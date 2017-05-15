@@ -40,7 +40,7 @@
     "tslib": "^1.6.0",
     "tslint": "^4.5.1",
     "tslint-microsoft-contrib": "^4.0.1",
-    "typescript": "2.1.4"
+    "typescript": "2.2.1"
   },
   "scripts": {
     "tslint": "./node_modules/.bin/gulp tslint",
