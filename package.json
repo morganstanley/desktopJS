@@ -1,0 +1,52 @@
+{
+  "name": "@morgan-stanley/desktopjs",
+  "title": "desktopJS",
+  "description": "Library for abstracting common container hosting",
+  "version": "0.0.6",
+  "main": "dist/desktop.js",
+  "license": "Apache-2.0",
+  "keywords": [
+    "container",
+    "desktop wrapper",
+    "desktop",
+    "openfin",
+    "electron",
+    "minuet"
+  ],
+  "files": [
+    "dist"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jasmine": "^2.5.47",
+    "@types/node": "^7.0.12",
+    "@types/openfin": "^17.0.2",
+    "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
+    "gulp-istanbul": "^1.1.1",
+    "gulp-istanbul-enforcer": "^1.0.3",
+    "gulp-jasmine": "^2.4.2",
+    "gulp-rename": "^1.2.2",
+    "gulp-sourcemaps": "^2.5.0",
+    "gulp-tslint": "^7.1.0",
+    "gulp-typescript": "^3.1.6",
+    "gulp-uglify": "^2.1.2",
+    "gulp-webserver": "^0.9.1",
+    "remap-istanbul": "^0.9.5",
+    "rollup": "^0.41.6",
+    "rollup-plugin-commonjs": "^8.0.2",
+    "rollup-plugin-node-resolve": "^2.1.1",
+    "rollup-plugin-typescript": "^0.8.1",
+    "tslib": "^1.6.0",
+    "tslint": "^4.5.1",
+    "tslint-microsoft-contrib": "^4.0.1",
+    "typescript": "2.1.4"
+  },
+  "scripts": {
+    "tslint": "./node_modules/.bin/gulp tslint",
+    "build": "./node_modules/.bin/gulp",
+    "watch": "./node_modules/.bin/gulp watch",
+    "test": "./node_modules/.bin/gulp test",
+    "server": "./node_modules/.bin/gulp server"
+  }
+}

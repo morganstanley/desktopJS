@@ -1,0 +1,59 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Attach OpenFin",
+			"type": "chrome",
+			"request": "attach",
+			"port": 9090,
+			"address": "localhost",
+			"webRoot": "${workspaceRoot}/dist",
+			"sourceMaps": true
+		},
+		{
+			"name": "Debug Electron Main",
+			"type": "node",
+			"request": "launch",
+			"cwd": "${workspaceRoot}/examples/web",
+			"runtimeExecutable": "electron.cmd", // For windows
+			//"runtimeExecutable": "electron" // Other platforms
+			"program": "${workspaceRoot}/examples/electron/electron.js"
+		},
+		{
+			"name": "Debug Electron Renderer",
+			"type": "chrome",
+			"request": "launch",
+			"runtimeExecutable": "electron.cmd", // For windows
+			//"runtimeExecutable": "electron" // Other platforms
+			"runtimeArgs": [
+				"${workspaceRoot}/examples/electron",
+				"--enable-logging",
+				"--remote-debugging-port=9222"
+			],
+			"sourceMaps": true,
+			"webRoot": "${workspaceRoot}/dist"
+		},
+		{
+			"name": "Debug Tests",
+			"type": "node",
+			"request": "launch",
+			"program": "${workspaceRoot}/node_modules/gulp/bin/gulp.js",
+			"stopOnEntry": false,
+			"args": [
+				"test"
+			],
+			"cwd": "${workspaceRoot}/src/",
+			"preLaunchTask": null,
+			"runtimeExecutable": null,
+			"runtimeArgs": [
+				"--nolazy"
+			],
+			"env": {
+				"NODE_ENV": "development"
+			},
+			"externalConsole": false,
+			"sourceMaps": true,
+			"outDir": null
+		}
+	]
+}

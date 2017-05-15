@@ -1,0 +1,18 @@
+{
+    "devtools_port": 9090,
+    "startup_app": {
+        "name": "desktopJS Demo",
+        "description": "desktopJS Demo",
+        "url": "http://localhost:8000/index.html",
+        "uuid": "0td3jltz4vswz5mi",
+        "autoShow": true,
+        "icon": "http://localhost:8000/assets/img/application.png"
+    },
+    "runtime": {
+        "arguments": "",
+        "version": "stable"
+    },
+    "shortcut": {
+        "target": []
+    }
+}

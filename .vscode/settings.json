@@ -1,0 +1,12 @@
+{
+    "json.schemas": [
+        {
+            "fileMatch": [ "tslint.json" ],
+            "url": "http://json.schemastore.org/tslint"
+        },
+        {
+            "fileMatch": [ "app.json" ],
+            "url": "http://json.schemastore.org/openfin"
+        }
+    ]
+}

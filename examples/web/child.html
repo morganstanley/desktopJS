@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Child</title>
+    <script type="text/javascript" src="desktop.js"></script>
+    <script>
+        function toggleMainVisibility() {
+            container.getMainWindow().isShowing().then((showing) => {
+                if (showing) {
+                    container.getMainWindow().hide();
+                } else {
+                    container.getMainWindow().show();
+                }
+            });
+        }
+    </script>
+</head>
+
+<body>
+    Child
+    <br />
+    <button onclick="toggleMainVisibility()">Test</button>
+    <a href="child.html" target="_blank">Child again</a>
+</body>
+
+</html>

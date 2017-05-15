@@ -1,0 +1,9 @@
+{
+  "name": "desktopJS",
+  "version": "0.0.0",
+  "description": "desktopJS Demo",
+  "main": "electron.js",
+  "dependencies": {
+    "node-notifier": "^5.1.2"
+  }
+}

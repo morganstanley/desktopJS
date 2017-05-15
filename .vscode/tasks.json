@@ -1,0 +1,86 @@
+{
+    "version": "0.1.0",
+    "showOutput": "always",
+    "tasks": [
+        {
+            "taskName": "build",
+            "command": "${workspaceRoot}/node_modules/.bin/gulp",
+            "showOutput": "always",
+            "echoCommand": true,
+            "isShellCommand": true,
+            "isBuildCommand": true,
+            "problemMatcher": [
+                "$tsc",
+                {
+                    "owner": "tslint",
+                    "pattern": {
+                        "regexp": "^\\(.+\\)\\s(\\S+)\\[(\\d+)(.{2})(\\d+)\\]:\\s+(.+)$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 4,
+                        "message": 5
+                    },
+                    "fileLocation": "absolute"
+                }
+            ]
+        },
+        {
+            "taskName": "watch",
+            "command": "${workspaceRoot}/node_modules/.bin/gulp",
+            "args": [
+                "watch"
+            ],
+            "showOutput": "never",
+            "echoCommand": true,
+            "isShellCommand": true,
+            "problemMatcher": [
+                "$tsc"
+            ]
+        },
+        {
+            "taskName": "analysis",
+            "command": "${workspaceRoot}/node_modules/.bin/gulp",
+            "args": [
+                "tslint"
+            ],
+            "showOutput": "always",
+            "echoCommand": true,
+            "isShellCommand": true,
+            "problemMatcher": [
+                "$tsc",
+                {
+                    "owner": "tslint",
+                    "pattern": {
+                        "regexp": "^\\(.+\\)\\s(\\S+)\\[(\\d+)(.{2})(\\d+)\\]:\\s+(.+)$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 4,
+                        "message": 5
+                    },
+                    "fileLocation": "absolute"
+                }
+            ]
+        },
+        {
+            "taskName": "test",
+            "command": "${workspaceRoot}/node_modules/.bin/gulp",
+            "args": [
+                "test"
+            ],
+            "showOutput": "always",
+            "echoCommand": true,
+            "isShellCommand": true,
+            "isTestCommand": true
+        },
+        {
+            "taskName": "Launch OpenFin",
+            "command": "openfin",
+            "args": [
+                "-l",
+                "-c",
+                "examples/openfin/app.json"
+            ],
+            "isShellCommand": true
+        }
+    ]
+}
