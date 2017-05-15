@@ -1,10 +1,9 @@
-<!--<img src="examples/web/assets/img/application.png" alt="desktopJS" valign="middle" style="margin:-5px 0 0 0" />-->
+[![devDependencies Status](https://david-dm.org/Morgan-Stanley/desktopJS/dev-status.svg)](https://david-dm.org/Morgan-Stanley/desktopJS?type=dev)
+[![dependencies Status](https://david-dm.org/Morgan-Stanley/desktopJS/status.svg)](https://david-dm.org/Morgan-Stanley/desktopJS)
+
 desktopJS
 ==========
 
-
-What is desktopJS?
--------------------
 desktopJS provides a common API across multiple HTML5 containers. By programming to a
 common API, applications can target multiple HTML5 containers without change. Detecting
 what container in which you are hosted, desktopJS provides shims and polyfills to
