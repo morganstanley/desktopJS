@@ -5,14 +5,8 @@ node_js:
 
 sudo: false
 
-env:
-  - workerCount=3
-
 matrix:
   fast_finish: true
-
-install:
-  - npm install
 
 script:
   - npm run build
@@ -20,6 +14,3 @@ script:
 cache:
   directories:
     - node_modules
-
-git:
-  depth: 1
