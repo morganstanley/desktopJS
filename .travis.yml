@@ -1,0 +1,27 @@
+language: node_js
+
+node_js:
+  - 'stable'
+  - '6'
+  - '4'
+
+sudo: false
+
+env:
+  - workerCount=3
+
+matrix:
+  fast_finish: true
+
+install:
+  - npm install
+
+script:
+  - npm run build
+
+cache:
+  directories:
+    - node_modules
+
+git:
+  depth: 1
