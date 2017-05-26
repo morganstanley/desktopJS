@@ -21,7 +21,7 @@
     "@types/jasmine": "^2.5.47",
     "@types/node": "^7.0.12",
     "@types/openfin": "^17.0.2",
-    "coveralls": "^2.13.1",
+    "codecov": "^2.2.0",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
     "gulp-istanbul": "^1.1.1",

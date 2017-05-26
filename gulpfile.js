@@ -26,7 +26,6 @@ var dest = 'dist';
 var testOutput = 'build';
 var coverageOutput = 'build/coverage';
 var coverageFile = coverageOutput + '/coverage-final.json';
-var lcovFile = coverageOutput + '/lcov.info';
 
 var tsProject = gulpts.createProject('tsconfig.json');
 var tsTestProject = gulpts.createProject('tsconfig-tests.json');
@@ -109,8 +108,7 @@ function remapCoverageFiles() {
             reports: {
                 'json': coverageFile, // overwrite js based json with ts remapped version
                 'html': coverageOutput,
-                'text': null,
-                'lcovonly': lcovFile
+                'text': null
             }
         }));
 };
