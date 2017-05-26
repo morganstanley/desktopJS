@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Morgan-Stanley/desktopJS.svg?branch=master)](https://travis-ci.org/Morgan-Stanley/desktopJS)
+[![Coverage Status](https://coveralls.io/repos/github/Morgan-Stanley/desktopJS/badge.svg)](https://coveralls.io/github/Morgan-Stanley/desktopJS)
 [![devDependencies Status](https://david-dm.org/Morgan-Stanley/desktopJS/dev-status.svg)](https://david-dm.org/Morgan-Stanley/desktopJS?type=dev)
 [![dependencies Status](https://david-dm.org/Morgan-Stanley/desktopJS/status.svg)](https://david-dm.org/Morgan-Stanley/desktopJS)
 
