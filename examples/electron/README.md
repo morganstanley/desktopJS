@@ -11,7 +11,7 @@ directory to ensure assets used from examples/web are also within the scope of t
 node process.
 
 <blockquote>
-   [examples/web] $ electron ../electron
+   [examples/web] $ electron ../electron --enable-logging
 </blockquote>
 
 ### Electron main

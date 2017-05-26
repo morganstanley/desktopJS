@@ -1,5 +1,6 @@
 import { ContainerWindowManager, ContainerWindow } from "./window";
 import { ContainerNotificationManager } from "./notification";
+import { MessageBus } from "./ipc";
 import { TrayIconDetails } from "./tray";
 import { MenuItem } from "./menu";
 import { Guid } from "./guid";
@@ -29,6 +30,11 @@ export interface Container extends ContainerWindowManager, ContainerNotification
      * @param {MenuItem[]} menuItems (Optional) Context menu.
      */
     addTrayIcon(details: TrayIconDetails, listener?: () => void, menuItems?: MenuItem[]);
+
+    /**
+     * A messaging bus for sending and receiving messages
+     */
+    readonly ipc: MessageBus;
 }
 
 /**
@@ -50,6 +56,8 @@ export abstract class ContainerBase implements Container {
     addTrayIcon(details: TrayIconDetails, listener?: () => void, menuItems?: MenuItem[]) {
         throw new TypeError("Tray icons are not supported by this container.");
     }
+
+    public ipc: MessageBus;
 }
 
 /**
@@ -57,7 +65,7 @@ export abstract class ContainerBase implements Container {
  * @extends ContainerBase
  */
 export abstract class WebContainerBase extends ContainerBase {
-    protected globalWindow: Window;
+    public readonly globalWindow: Window;
     private linkHelper: any;
 
     public constructor(win?: Window) {
