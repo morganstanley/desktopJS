@@ -11,6 +11,9 @@ matrix:
 script:
   - npm run build
 
+after_success:
+  - "./node_modules/.bin/codecov -f ./build/coverage/*.json"
+
 cache:
   directories:
     - node_modules
