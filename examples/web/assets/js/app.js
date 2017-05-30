@@ -1,13 +1,20 @@
 ﻿var container = desktopJS.resolveContainer();
 
 var hostName = document.getElementById('hostName');
-var btnOpenWindow = document.getElementById('button-open-window');
-var btnToggleVisibility = document.getElementById('button-toggle-visiblity');
-var btnNotification = document.getElementById('button-notification');
-var btnTrayIcon = document.getElementById('button-tray-icon');
-var btnChildFocus = document.getElementById('button-child-focus');
-var btnScreenshot = document.getElementById('button-screenshot');
+var openWindowButton = document.getElementById('button-open-window');
+var visibilityButton = document.getElementById('button-toggle-visiblity');
+var notificationButton = document.getElementById('button-notification');
+var trayIconButton = document.getElementById('button-tray-icon');
+var childFocusButton = document.getElementById('button-child-focus');
+var screenshotButton = document.getElementById('button-screenshot');
+var subscribeButton = document.getElementById('button-subscribe');
+var publishButton = document.getElementById('button-publish');
+var unsubscribeButton = document.getElementById('button-unsubscribe');
+var publishText = document.getElementById('input-publish');
+var messageBusText = document.getElementById('text-messagebus');
 var previewImage = document.getElementById('image-preview');
+var subscription;
+var childWindow;
 
 /*
 // Provide polyfill of browser getSnapshot.  Here is an example using html2canvas
@@ -30,25 +37,29 @@ desktopJS.Electron.ElectronContainer.prototype.showNotification = function (opti
 };
 
 document.addEventListener("DOMContentLoaded", function (event) {
-	hostName.innerHTML = container.hostType + "<br />" + container.uuid
+	hostName.innerHTML = container.hostType + "<br />" + container.uuid;
+	subscribe();
 });
 
-var childWindow;
-
-btnOpenWindow.onclick = function () {
-	childWindow = container.showWindow("child.html",
+openWindowButton.onclick = function () {
+	childWindow = container.showWindow("http://localhost:8000",
 		{
 			resizable: true,
 			x: 10, y: 10,
-			width: 500, height: 300,
-			minWidth: 200, minHeight: 100, maxWidth: 800, maxHeight: 500,
+			width: 500, height: 500,
+			minWidth: 200, minHeight: 100, maxWidth: 800, maxHeight: 600,
 			taskbar: true, icon: "assets/img/application.png",
 			minimizable: true, maximizable: true,
 			alwaysOnTop: false, center: false,
+			name: "child"
 		});
 };
 
-btnToggleVisibility.onclick = function () {
+visibilityButton.onclick = function () {
+	if (!childWindow) {
+		return;
+	}
+
 	childWindow.isShowing().then(function (showing) {
 		if (showing) {
 			childWindow.hide();
@@ -58,11 +69,11 @@ btnToggleVisibility.onclick = function () {
 	});
 };
 
-btnNotification.onclick = function () {
+notificationButton.onclick = function () {
 	container.showNotification({ title: "Title", message: "Message", url: "notification.html" });
 };
 
-btnTrayIcon.onclick = function () {
+trayIconButton.onclick = function () {
 	container.addTrayIcon({ icon: 'assets/img/application.png', text: 'ContainerPOC' }, function () {
 		container.getMainWindow().isShowing().then(function (showing) {
 			if (showing) {
@@ -79,13 +90,43 @@ btnTrayIcon.onclick = function () {
 		]);
 };
 
-btnChildFocus.onclick = function () {
+childFocusButton.onclick = function () {
 	childWindow.show()
 		.then(childWindow.focus());
 };
 
-btnScreenshot.onclick = function () {
+screenshotButton.onclick = function () {
 	container.getMainWindow().getSnapshot().then(function (data) {
 		previewImage.src = data;
 	}).catch(function (error) { window.alert(error); });
 };
+
+subscribeButton.onclick = function () {
+	subscribe();
+};
+
+function subscribe() {
+	unsubscribe();
+
+	container.ipc.subscribe("stock.selected", function (event, message) {
+		messageBusText.innerHTML += "<br/>" + message.symbol;
+	}).then(function (sub) {
+		subscription = sub;
+	});
+}
+
+publishButton.onclick = function () {
+	container.ipc.publish("stock.selected", { symbol: publishText.value });
+};
+
+unsubscribeButton.onclick = function () {
+	unsubscribe();
+};
+
+function unsubscribe() {
+	if (subscription) {
+		container.ipc.unsubscribe(subscription);
+	}
+
+	subscription = undefined;
+}

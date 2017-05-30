@@ -19,6 +19,10 @@ function createWindow() {
         });
     }, [{ label: "Exit", click: (menuItem) => app.quit() }]);
 
+	container.ipc.subscribe("stock.selected", function (event, message) {
+		console.log("Message received: " + message.symbol);
+    });
+
     /*
     mainWindow.on("closed", function () {
         mainWindow = null;

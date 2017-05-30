@@ -1,30 +1,46 @@
-import { ElectronContainer, ElectronContainerWindow } from "../../../src/Electron/electron";
-
-class MockBrowserWindow {
-    getParentWindow(): any {
-        return undefined;
-    }
-}
+import { ElectronContainer, ElectronContainerWindow, ElectronMessageBus } from "../../../src/Electron/electron";
+import { MessageBusSubscription } from "../../../src/ipc";
 
 class MockWindow {
-    focus() { }
-    show() { }
-    hide() { }
-    isVisible(): boolean { return true; }
-    capturePage(callback: (snapshot: MockCapture) => void): any {
+    public name: string;
+
+    constructor(name?: string) {
+        this.name = name;
+    }
+
+    public focus(): void { }
+    public show(): void { }
+    public hide(): void { }
+    public isVisible(): boolean { return true; }
+    public capturePage(callback: (snapshot: MockCapture) => void): any {
         callback(new MockCapture());
         return {};
+    }
+
+    public getParentWindow(): any { return undefined; }
+
+    public getAllWindows(): any { return [new MockWindow(), new MockWindow("target")]; }
+
+    public webContents: any = {
+        send(channel: string, ...args: any[]) { }
     }
 }
 
 class MockCapture {
-    toPNG(): any {
-         return {
-             toString(type: any) {
-                 return "Mock";
-             }
-         };    
+    public toPNG(): any {
+        return {
+            toString(type: any) {
+                return "Mock";
+            }
+        };
     }
+}
+
+class MockIpc {
+    public on(event: string | symbol, listener: Function) { return this; }
+    public removeListener(event: string | symbol, listener: Function) { return this; };
+    public send(channel: string, ...args: any[]) { }
+    public sendSync(channel: string, ...args: any[]) { return {} };
 }
 
 describe("ElectronContainerWindow", () => {
@@ -78,7 +94,7 @@ describe("ElectronContainerWindow", () => {
             }).then(done);
         });
 
-         it("getSnapshot", (done) => {
+        it("getSnapshot", (done) => {
             spyOn(innerWin, "capturePage").and.callThrough();
             let success: boolean = false;
 
@@ -119,7 +135,7 @@ describe("ElectronContainer", () => {
             require: (type: string) => { return {} },
             getCurrentWindow: () => { return {} }
         };
-        container = new ElectronContainer(electron);
+        container = new ElectronContainer(electron, new MockIpc());
     });
 
     it("hostType is Electron", () => {
@@ -140,7 +156,7 @@ describe("ElectronContainer", () => {
     });
 
     it("getCurrentWindow returns wrapped inner getCurrentWindow", () => {
-        const innerWin: any = new MockBrowserWindow();
+        const innerWin: any = new MockWindow();
         spyOn(electron, "getCurrentWindow").and.returnValue(innerWin);
         const win: ElectronContainerWindow = container.getMainWindow();
 
@@ -164,5 +180,55 @@ describe("ElectronContainer", () => {
         it("Throws Not implemented", () => {
             expect(() => container.showNotification({})).toThrowError(TypeError);
         });
+    });
+});
+
+describe("ElectronMessageBus", () => {
+    let mockIpc: any;
+    let mockWindow: any;
+    let bus: ElectronMessageBus;
+
+    function callback() { }
+
+    beforeEach(() => {
+        mockWindow = new MockWindow();
+        mockIpc = new MockIpc();
+        bus = new ElectronMessageBus(mockIpc, mockWindow);
+    });
+
+    it("subscribe invokes underlying subscribe", (done) => {
+        spyOn(mockIpc, "on").and.callThrough();
+        bus.subscribe("topic", callback).then((subscriber) => {
+            expect(subscriber.listener).toEqual(jasmine.any(Function));
+            expect(subscriber.topic).toEqual("topic");
+        }).then(done);
+        expect(mockIpc.on).toHaveBeenCalledWith("topic", jasmine.any(Function));
+    });
+
+    it("subscribe listener attached", (done) => {
+        bus.subscribe("topic", callback).then((subscriber) => {
+            spyOn(subscriber, "listener").and.callThrough();
+            subscriber.listener();
+            expect(subscriber.listener).toHaveBeenCalled();
+        }).then(done);
+    });
+
+    it("unsubscribe invokes underlying unsubscribe", (done) => {
+        spyOn(mockIpc, "removeListener").and.callThrough();
+        bus.unsubscribe({ topic: "topic", listener: callback }).then(done);
+        expect(mockIpc.removeListener).toHaveBeenCalledWith("topic", jasmine.any(Function));
+    });
+
+    it("publish invokes underling publish", (done) => {
+        let message: any = {};
+        spyOn(mockIpc, "send").and.callThrough();
+        spyOn(mockWindow.webContents, "send").and.callThrough();
+        bus.publish("topic", message).then(done);
+        expect(mockIpc.send).toHaveBeenCalledWith("topic", message);
+    });
+
+    it("publish with optional name invokes underling send", (done) => {
+        let message: any = {};
+        bus.publish("topic", message, { name: "target" }).then(done);
     });
 });

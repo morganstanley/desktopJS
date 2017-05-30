@@ -5,6 +5,7 @@ import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions } from "../notification";
 import { TrayIconDetails } from "../tray";
 import { MenuItem } from "../menu";
+import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../ipc";
 
 ContainerRegistry.registerContainer("Electron", {
     condition: () => {
@@ -64,6 +65,59 @@ export class ElectronContainerWindow implements ContainerWindow {
 }
 
 /**
+ * @augments MessageBus
+ */
+export class ElectronMessageBus implements MessageBus {
+    public ipc: NodeJS.EventEmitter;
+    private browserWindow: any;
+
+    public constructor(ipc: NodeJS.EventEmitter, browserWindow: any) {
+        this.ipc = ipc;
+        this.browserWindow = browserWindow;
+    }
+
+    public subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
+        return new Promise<MessageBusSubscription>((resolve, reject) => {
+            const subscription: MessageBusSubscription = new MessageBusSubscription(topic, (event: any, message: any) => {
+                listener({ topic: topic }, message);
+            });
+            this.ipc.on(topic, subscription.listener);
+            resolve(subscription);
+        });
+    }
+
+    public unsubscribe(subscription: MessageBusSubscription): Promise<void> {
+        const { topic, listener, options } = subscription;
+        return Promise.resolve(<any>this.ipc.removeListener(topic, listener));
+    }
+
+    public publish<T>(topic: string, message: T, options?: MessageBusOptions): Promise<void> {
+        // Publish to main from renderer (send is not available on ipcMain)
+        if ((<any>this.ipc).send !== undefined) {
+            // If publisher is targeting a window, do not send to main
+            if (!options || !options.name) {
+                (<any>this.ipc).send(topic, message);
+            }
+        }
+
+        // Broadcast to all windows or to the individual targeted window
+        if (this.browserWindow) {
+            for (const window of (this.browserWindow).getAllWindows()) {
+                if (options && options.name) {
+                    if (options.name === window.name) {
+                        window.webContents.send(topic, message);
+                    }
+                } else {
+                    window.webContents.send(topic, message);
+                }
+            }
+        }
+
+        return Promise.resolve();
+    }
+}
+
+/**
  * @extends ContainerBase
  */
 export class ElectronContainer extends ContainerBase {
@@ -74,6 +128,7 @@ export class ElectronContainer extends ContainerBase {
     protected browserWindow: any;
     protected tray: any;
     protected menu: any;
+    protected internalIpc: NodeJS.EventEmitter;
 
     public static readonly windowOptionsMap: PropertyMap = {
         taskbar: { target: "skipTaskbar", convert: (value: any, from: any, to: any) => { return !value; } }
@@ -81,7 +136,7 @@ export class ElectronContainer extends ContainerBase {
 
     public windowOptionsMap: PropertyMap = ElectronContainer.windowOptionsMap;
 
-    public constructor(electron?: any) {
+    public constructor(electron?: any, ipc?: NodeJS.EventEmitter | any) {
         super();
         this.hostType = "Electron";
 
@@ -101,6 +156,17 @@ export class ElectronContainer extends ContainerBase {
             this.browserWindow = this.electron.BrowserWindow;
             this.tray = this.electron.Tray;
             this.menu = this.electron.Menu;
+
+            this.internalIpc = ipc || ((this.isRemote) ? require("electron").ipcRenderer : this.electron.ipcMain);
+            this.ipc = new ElectronMessageBus(this.internalIpc, this.browserWindow);
+
+            if (!this.isRemote) {
+                this.internalIpc.on("setWindowName", (event: any, message: any) => {
+                    const { id, name } = message;
+                    this.browserWindow.fromId(id).name = name;
+                    event.returnValue = name;
+                });
+            }
         } catch (e) {
             console.error(e);
         }
@@ -128,7 +194,23 @@ export class ElectronContainer extends ContainerBase {
 
     public showWindow(url: string, options?: any): ContainerWindow {
         const newOptions = this.getWindowOptions(options);
-        const electronWindow = new this.browserWindow(newOptions);
+        const electronWindow: any = new this.browserWindow(newOptions);
+        const windowName = newOptions.name || url;
+
+        /*
+            If we are in the renderer process, we need to ipc to the main process
+            to set the window name. Otherwise it can not be seen from other renderer
+            processes.
+
+            This requires the main process to have desktopJS container listening
+            either via desktopJS.resolveContainer() or new desktopJS.Electron.ElectronContainer();
+            If it is not listening, this ipc call will hang indefinitely. If we are in the
+            main process we can just directly set the name.
+        */
+        electronWindow["name"] = (this.isRemote)
+            ? (<any>this.internalIpc).sendSync("setWindowName", { id: electronWindow.id, name: windowName })
+            : windowName;
+
         electronWindow.loadURL(url);
 
         return this.wrapWindow(electronWindow);

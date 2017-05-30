@@ -6,6 +6,7 @@ import { NotificationOptions } from "../notification";
 import { TrayIconDetails } from "../tray";
 import { MenuItem } from "../menu";
 import { Guid } from "../guid";
+import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../ipc";
 
 ContainerRegistry.registerContainer("OpenFin", {
     condition: () => typeof window !== "undefined" && "fin" in window && "desktop" in fin,
@@ -52,6 +53,67 @@ export class OpenFinContainerWindow implements ContainerWindow {
                 (snapshot) => resolve("data:image/png;base64," + snapshot),
                 (reason) => reject(reason)
             );
+        });
+    }
+}
+
+/**
+ * @augments MessageBus
+ */
+export class OpenFinMessageBus implements MessageBus {
+    private bus: fin.OpenFinInterApplicationBus;
+    private uuid: string;
+
+    public constructor(bus: fin.OpenFinInterApplicationBus, uuid: string) {
+        this.bus = bus;
+        this.uuid = uuid;
+    }
+
+    public subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
+        return new Promise<MessageBusSubscription>((resolve, reject) => {
+            const subscription: MessageBusSubscription = new MessageBusSubscription(topic, (message: any, uuid: string, name: string) => {
+                listener( /* Event */ { topic: topic }, message);
+            }, options);
+
+            this.bus.subscribe(options && options.uuid || "*",      // senderUuid
+                options && options.name || undefined,               // name
+                subscription.topic,                                 // topic
+                subscription.listener,                              // listener
+                () => resolve(subscription),                        // callback
+                reject);                                            // errorCallback
+        });
+    }
+
+    public unsubscribe(subscription: MessageBusSubscription): Promise<void> {
+        const { topic, listener, options } = subscription;
+        return new Promise<void>((resolve, reject) => {
+            this.bus.unsubscribe(options && options.uuid || "*",    // senderUuid
+                options && options.name || undefined,               // name
+                topic,                                              // topic
+                listener,                                           // listener
+                resolve,                                            // callback
+                reject);                                            // errorCallback
+        });
+    }
+
+    public publish<T>(topic: string, message: T, options?: MessageBusOptions): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            // If publisher has targets defined, use OpenFin send vs broadcast publish
+            // If name is specified but not uuid, assume the user wants current app uuid
+            if ((options && options.uuid) || (options && options.name)) {
+                this.bus.send(options.uuid || this.uuid,            // destinationUuid
+                    options.name || undefined,                      // name
+                    topic,                                          // topic
+                    message,                                        // message
+                    resolve,                                        // callback
+                    reject);                                        // errorCallback
+
+            } else {
+                this.bus.publish(topic,                             // topic
+                    message,                                        // message
+                    resolve,                                        // callback
+                    reject);                                        // errorCallback
+            }
         });
     }
 }
@@ -157,6 +219,8 @@ export class OpenFinContainer extends WebContainerBase {
         super();
         this.desktop = desktop || fin.desktop;
         this.hostType = "OpenFin";
+
+        this.ipc = new OpenFinMessageBus(this.desktop.InterApplicationBus, (<any>this.desktop.Application.getCurrent()).uuid);
     }
 
     public getMainWindow(): ContainerWindow {
