@@ -14,11 +14,12 @@
                 {
                     "owner": "tslint",
                     "pattern": {
-                        "regexp": "^\\(.+\\)\\s(\\S+)\\[(\\d+)(.{2})(\\d+)\\]:\\s+(.+)$",
-                        "file": 1,
-                        "line": 2,
-                        "column": 4,
-                        "message": 5
+                        "regexp": "^(.+):\\s+\\(.+\\)\\s(\\S+)\\[(\\d+)(.{2})(\\d+)\\]:\\s+(.+)$",
+                        "severity": 0,
+                        "file": 2,
+                        "line": 3,
+                        "column": 5,
+                        "message": 6
                     },
                     "fileLocation": "absolute"
                 }
@@ -51,11 +52,12 @@
                 {
                     "owner": "tslint",
                     "pattern": {
-                        "regexp": "^\\(.+\\)\\s(\\S+)\\[(\\d+)(.{2})(\\d+)\\]:\\s+(.+)$",
-                        "file": 1,
-                        "line": 2,
-                        "column": 4,
-                        "message": 5
+                        "regexp": "^(.+):\\s+\\(.+\\)\\s(\\S+)\\[(\\d+)(.{2})(\\d+)\\]:\\s+(.+)$",
+                        "severity": 0,
+                        "file": 2,
+                        "line": 3,
+                        "column": 5,
+                        "message": 6
                     },
                     "fileLocation": "absolute"
                 }

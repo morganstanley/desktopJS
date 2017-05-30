@@ -61,7 +61,7 @@ export class ElectronContainerWindow implements ContainerWindow {
                 resolve("data:image/png;base64," + snapshot.toPNG().toString("base64"));
             });
         });
-    };
+    }
 }
 
 /**
