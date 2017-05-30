@@ -101,7 +101,7 @@ export class DefaultContainer extends WebContainerBase {
             if (permission === "denied") {
                 console.warn("Notifications not permitted");
             } else if (permission === "granted") {
-                new (<any>this.globalWindow).Notification(options.title, { body: options.message });
+                new (<any>this.globalWindow).Notification(options.title, { body: options.message }); // tslint:disable-line
             }
         });
     }
