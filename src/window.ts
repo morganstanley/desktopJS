@@ -62,7 +62,6 @@ export class PersistedWindow {
     public name: any;
     public bounds: any;
     public url: string;
-    public state?: any;
 }
 
 /** Represents a persisted window layout */
