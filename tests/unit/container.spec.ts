@@ -35,27 +35,6 @@ class TestContainer extends ContainerBase {
         };
     }
 
-    /*
-        public get storage(): any {
-            return {
-                getItem(key: string): string {
-                    const layout: PersistedWindowLayout = new PersistedWindowLayout();
-                    const win: PersistedWindow = new PersistedWindow();
-                    win.name = "name";
-                    win.url = "url";
-                    layout.windows.push(win);
-                    layout.name = "Test";
-                    const layouts: any = { "Test": layout };
-                    let test: string = JSON.stringify(layouts);
-                    return test;
-                },
-                setItem(key: string, value: any) {
-                    // no op
-                }
-            };
-        }
-    */
-
     public saveLayoutToStorage(name: string, layout: PersistedWindowLayout) {
         super.saveLayoutToStorage(name, layout);
     }
