@@ -22,6 +22,7 @@ export interface ContainerWindow {
     getSnapshot(): Promise<string>;
 }
 
+/** Represents window management capability */
 export interface ContainerWindowManager {
     /**
      * Gets the main ContainerWindow of the application.
@@ -36,4 +37,40 @@ export interface ContainerWindowManager {
      * @returns {ContainerWindow} A new native container window wrapped within a generic ContainerWindow.
      */
     showWindow(url: string, options?: any): ContainerWindow;
+
+    /**
+     * Loads a window layout from persistence
+     * @param {string} name - Name of the window layout to load
+     */
+    loadLayout(name: string): Promise<PersistedWindowLayout>;
+
+    /** Persists a window layout
+     * @param {string} name - Name of the window layout to save
+     * @returns {Promise<PersistedWindowLayout>} - A promise that returns {@link PersistedWindowLayout} if resolved
+     */
+    saveLayout(name: string): Promise<PersistedWindowLayout>;
+
+    /**
+     *  Retrieve a list of persisted window layouts
+     *  @returns {Promise<PersistedWindowLayout[]>} - A promise that returns an array of {@link PersistedWindowLayout} if resolved
+     */
+    getLayouts(): Promise<PersistedWindowLayout[]>;
+}
+
+/** Represents a persisted window in a layout */
+export class PersistedWindow {
+    public name: any;
+    public bounds: any;
+    public url: string;
+    public state?: any;
+}
+
+/** Represents a persisted window layout */
+export class PersistedWindowLayout {
+    public name: string;
+    public windows: PersistedWindow[] = [];
+
+    constructor(name?: string) {
+        this.name = name;
+    }
 }

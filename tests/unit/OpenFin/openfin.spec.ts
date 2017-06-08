@@ -5,7 +5,16 @@ class MockDesktop {
     Window(): MockWindow { return new MockWindow(); }
     Notification(): any { return {}; }
     InterApplicationBus(): any { return new MockInterApplicationBus(); }
-    Application: any = { getCurrent() { return { uuid: "uuid" } } }
+    Application: any = {
+        getCurrent() {
+            return {
+                uuid: "uuid",
+                getChildWindows(callback) {
+                    callback([MockWindow.singleton]);
+                }
+            }
+        }
+    }
 }
 
 class MockInterApplicationBus {
@@ -32,7 +41,10 @@ class MockInterApplicationBus {
 }
 
 class MockWindow {
-    static getCurrent(): any { return {}; }
+    static singleton: MockWindow = new MockWindow();
+
+    static getCurrent(): any { return MockWindow.singleton; }
+
     getParentWindow(): any { return {}; }
 
     focus(callback: () => void, error: (reason) => void): any {
@@ -41,6 +53,11 @@ class MockWindow {
     }
 
     show(callback: () => void, error: (reason) => void): any {
+        callback();
+        return {};
+    }
+
+    close(force: Boolean, callback: () => void, error: (reason) => void): any {
         callback();
         return {};
     }
@@ -57,6 +74,16 @@ class MockWindow {
 
     getSnapshot(callback: (snapshot: string) => void, error: (reason) => void): any {
         callback("");
+        return {};
+    }
+
+    getBounds(callback: (bounds: fin.WindowBounds) => void, error: (reason) => void): any {
+        callback({ left: 0, top: 1, width: 2, height: 3 });
+        return {};
+    }
+
+    getOptions(callback: (options: fin.WindowOptions) => void, error: (reason) => void): any {
+        callback({ url: "url" });
         return {};
     }
 }
@@ -195,8 +222,31 @@ describe("OpenFinContainer", () => {
                 }
             );
         });
-    });
 
+        describe("window management", () => {
+            it("closeAllWindows invokes window.close", (done) => {
+                spyOn(MockWindow.singleton, "close").and.callThrough();
+                (<any>container).closeAllWindows().then(done).catch(error => {
+                    fail(error);
+                    done();
+                });;
+                expect(MockWindow.singleton.close).toHaveBeenCalled();
+            });
+
+            it("saveLayout invokes underlying saveLayoutToStorage", (done) => {
+                spyOn<any>(container, "saveLayoutToStorage").and.stub();
+                container.saveLayout("Test")
+                    .then(layout => {
+                        expect(layout).toBeDefined();
+                        expect((<any>container).saveLayoutToStorage).toHaveBeenCalledWith("Test", layout);
+                        done();
+                    }).catch(error => {
+                        fail(error);
+                        done();
+                    });
+            });
+        });
+    });
 
     it("showNotification passes message and invokes underlying notification api", () => {
         spyOn(desktop, "Notification").and.stub();

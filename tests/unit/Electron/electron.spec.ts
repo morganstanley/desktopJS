@@ -10,6 +10,7 @@ class MockWindow {
 
     public focus(): void { }
     public show(): void { }
+    public close(): void { }
     public hide(): void { }
     public isVisible(): boolean { return true; }
     public capturePage(callback: (snapshot: MockCapture) => void): any {
@@ -22,8 +23,11 @@ class MockWindow {
     public getAllWindows(): any { return [new MockWindow(), new MockWindow("target")]; }
 
     public webContents: any = {
-        send(channel: string, ...args: any[]) { }
+        send(channel: string, ...args: any[]) { },
+        getURL() { return "url"; }
     }
+
+    public getBounds(): any { return { x: 0, y: 1, width: 2, height: 3 }; }
 }
 
 class MockCapture {
@@ -113,13 +117,14 @@ describe("ElectronContainerWindow", () => {
 describe("ElectronContainer", () => {
     let electron: any;
     let container: ElectronContainer;
+    let windows: MockWindow[] = [new MockWindow(), new MockWindow()];
 
     beforeEach(() => {
         electron = {
             app: {},
             BrowserWindow: (options: any) => {
                 return {
-                    loadURL: (url: string) => { }
+                    loadURL: (url: string) => { },
                 }
             },
             Tray: (icon: string) => {
@@ -133,7 +138,7 @@ describe("ElectronContainer", () => {
                 buildFromTemplate: (menuItems: any) => { }
             },
             require: (type: string) => { return {} },
-            getCurrentWindow: () => { return {} }
+            getCurrentWindow: () => { return windows[0]; }
         };
         container = new ElectronContainer(electron, new MockIpc());
     });
@@ -179,6 +184,52 @@ describe("ElectronContainer", () => {
     describe("showNotification", () => {
         it("Throws Not implemented", () => {
             expect(() => container.showNotification({})).toThrowError(TypeError);
+        });
+    });
+
+    describe("window management", () => {
+        beforeEach(() => {
+            electron.BrowserWindow = {
+                getAllWindows(): MockWindow[] { return windows; }
+            };
+
+            container = new ElectronContainer(electron, new MockIpc());
+        });
+
+        it("closeAllWindows excluding self skips current window", (done) => {
+            spyOn(electron, "getCurrentWindow").and.callThrough();
+            spyOn(windows[0], "close").and.callThrough();
+            spyOn(windows[1], "close").and.callThrough();
+            (<any>container).closeAllWindows(true).then(done).catch(error => {
+                fail(error);
+                done();
+            });
+            expect(electron.getCurrentWindow).toHaveBeenCalled();
+            expect(windows[0].close).not.toHaveBeenCalled();
+            expect(windows[1].close).toHaveBeenCalled();
+        });
+
+        it("closeAllWindows including self closes all", (done) => {
+            spyOn(electron, "getCurrentWindow").and.callThrough();
+            spyOn(windows[0], "close").and.callThrough();
+            spyOn(windows[1], "close").and.callThrough();
+            (<any>container).closeAllWindows().then(done);
+            expect(electron.getCurrentWindow).not.toHaveBeenCalled();
+            expect(windows[0].close).toHaveBeenCalled();
+            expect(windows[1].close).toHaveBeenCalled();
+        });
+
+        it("saveLayout invokes underlying saveLayoutToStorage", (done) => {
+            spyOn<any>(container, "saveLayoutToStorage").and.stub();
+            container.saveLayout("Test")
+                .then(layout => {
+                    expect(layout).toBeDefined();
+                    expect((<any>container).saveLayoutToStorage).toHaveBeenCalledWith("Test", layout);
+                    done();
+                }).catch(error => {
+                    fail(error);
+                    done();
+                });;
         });
     });
 });

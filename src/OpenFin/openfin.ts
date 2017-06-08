@@ -1,5 +1,5 @@
 import * as ContainerRegistry from "../registry";
-import { ContainerWindow } from "../window";
+import { ContainerWindow, PersistedWindowLayout, PersistedWindow } from "../window";
 import { WebContainerBase } from "../container";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions } from "../notification";
@@ -355,5 +355,45 @@ export class OpenFinContainer extends WebContainerBase {
                     });
 
             }, (error) => { console.error(error); });
+    }
+
+    protected closeAllWindows(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const windowClosing: Promise<void>[] = [];
+
+            this.desktop.Application.getCurrent().getChildWindows(windows => {
+                windows.forEach(window => {
+                    windowClosing.push(new Promise<void>((innerResolve, innerReject) => window.close(true, innerResolve, innerReject)));
+                });
+
+                Promise.all(windowClosing).then(() => resolve());
+            }, reject);
+        });
+    }
+
+    public saveLayout(name: string): Promise<PersistedWindowLayout> {
+        const layout = new PersistedWindowLayout();
+
+        return new Promise<PersistedWindowLayout>((resolve, reject) => {
+            this.desktop.Application.getCurrent().getChildWindows(windows => {
+                const windowClosing: Promise<void>[] = [];
+
+                windows.forEach(window => {
+                    windowClosing.push(new Promise<void>((innerResolve, innerReject) => {
+                        window.getBounds(bounds => {
+                            window.getOptions(options => {
+                                layout.windows.push({ name: window.name, url: options.url, bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height } });
+                                innerResolve();
+                            });
+                        });
+                    }));
+                });
+
+                Promise.all(windowClosing).then(() => {
+                    this.saveLayoutToStorage(name, layout);
+                    resolve(layout);
+                });
+            });
+        });
     }
 }

@@ -1,4 +1,4 @@
-import { ContainerWindowManager, ContainerWindow } from "./window";
+import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, PersistedWindow } from "./window";
 import { ContainerNotificationManager } from "./notification";
 import { MessageBus } from "./ipc";
 import { TrayIconDetails } from "./tray";
@@ -35,6 +35,11 @@ export interface Container extends ContainerWindowManager, ContainerNotification
      * A messaging bus for sending and receiving messages
      */
     readonly ipc: MessageBus;
+
+    /**
+     * Persistent storage
+     */
+    storage: Storage;
 }
 
 /**
@@ -44,6 +49,8 @@ export interface Container extends ContainerWindowManager, ContainerNotification
 export abstract class ContainerBase implements Container {
     public hostType: string;
     public uuid: string = Guid.newGuid();
+
+    public static readonly layoutsPropertyKey: string = "desktopJS-layouts";
 
     abstract getMainWindow(): ContainerWindow;
 
@@ -58,6 +65,59 @@ export abstract class ContainerBase implements Container {
     }
 
     public ipc: MessageBus;
+
+    public storage: Storage = (typeof window !== "undefined" && window)
+            ? window.localStorage
+            : undefined;
+
+    protected getLayoutFromStorage(name: string): PersistedWindowLayout {
+        return JSON.parse(this.storage.getItem(ContainerBase.layoutsPropertyKey))[name];
+    }
+
+    protected saveLayoutToStorage(name: string, layout: PersistedWindowLayout) {
+        const layouts: any = JSON.parse(this.storage.getItem(ContainerBase.layoutsPropertyKey)) || {};
+
+        if (!layout.name) {
+            layout.name = name;
+        }
+
+        layouts[name] = layout;
+
+        this.storage.setItem(ContainerBase.layoutsPropertyKey, JSON.stringify(layouts));
+    }
+
+    protected abstract closeAllWindows(excludeSelf?: Boolean): Promise<void>;
+
+    public loadLayout(name: string): Promise<PersistedWindowLayout> {
+        return new Promise<PersistedWindowLayout>((resolve, reject) => {
+            this.closeAllWindows(true).then(() => {
+                const layout = <PersistedWindowLayout>this.getLayoutFromStorage(name);
+                if (layout && layout.windows) {
+                    for (const window of layout.windows) {
+                        const options: any = Object.assign({}, window.bounds);
+                        options.name = window.name;
+                        this.showWindow(window.url, options);
+                    }
+                }
+
+                resolve(layout);
+            });
+        });
+    }
+
+    abstract saveLayout(name: string): Promise<PersistedWindowLayout>;
+
+    public getLayouts(): Promise<PersistedWindowLayout[]> {
+        return new Promise<PersistedWindowLayout[]>((resolve, reject) => {
+            const rawLayouts = this.storage.getItem(ContainerBase.layoutsPropertyKey);
+            if (rawLayouts) {
+                const layouts = JSON.parse(rawLayouts);
+                resolve(Object.getOwnPropertyNames(layouts).map(key => layouts[key]));
+            }
+
+            resolve(undefined);
+        });
+    }
 }
 
 /**
