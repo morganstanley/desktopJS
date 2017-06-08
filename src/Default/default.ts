@@ -1,5 +1,5 @@
 import { WebContainerBase } from "../container";
-import { ContainerWindow } from "../window";
+import { ContainerWindow, PersistedWindowLayout, PersistedWindow } from "../window";
 import { NotificationOptions } from "../notification";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { Guid } from "../guid";
@@ -196,6 +196,36 @@ export class DefaultContainer extends WebContainerBase {
             } else if (permission === "granted") {
                 new (<any>this.globalWindow).Notification(options.title, { body: options.message }); // tslint:disable-line
             }
+        });
+    }
+
+    protected closeAllWindows(excludeSelf?: Boolean): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+            for (const key in windows) {
+                const win = windows[key];
+                if (!excludeSelf || this.globalWindow !== win) {
+                    win.close();
+                }
+            }
+            resolve();
+        });
+    }
+
+    public saveLayout(name: string): Promise<PersistedWindowLayout> {
+        const layout = new PersistedWindowLayout();
+
+        return new Promise<PersistedWindowLayout>((resolve, reject) => {
+            const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+            for (const key in windows) {
+                const win = windows[key];
+                if (this.globalWindow !== win) {
+                    layout.windows.push({ name: win.name, url: win.location.toString(), bounds: { x: win.screenX, y: win.screenY, width: win.innerWidth, height: win.innerHeight } });
+                }
+            }
+
+            this.saveLayoutToStorage(name, layout);
+            resolve(layout);
         });
     }
 }

@@ -5,6 +5,7 @@ class MockWindow {
 
     public focus(): void { };
     public show(): void { };
+    public close(): void { };
     public open(url?: string, target?: string, features?: string, replace?: boolean): any { return new MockWindow(); }
     public addEventListener(type: string, listener: any): void { this.listener = listener; }
     public removeEventListener(type: string, listener: any): void { }
@@ -139,6 +140,34 @@ describe("DefaultContainer", () => {
             let container: DefaultContainer = new DefaultContainer(<any>window);
             container.showNotification({});
             expect(console.warn).toHaveBeenCalledWith("Notifications not permitted");
+        });
+    });
+
+    describe("window management", () => {
+        it("closeAllWindows invokes window.close", (done) => {
+            let container: DefaultContainer = new DefaultContainer(window);
+            spyOn(window, "close").and.callThrough();
+            (<any>container).closeAllWindows().then(done);
+            expect(window.close).toHaveBeenCalled();
+        });
+
+        it("saveLayout invokes underlying saveLayoutToStorage", (done) => {
+            window[DefaultContainer.windowsPropertyKey] = {
+                "1": new MockWindow(),
+                "2": new MockWindow()
+            };
+
+            let container: DefaultContainer = new DefaultContainer(window);
+            spyOn<any>(container, "saveLayoutToStorage").and.stub();
+            container.saveLayout("Test")
+                .then(layout => {
+                    expect(layout).toBeDefined();
+                    expect((<any>container).saveLayoutToStorage).toHaveBeenCalledWith("Test", layout);
+                    done();
+                }).catch(error => {
+                    fail(error);
+                    done();
+                });
         });
     });
 });

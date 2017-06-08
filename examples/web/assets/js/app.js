@@ -13,6 +13,9 @@ var unsubscribeButton = document.getElementById('button-unsubscribe');
 var publishText = document.getElementById('input-publish');
 var messageBusText = document.getElementById('text-messagebus');
 var previewImage = document.getElementById('image-preview');
+var loadlayoutButton = document.getElementById('button-loadlayout');
+var savelayoutButton = document.getElementById('button-savelayout');
+
 var subscription;
 var childWindow;
 
@@ -130,3 +133,11 @@ function unsubscribe() {
 
 	subscription = undefined;
 }
+
+loadlayoutButton.onclick = function () {
+	container.loadLayout("Layout");
+};
+
+savelayoutButton.onclick = function () {
+	container.saveLayout("Layout");
+};
