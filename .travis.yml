@@ -15,5 +15,6 @@ after_success:
   - "./node_modules/.bin/codecov -f ./build/coverage/*.json"
 
 cache:
+  yarn: true
   directories:
     - node_modules
