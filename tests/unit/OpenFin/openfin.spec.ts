@@ -1,18 +1,22 @@
 import { OpenFinContainer, OpenFinContainerWindow, OpenFinMessageBus } from "../../../src/OpenFin/openfin";
 import { MessageBusSubscription } from "../../../src/ipc";
+import { MenuItem } from "../../../src/menu";
 
 class MockDesktop {
+    public static application: any = {
+        uuid: "uuid",
+        getChildWindows(callback) {
+            callback([MockWindow.singleton]);
+        },
+        setTrayIcon() { }
+    }
+
     Window(): MockWindow { return new MockWindow(); }
     Notification(): any { return {}; }
     InterApplicationBus(): any { return new MockInterApplicationBus(); }
     Application: any = {
         getCurrent() {
-            return {
-                uuid: "uuid",
-                getChildWindows(callback) {
-                    callback([MockWindow.singleton]);
-                }
-            }
+            return MockDesktop.application;
         }
     }
 }
@@ -252,6 +256,28 @@ describe("OpenFinContainer", () => {
         spyOn(desktop, "Notification").and.stub();
         container.showNotification({ title: "title", message: "Test message", url: "notification.html" });
         expect(desktop.Notification).toHaveBeenCalledWith({ url: "notification.html", message: { message: "Test message" } });
+    });
+
+    it ("getMenuHtml is non null and equal to static default", ()=> {
+        expect((<any>container).getMenuHtml()).toEqual(OpenFinContainer.menuHtml);
+    });
+
+    it ("getMenuItemHtml with icon has embedded icon in span", () => {
+        const menuItem: MenuItem = { id: "ID", label: "Label",  icon: "Icon" };
+        const menuItemHtml: string = (<any>container).getMenuItemHtml(menuItem);
+        expect(menuItemHtml).toEqual(`<li class="context-menu-item" onclick="fin.desktop.InterApplicationBus.send('uuid', null, 'TrayIcon_ContextMenuClick_${container.uuid}', { id: '${menuItem.id}' });this.close()"><span><img align="absmiddle" class="context-menu-image" src="${menuItem.icon}" /></span>Label</li>`);
+    });
+
+    it ("getMenuItemHtml with no icon has nbsp; in span", () => {
+        const menuItem: MenuItem = { id: "ID", label: "Label" };
+        const menuItemHtml: string = (<any>container).getMenuItemHtml(menuItem);
+        expect(menuItemHtml).toEqual(`<li class="context-menu-item" onclick="fin.desktop.InterApplicationBus.send('uuid', null, 'TrayIcon_ContextMenuClick_${container.uuid}', { id: '${menuItem.id}' });this.close()"><span>&nbsp;</span>Label</li>`);
+    });
+
+    it("addTrayIcon invokes underlying setTrayIcon", () => {
+        spyOn(MockDesktop.application, "setTrayIcon").and.stub();
+        container.addTrayIcon({ icon: 'icon', text: 'Text' }, () => { });
+        expect(MockDesktop.application.setTrayIcon).toHaveBeenCalledWith("icon", jasmine.any(Function), jasmine.any(Function), jasmine.any(Function));
     });
 });
 
