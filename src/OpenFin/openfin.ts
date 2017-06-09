@@ -258,6 +258,19 @@ export class OpenFinContainer extends WebContainerBase {
         });
     }
 
+    protected getMenuHtml() {
+        return OpenFinContainer.menuHtml;
+    }
+
+    protected getMenuItemHtml(item: MenuItem) {
+        const imgHtml: string = (item.icon)
+            ? `<span><img align="absmiddle" class="context-menu-image" src="${this.ensureAbsoluteUrl(item.icon)}" /></span>`
+            : "<span>&nbsp;</span>";
+
+        return `<li class="context-menu-item" onclick="fin.desktop.InterApplicationBus.send('${(<any>this.desktop.Application.getCurrent()).uuid}`
+            + `', null, 'TrayIcon_ContextMenuClick_${this.uuid}', { id: '${item.id}' });this.close()\">${imgHtml}${item.label}</li>`;
+    }
+
     private showMenu(x: number, y: number, monitorInfo: fin.MonitorInfo, menuItems: MenuItem[]) {
         this.menuItemRef = menuItems;
 
@@ -278,7 +291,7 @@ export class OpenFinContainer extends WebContainerBase {
             , () => {
                 const win: Window = contextMenu.getNativeWindow();
                 win.document.open("text/html", "replace");
-                win.document.write(OpenFinContainer.menuHtml);
+                win.document.write(this.getMenuHtml());
                 win.document.close();
 
                 let menuItemHtml: string = "";
@@ -287,12 +300,7 @@ export class OpenFinContainer extends WebContainerBase {
                         item.id = Guid.newGuid();
                     }
 
-                    const imgHtml: string = (item.icon)
-                        ? `<span><img align="absmiddle" class="context-menu-image" src="${this.ensureAbsoluteUrl(item.icon)}" /></span>`
-                        : "<span>&nbsp;</span>";
-
-                    menuItemHtml += `<li class="context-menu-item" onclick="fin.desktop.InterApplicationBus.send('${(<any>this.desktop.Application.getCurrent()).uuid}`
-                        + `', null, 'TrayIcon_ContextMenuClick_${this.uuid}', { id: '${item.id}' });this.close()\">${imgHtml}${item.label}</li>`;
+                    menuItemHtml += this.getMenuItemHtml(item);
                 }
 
                 const contextMenuElement: HTMLElement = win.document.getElementById("contextMenu");
