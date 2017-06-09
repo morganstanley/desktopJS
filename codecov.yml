@@ -1,9 +1,13 @@
 coverage:
   precision: 2
   round: down
-  range: "70...90"
+  range: "70...95"
 
   status:
     project: yes
     patch: no
     changes: no
+
+comment:
+  layout: "diff, flags, files"
+  behavior: new  
