@@ -126,6 +126,10 @@ export class OpenFinContainer extends WebContainerBase {
     private mainWindow: OpenFinContainerWindow;
     private menuItemRef: MenuItem[];
 
+    // Offsets for tray icon mouse click to not show over icon
+    private static readonly trayIconMenuLeftOffset: number = 4;
+    private static readonly trayIconMenuTopOffset: number = 23;
+
     public static readonly windowOptionsMap: PropertyMap = {
         x: { target: "defaultLeft" },
         y: { target: "defaultTop" },
@@ -138,81 +142,61 @@ export class OpenFinContainer extends WebContainerBase {
     public windowOptionsMap: PropertyMap = OpenFinContainer.windowOptionsMap;
 
     /* tslint:disable */
-    private static menuHtml: string = `<html>
-                                <head>
-                                    <style>
-                                        body:before, body:after {
-                                            content: "";
-                                            position: fixed;
-                                            background: silver;
-                                            left: 0;
-                                            right: 0;
-                                            height: 1px;
-                                        }
-
-                                        body:before {
-                                            top: 0;
-                                        }
-
-                                        body:after {
-                                            bottom: 0;
-                                        }
-
-                                        body {
-                                            margin: 0px;
-                                            border-left: 1px solid silver;
-                                            border-right: 1px solid silver;  
-                                            overflow:hidden;
-                                        }
-
-                                        .context-menu {
-                                            list-style: none;
-                                            margin: 0;
-                                            padding: 2px 0 0 0;
-                                        }
-
-                                        .context-menu-item {
-                                            display: block;
-                                            cursor: default;
-                                            font-family: Arial, Helvetica, sans-serif;
-                                            font-size: 9pt;
-                                            margin-bottom: 2px;
-                                            padding: 4px 0 4px 4px;
-                                        }
-
-                                        .context-menu-item span {
-                                            display: inline-block;
-                                            width: 20px;
-                                        }
-
-                                        .context-menu-item:last-child {
-                                            margin-bottom: 0;
-                                        }                        
-
-                                        .context-menu-item:hover {
-                                            color: #fff;
-                                            background-color: #0066aa;
-                                        }
-
-                                        .context-menu-image {
-                                            width: 16px;
-                                            height: 16px;
-                                            margin-top: -1px;
-                                            margin-right: 4px;
-                                        }                        
-                                    </style>
-                                    <script>
-                                        document.addEventListener('keydown', (event) => {
-                                            if (event.keyCode == 27) {
-                                                window.close();
-                                            }
-                                        }, false);
-                                    <\/script>
-                                </head>
-                                <body>
-                                    <ul class="context-menu" id="contextMenu"></ul>
-                                </body>
-                            </html>`;
+    public static menuHtml: string =
+    `<html>
+        <head>
+            <style>
+                body:before, body:after {
+                    position: fixed;
+                    background: silver;
+                }
+                body {
+                    margin: 0px;
+                    overflow: hidden;
+                }
+                .context-menu {
+                    list-style: none;
+                    padding: 1px 0 1px 0;
+                }
+                .context-menu-item {
+                    display: block;
+                    cursor: default;
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 9pt;
+                    margin-bottom: 2px;
+                    padding: 4px 0 4px 4px;
+                    white-space: nowrap;
+                }
+                .context-menu-item span {
+                    display: inline-block;
+                    min-width: 20px;
+                }
+                .context-menu-item:last-child {
+                    margin-bottom: 0;
+                }                        
+                .context-menu-item:hover {
+                    color: #fff;
+                    background-color: #0066aa;
+                }
+                .context-menu-image {
+                    width: 16px;
+                    height: 16px;
+                    margin-top: -1px;
+                    margin-right: 4px;
+                }                        
+            </style>
+            <script>
+                document.addEventListener('keydown', (event) => {
+                    if (event.keyCode == 27) {
+                        window.close();
+                    }
+                }, false);
+            <\/script>
+        </head>
+        <body>
+            <ul class="context-menu" id="contextMenu"></ul>
+        </body>
+    </html>`;
     /* tslint:enable */
 
     public constructor(desktop?: fin.OpenFinDesktop) {
@@ -274,12 +258,12 @@ export class OpenFinContainer extends WebContainerBase {
         });
     }
 
-    private showMenu(x: number, y: number, monitorInfo: any, menuItems: MenuItem[]) {
+    private showMenu(x: number, y: number, monitorInfo: fin.MonitorInfo, menuItems: MenuItem[]) {
         this.menuItemRef = menuItems;
 
         const contextMenu = new this.desktop.Window(
             <any>{
-                name: "trayMenu" + Guid.newGuid(),
+                name: `trayMenu${Guid.newGuid()}`,
                 saveWindowState: false,
                 autoShow: false,
                 defaultWidth: 150,
@@ -292,45 +276,42 @@ export class OpenFinContainer extends WebContainerBase {
                 shadow: true
             }
             , () => {
-                const win = contextMenu.getNativeWindow();
+                const win: Window = contextMenu.getNativeWindow();
                 win.document.open("text/html", "replace");
                 win.document.write(OpenFinContainer.menuHtml);
                 win.document.close();
 
-                let menuItemHtml = "";
-                for (const index in menuItems) {
-                    const item = menuItems[index];
-
-                    if (!item.label) {
-                        continue;
-                    }
-
+                let menuItemHtml: string = "";
+                for (const item of menuItems.filter(value => value.label)) {
                     if (!item.id) {
                         item.id = Guid.newGuid();
                     }
 
-                    let imgHtml: string = "<span>&nbsp;</span>";
-                    if (item.icon) {
-                        imgHtml = "<span><img align=\"absmiddle\" class=\"context-menu-image\" src=\"" + this.ensureAbsoluteUrl(item.icon) + "\" /></span>";
-                    }
+                    const imgHtml: string = (item.icon)
+                        ? `<span><img align="absmiddle" class="context-menu-image" src="${this.ensureAbsoluteUrl(item.icon)}" /></span>`
+                        : "<span>&nbsp;</span>";
 
-                    menuItemHtml += "<li class=\"context-menu-item\" onclick=\"fin.desktop.InterApplicationBus.send('"
-                        + (<any>this.desktop.Application.getCurrent()).uuid
-                        + "', null, 'TrayIcon_ContextMenuClick_" + this.uuid + "', { id: '" + item.id + "' });this.close()\">" + imgHtml + item.label + "</li>";
+                    menuItemHtml += `<li class="context-menu-item" onclick="fin.desktop.InterApplicationBus.send('${(<any>this.desktop.Application.getCurrent()).uuid}`
+                        + `', null, 'TrayIcon_ContextMenuClick_${this.uuid}', { id: '${item.id}' });this.close()\">${imgHtml}${item.label}</li>`;
                 }
 
-                const contextMenuElement: any = win.document.getElementById("contextMenu");
+                const contextMenuElement: HTMLElement = win.document.getElementById("contextMenu");
+                contextMenuElement.innerHTML = menuItemHtml; // tslint:disable-line
 
-                /* tslint:disable */
-                contextMenuElement.innerHTML = menuItemHtml;
-                /* tslint:enable */
-
-                const width = contextMenuElement.offsetWidth; // Need to calculate
-                const height = contextMenuElement.offsetHeight + 2;
-
+                // Size <ul> to fit
+                const { "offsetWidth": width, "offsetHeight": height } = contextMenuElement;
                 contextMenu.resizeTo(width, height, "top-left");
+
+                // If the menu will not fit on the monitor as right/down from x, y then show left/up
+                const left = (x + width) > monitorInfo.primaryMonitor.monitorRect.right
+                    ? x - width - OpenFinContainer.trayIconMenuLeftOffset
+                    : x;
+                const top = (y + height) > monitorInfo.primaryMonitor.monitorRect.bottom
+                    ? y - height - OpenFinContainer.trayIconMenuTopOffset
+                    : y;
+
                 contextMenu.addEventListener("blurred", () => contextMenu.close());
-                contextMenu.showAt(x, y, false, () => contextMenu.focus()); // Need to calculate based on monitor info
+                contextMenu.showAt(left, top, false, () => contextMenu.focus());
             });
     }
 
@@ -340,7 +321,10 @@ export class OpenFinContainer extends WebContainerBase {
                 if (clickInfo.button === 0 && listener) { // Passthrough left click to addTrayIcon listener callback
                     listener();
                 } else if (clickInfo.button === 2) { // handle right click ourselves to display context menu
-                    this.showMenu(clickInfo.x + 4, clickInfo.y + 22, clickInfo.monitorInfo, menuItems);
+                    this.showMenu(clickInfo.x + OpenFinContainer.trayIconMenuLeftOffset,
+                        clickInfo.y + OpenFinContainer.trayIconMenuTopOffset,
+                        clickInfo.monitorInfo,
+                        menuItems);
                 }
             }, () => {
                 // Append desktopJS container instance uuid to topic so communication is unique to this tray icon and window
