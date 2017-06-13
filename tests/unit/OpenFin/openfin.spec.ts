@@ -192,7 +192,7 @@ describe("OpenFinContainer", () => {
         it("defaults", () => {
             let win: OpenFinContainerWindow = container.showWindow("url");
             expect(win).toBeDefined();
-            expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: "url" });
+            expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: jasmine.stringMatching(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/) });
         });
 
         it("showWindow defaults", () => {
@@ -206,7 +206,8 @@ describe("OpenFinContainer", () => {
                     width: "width",
                     taskbar: "taskbar",
                     center: "center",
-                    icon: "icon"
+                    icon: "icon",
+                    name: "name"
                 });
 
             expect(win).toBeDefined();
@@ -222,7 +223,7 @@ describe("OpenFinContainer", () => {
                     autoShow: true,
                     saveWindowState: false,
                     url: "url",
-                    name: "url"
+                    name: "name"
                 }
             );
         });
