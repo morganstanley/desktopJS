@@ -245,7 +245,7 @@ export class OpenFinContainer extends WebContainerBase {
 
         // OpenFin requires a name for the window to show
         if (!("name" in newOptions)) {
-            newOptions.name = url;
+            newOptions.name = Guid.newGuid();
         }
 
         return this.wrapWindow(new this.desktop.Window(newOptions));
