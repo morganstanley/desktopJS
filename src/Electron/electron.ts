@@ -29,24 +29,23 @@ export class ElectronContainerWindow implements ContainerWindow {
     }
 
     public focus(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            this.containerWindow.focus();
-            resolve();
-        });
+        this.containerWindow.focus();
+        return Promise.resolve();
     }
 
     public show(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            this.containerWindow.show();
-            resolve();
-        });
+        this.containerWindow.show();
+        return Promise.resolve();
     }
 
     public hide(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            this.containerWindow.hide();
-            resolve();
-        });
+        this.containerWindow.hide();
+        return Promise.resolve();
+    }
+
+    public close(): Promise<void> {
+        this.containerWindow.close();
+        return Promise.resolve();
     }
 
     public isShowing(): Promise<boolean> {
