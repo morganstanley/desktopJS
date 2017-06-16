@@ -113,7 +113,7 @@ gulp.task('test', ['build-staging'], function () {
  * to match this hierarchy before rolling up the declarations
  */
 function injectModuleDeclarations(src) {
-    return src.pipe(replace(/(\/\*\*[\s\S]*export declare class (\w+)ContainerWindow[\s\S]*})/, "export module $2 {\n$1\n}"))
+    return src.pipe(replace(/(\/\*\*[\s\S]*export declare class (\w+)Container[\s\S]*})/, "export module $2 {\n$1\n}"))
         .pipe(clean())
         .pipe(gulp.dest(stagingOutput + "/src"));
 }
