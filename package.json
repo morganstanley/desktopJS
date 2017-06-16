@@ -4,13 +4,14 @@
   "description": "Library for abstracting common container hosting",
   "version": "0.0.6",
   "main": "dist/desktop.js",
+  "types": "dist/desktopjs.d.ts",
   "license": "Apache-2.0",
   "private": true,
   "author": {
     "name": "desktopJS",
     "email": "desktopjs@morganstanley.com"
   },
-  "repository":{
+  "repository": {
     "type": "git",
     "url": "https://github.com/Morgan-Stanley/desktopJS.git"
   },
@@ -32,17 +33,20 @@
     "@types/node": "^7.0.12",
     "@types/openfin": "^17.0.2",
     "codecov": "^2.2.0",
+    "dts-bundle": "^0.7.2",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
     "gulp-istanbul": "^1.1.1",
     "gulp-istanbul-enforcer": "^1.0.3",
     "gulp-jasmine": "^2.4.2",
     "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.5.4",
     "gulp-sourcemaps": "^2.5.0",
     "gulp-tslint": "^8.1.0",
     "gulp-typescript": "^3.1.6",
     "gulp-uglify": "^2.1.2",
     "gulp-webserver": "^0.9.1",
+    "merge2": "^1.0.3",
     "remap-istanbul": "^0.9.5",
     "rollup": "^0.41.6",
     "rollup-plugin-commonjs": "^8.0.2",
