@@ -15,6 +15,9 @@ export interface ContainerWindow {
     /** Hides the window if showing. */
     hide(): Promise<void>;
 
+    /** Try to close the window.  This has the same effect as clicking the close button on the window. */
+    close(): Promise<void>;
+
     /** Determines whether the window is currently showing. */
     isShowing(): Promise<boolean>;
 

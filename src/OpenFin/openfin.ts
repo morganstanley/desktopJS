@@ -41,6 +41,12 @@ export class OpenFinContainerWindow implements ContainerWindow {
         });
     }
 
+    public close(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.containerWindow.close(false, resolve, reject);
+        });
+    }
+
     public isShowing(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             this.containerWindow.isShowing(resolve, reject);
