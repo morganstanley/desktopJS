@@ -30,6 +30,11 @@ export class DefaultContainerWindow implements ContainerWindow {
         return Promise.resolve();
     }
 
+    public close(): Promise<void> {
+        this.containerWindow.close();
+        return Promise.resolve();
+    }
+
     public isShowing(): Promise<boolean> {
         // https://github.com/ai/visibilityjs ?
         return Promise.resolve(true);

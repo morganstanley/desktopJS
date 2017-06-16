@@ -84,6 +84,13 @@ describe("ElectronContainerWindow", () => {
             }).then(done);
         });
 
+        it("close", (done) => {
+            spyOn(innerWin, "close").and.callThrough();
+            win.close().then(() => {
+                expect(innerWin.close).toHaveBeenCalled();
+            }).then(done);
+        });
+
         it("isShowing", (done) => {
             spyOn(innerWin, "isVisible").and.callThrough();
             let success: boolean = false;

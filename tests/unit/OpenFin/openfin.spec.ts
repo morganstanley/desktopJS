@@ -128,6 +128,13 @@ describe("OpenFinContainerWindow", () => {
         }).then(done);
     });
 
+    it("close", (done) => {
+        spyOn(innerWin, "close").and.callThrough();
+        win.close().then(() => {
+            expect(innerWin.close).toHaveBeenCalled();
+        }).then(done);
+    });    
+
     it("isShowing", (done) => {
         spyOn(innerWin, "isShowing").and.callThrough();
         let success: boolean = false;

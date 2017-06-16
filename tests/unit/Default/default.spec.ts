@@ -5,7 +5,7 @@ class MockWindow {
 
     public focus(): void { };
     public show(): void { };
-    public close(): void { };
+    public close(): Promise<void> { return Promise.resolve(); };
     public open(url?: string, target?: string, features?: string, replace?: boolean): any { return new MockWindow(); }
     public addEventListener(type: string, listener: any): void { this.listener = listener; }
     public removeEventListener(type: string, listener: any): void { }
@@ -53,6 +53,13 @@ describe("DefaultContainerWindow", () => {
             expect(error).toBeDefined();
         }).then(() => {
             expect(success).toEqual(true);
+        }).then(done);
+    });
+
+    it("close", (done) => {
+        spyOn(win, "close").and.callThrough();
+        win.close().then(() => {
+            expect(win.close).toHaveBeenCalled();
         }).then(done);
     });
 });
