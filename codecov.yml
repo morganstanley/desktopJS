@@ -10,4 +10,3 @@ coverage:
 
 comment:
   layout: "diff, flags, files"
-  behavior: new  
