@@ -7,6 +7,10 @@
         {
             "fileMatch": [ "app.json" ],
             "url": "http://json.schemastore.org/openfin"
+        },
+        {
+            "fileMatch": [ "tsconfig-staging.json" ],
+            "url": "http://json.schemastore.org/tsconfig"
         }
     ]
 }

@@ -10,6 +10,7 @@ var gulp = require('gulp'),
     jasmine = require('gulp-jasmine'),
     istanbul = require('gulp-istanbul'),
     webserver = require('gulp-webserver'),
+    replace = require('gulp-replace'),
     instanbulEnforcer = require('gulp-istanbul-enforcer'),
     remap = require('remap-istanbul/lib/gulpRemapIstanbul'),
     rollup = require('rollup'),
@@ -17,18 +18,20 @@ var gulp = require('gulp'),
     commonjs = require('rollup-plugin-commonjs'),
     tsrollup = require('rollup-plugin-typescript'),
     typescript = require('typescript'),
-    pkg = require('./package.json');
+    pkg = require('./package.json'),
+    dts = require('dts-bundle'),
+    merge = require('merge2');
 
 var src = ['src/**/*.ts'];
-var testSrc = ['**/*.ts', '!node_modules/**/*.ts', '**/*.spec.ts', '!node_modules/**/*.spec.ts'];
+var stagingSrc = ['**/*.ts', '!node_modules/**/*.ts', '**/*.spec.ts', '!node_modules/**/*.spec.ts'];
 
 var dest = 'dist';
-var testOutput = 'build';
-var coverageOutput = 'build/coverage';
+var stagingOutput = 'build';
+var coverageOutput = stagingOutput + '/coverage';
 var coverageFile = coverageOutput + '/coverage-final.json';
 
 var tsProject = gulpts.createProject('tsconfig.json');
-var tsTestProject = gulpts.createProject('tsconfig-tests.json');
+var tsStagingProject = gulpts.createProject('tsconfig-staging.json');
 
 gulp.task('tslint', function () {
     return gulp.src(src)
@@ -36,12 +39,12 @@ gulp.task('tslint', function () {
         .pipe(tslint.report({ summarizeFailureOutput: true }));
 });
 
-gulp.task('clean', ['clean-test'], function () {
+gulp.task('clean', ['clean-staging'], function () {
     return gulp.src('dist', { read: false })
         .pipe(clean());
 });
 
-gulp.task('clean-test', function () {
+gulp.task('clean-staging', function () {
     return gulp.src('build', { read: false })
         .pipe(clean());
 });
@@ -64,20 +67,24 @@ gulp.task('build', ['clean', 'tslint'], function () {
     });
 });
 
-gulp.task('build-tests', ['clean-test'], function () {
-    var tsResult = gulp.src(testSrc)
+gulp.task('build-staging', ['clean-staging'], function () {
+    var tsResult = gulp.src(stagingSrc)
         .pipe(sourcemaps.init())
-        .pipe(tsTestProject({
+        .pipe(tsStagingProject({
             typescript: typescript,
         }));
 
-    return tsResult.js
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(testOutput));
+    return merge([
+        tsResult.js
+            .pipe(sourcemaps.write('.'))
+            .pipe(gulp.dest(stagingOutput)),
+        tsResult.dts
+            .pipe(gulp.dest(stagingOutput))
+    ]);;
 });
 
-gulp.task('test', ['build-tests'], function () {
-    gulp.src('build/src/**/*.js')
+gulp.task('test', ['build-staging'], function () {
+    return gulp.src('build/src/**/*.js')
         .pipe(istanbul({ includeUntested: true }))
         .pipe(istanbul.hookRequire())
         .on('finish', function () {
@@ -98,6 +105,35 @@ gulp.task('test', ['build-tests'], function () {
                             }
                         }));
                 });
+        });
+});
+
+/**
+ * Since the default export in umd bundle desktop.js has hierarchy we need to introduce modules into the .d.ts
+ * to match this hierarchy before rolling up the declarations
+ */
+function injectModuleDeclarations(src) {
+    return src.pipe(replace(/(\/\*\*[\s\S]*export declare class (\w+)Container[\s\S]*})/, "export module $2 {\n$1\n}"))
+        .pipe(clean())
+        .pipe(gulp.dest(stagingOutput + "/src"));
+}
+
+gulp.task('dts', ['build-staging'], function () {
+    return injectModuleDeclarations(gulp.src(
+        [
+            stagingOutput + "/src/Default/default.d.ts",
+            stagingOutput + "/src/Electron/electron.d.ts",
+            stagingOutput + "/src/OpenFin/openfin.d.ts",
+            stagingOutput + "/src/Minuet/minuet.d.ts"
+        ], { base: stagingOutput + "/src" }))
+        .on('finish', function () {
+            dts.bundle({
+                name: pkg.name,
+                main: stagingOutput + "/src/desktop.d.ts",
+                out: "../../" + pkg.types,
+                verbose: false,
+                outputAsModuleFolder: true
+            });
         });
 });
 
@@ -132,7 +168,7 @@ gulp.task("server", function () {
         }));
 });
 
-gulp.task('bundle', ['tslint', 'clean', 'build', 'test', 'compress']);
+gulp.task('bundle', ['tslint', 'clean', 'build', 'test', 'dts', 'compress']);
 
 gulp.task('watch', function () {
     gulp.watch(src, ['bundle']);
