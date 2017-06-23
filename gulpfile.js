@@ -40,7 +40,7 @@ gulp.task('tslint', function () {
 });
 
 gulp.task('clean', ['clean-staging'], function () {
-    return gulp.src('dist', { read: false })
+    return gulp.src(dest, { read: false })
         .pipe(clean());
 });
 
@@ -49,7 +49,7 @@ gulp.task('clean-staging', function () {
         .pipe(clean());
 });
 
-gulp.task('build', ['clean', 'tslint'], function () {
+function createBundle(format, destination) {
     return rollup.rollup({
         entry: 'src/desktop.ts',
         plugins: [
@@ -59,12 +59,28 @@ gulp.task('build', ['clean', 'tslint'], function () {
         ]
     }).then(function (bundle) {
         bundle.write({
-            dest: pkg.main,
-            format: 'umd',
+            dest: destination,
+            format: format,
             moduleName: pkg.title,
             sourceMap: true,
         });
     });
+}
+
+gulp.task('build', ['clean', 'tslint'], function () {
+    // Main bundle is umd
+    return createBundle('umd', pkg.main)
+        .then(function () {
+            // Generate iife for use as a V8 extension if necessary since umd isn't supported
+            createBundle('iife', dest + '/iffe/desktop.js');
+        }).then(function () {
+            // Wrap umd with a condition checking if desktopJS is already defined to not overwrite it.  This will allow
+            // preload registration of desktopJS without hosted web script includes redefining.
+            gulp.src(pkg.main)
+                .pipe(replace(/(\(function \(global, factory\)[\s\S]*}\)\)\);)([\s\S]*)/, "if (typeof desktopJS === \"undefined\") {$1}$2"))
+                .pipe(clean())
+                .pipe(gulp.dest(dest));
+        });
 });
 
 gulp.task('build-staging', ['clean-staging'], function () {
@@ -159,7 +175,7 @@ gulp.task('compress', ['build'], function (cb) {
 });
 
 gulp.task("server", function () {
-    gulp.src(['examples/web', 'dist'])
+    gulp.src(['examples/web', dest])
         .pipe(webserver({
             fallback: 'index.html',
             livereload: {
