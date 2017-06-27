@@ -39,7 +39,7 @@ export interface ContainerWindowManager {
      * @param {any} options (Optional)
      * @returns {ContainerWindow} A new native container window wrapped within a generic ContainerWindow.
      */
-    showWindow(url: string, options?: any): ContainerWindow;
+    createWindow(url: string, options?: any): ContainerWindow;
 
     /**
      * Loads a window layout from persistence

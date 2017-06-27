@@ -191,21 +191,21 @@ describe("OpenFinContainer", () => {
         expect(container.hostType).toEqual("OpenFin");
     });
 
-    describe("showWindow", () => {
+    describe("createWindow", () => {
         beforeEach(() => {
             spyOn(desktop, "Window").and.stub();
         });
 
         it("defaults", () => {
-            let win: OpenFinContainerWindow = container.showWindow("url");
+            let win: OpenFinContainerWindow = container.createWindow("url");
             expect(win).toBeDefined();
             expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: jasmine.stringMatching(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/) });
         });
 
-        it("showWindow defaults", () => {
+        it("createWindow defaults", () => {
             spyOn<any>(container, "ensureAbsoluteUrl").and.returnValue("absoluteIcon");
 
-            let win: OpenFinContainerWindow = container.showWindow("url",
+            let win: OpenFinContainerWindow = container.createWindow("url",
                 {
                     x: "x",
                     y: "y",

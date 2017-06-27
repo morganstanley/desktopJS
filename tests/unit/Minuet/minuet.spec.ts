@@ -25,9 +25,9 @@ describe("MinuetContainer", () => {
         expect(container.hostType).toEqual("Minuet/Paragon");
     });
 
-    it("showWindow", () => {
+    it("createWindow", () => {
         spyOn<any>(mockWindow, "create").and.callThrough();
-        container.showWindow("url");
+        container.createWindow("url");
         expect(mockWindow.create).toHaveBeenCalledWith("url", {});
     });
 });

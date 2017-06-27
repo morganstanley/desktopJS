@@ -7,7 +7,7 @@ let mainWindow;
 function createWindow() {
     let container = desktopJS.resolveContainer();
 
-    mainWindow = container.showWindow('http://localhost:8000');
+    mainWindow = container.createWindow('http://localhost:8000');
 
     container.addTrayIcon({ icon: __dirname + '\\..\\web\\favicon.ico', text: 'ContainerPOC' }, () => {
         mainWindow.isShowing().then((showing) => {

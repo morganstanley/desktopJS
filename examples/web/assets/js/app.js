@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 });
 
 openWindowButton.onclick = function () {
-	childWindow = container.showWindow("http://localhost:8000",
+	childWindow = container.createWindow("http://localhost:8000",
 		{
 			resizable: true,
 			x: 10, y: 10,
