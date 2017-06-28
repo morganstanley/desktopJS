@@ -154,7 +154,7 @@ export class DefaultContainer extends WebContainerBase {
         return new DefaultContainerWindow(containerWindow);
     }
 
-    public showWindow(url: string, options?: any): ContainerWindow {
+    public createWindow(url: string, options?: any): ContainerWindow {
         let features: string;
         let target = "_blank";
 

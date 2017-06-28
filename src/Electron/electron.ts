@@ -191,7 +191,7 @@ export class ElectronContainer extends ContainerBase {
         return new ElectronContainerWindow(containerWindow);
     }
 
-    public showWindow(url: string, options?: any): ContainerWindow {
+    public createWindow(url: string, options?: any): ContainerWindow {
         const newOptions = this.getWindowOptions(options);
         const electronWindow: any = new this.browserWindow(newOptions);
         const windowName = newOptions.name || url;

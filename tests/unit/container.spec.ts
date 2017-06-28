@@ -10,7 +10,7 @@ class TestContainer extends ContainerBase {
         return undefined;
     }
 
-    showWindow(url: string, options?: any): ContainerWindow {
+    createWindow(url: string, options?: any): ContainerWindow {
         return undefined;
     }
 
@@ -72,10 +72,10 @@ describe("container", () => {
 
         describe("window management", () => {
             it("loadLayout", (done) => {
-                spyOn(container, "showWindow").and.callThrough();
+                spyOn(container, "createWindow").and.callThrough();
                 container.loadLayout("Test").then(layout => {
                     expect(layout).toBeDefined();
-                    expect(container.showWindow).toHaveBeenCalledWith("url", { name: "name" });
+                    expect(container.createWindow).toHaveBeenCalledWith("url", { name: "name" });
                     done();
                 });
             });

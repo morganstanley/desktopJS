@@ -33,7 +33,7 @@ export class MinuetContainer extends DefaultContainer { // tslint:disable-line
         return new DefaultContainerWindow(containerWindow);
     }
 
-    public showWindow(url: string, options?: any): ContainerWindow {
+    public createWindow(url: string, options?: any): ContainerWindow {
         const newOptions = this.getWindowOptions(options);
         return this.wrapWindow(this.app.window.create(url, newOptions));
     }

@@ -76,7 +76,7 @@ describe("DefaultContainer", () => {
         expect(container.hostType).toEqual("Default");
     });
 
-    describe("showWindow", () => {
+    describe("createWindow", () => {
         let container: DefaultContainer;
 
         beforeEach(() => {
@@ -86,19 +86,19 @@ describe("DefaultContainer", () => {
 
         it("Returns a DefaultContainerWindow and invokes underlying window.open", () => {
             spyOn(window, "open").and.callThrough();
-            let newWin: DefaultContainerWindow = container.showWindow("url");
+            let newWin: DefaultContainerWindow = container.createWindow("url");
             expect(window.open).toHaveBeenCalledWith("url", "_blank", undefined);
         });
 
         it("Options target property maps to open target parameter", () => {
             spyOn(window, "open").and.callThrough();
-            let newWin: DefaultContainerWindow = container.showWindow("url", { target: "MockTarget" });
+            let newWin: DefaultContainerWindow = container.createWindow("url", { target: "MockTarget" });
             expect(window.open).toHaveBeenCalledWith("url", "MockTarget", "target=MockTarget,");
         });
 
         it("Options parameters are converted to features", () => {
             spyOn(window, "open").and.callThrough();
-            let newWin: DefaultContainerWindow = container.showWindow("url",
+            let newWin: DefaultContainerWindow = container.createWindow("url",
                 {
                     x: "x0",
                     y: "y0"
@@ -107,14 +107,14 @@ describe("DefaultContainer", () => {
         });
 
         it("Window is addded to windows", () => {
-            let newWin: any = container.showWindow("url").containerWindow;
+            let newWin: any = container.createWindow("url").containerWindow;
             expect(newWin[DefaultContainer.windowUuidPropertyKey]).toBeDefined();
             expect(newWin[DefaultContainer.windowsPropertyKey]).toBeDefined();
             expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
         });
 
         it("Window is removed from windows on close", () => {
-            let newWin: any = container.showWindow("url").containerWindow;
+            let newWin: any = container.createWindow("url").containerWindow;
             expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
             newWin.listener("unload", {});
             expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeUndefined();

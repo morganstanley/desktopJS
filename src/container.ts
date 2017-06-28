@@ -54,7 +54,7 @@ export abstract class ContainerBase implements Container {
 
     abstract getMainWindow(): ContainerWindow;
 
-    abstract showWindow(url: string, options?: any): ContainerWindow;
+    abstract createWindow(url: string, options?: any): ContainerWindow;
 
     showNotification(options: NotificationOptions) {
         throw new TypeError("Notifications not supported by this container");
@@ -96,7 +96,7 @@ export abstract class ContainerBase implements Container {
                     for (const window of layout.windows) {
                         const options: any = Object.assign({}, window.bounds);
                         options.name = window.name;
-                        this.showWindow(window.url, options);
+                        this.createWindow(window.url, options);
                     }
                 }
 

@@ -142,7 +142,8 @@ export class OpenFinContainer extends WebContainerBase {
         height: { target: "defaultHeight" },
         width: { target: "defaultWidth" },
         taskbar: { target: "showTaskbarIcon" },
-        center: { target: "defaultCentered" }
+        center: { target: "defaultCentered" },
+        show: { target: "autoShow" }
     };
 
     public windowOptionsMap: PropertyMap = OpenFinContainer.windowOptionsMap;
@@ -245,9 +246,9 @@ export class OpenFinContainer extends WebContainerBase {
         return new OpenFinContainerWindow(containerWindow);
     }
 
-    public showWindow(url: string, options?: any): ContainerWindow {
+    public createWindow(url: string, options?: any): ContainerWindow {
         const newOptions = this.getWindowOptions(options);
-        newOptions.url = url; // showWindow param will always take precedence over any passed on options
+        newOptions.url = url; // createWindow param will always take precedence over any passed on options
 
         // OpenFin requires a name for the window to show
         if (!("name" in newOptions)) {

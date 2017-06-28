@@ -176,9 +176,9 @@ describe("ElectronContainer", () => {
         expect(win.containerWindow).toEqual(innerWin);
     });
 
-    it("showWindow", () => {
+    it("createWindow", () => {
         spyOn<any>(container, "browserWindow").and.callThrough();
-        container.showWindow("url", { x: "x", taskbar: false });
+        container.createWindow("url", { x: "x", taskbar: false });
         expect((<any>container).browserWindow).toHaveBeenCalledWith({ x: "x", skipTaskbar: true });
     });
 
