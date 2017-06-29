@@ -20,8 +20,7 @@
     "desktop",
     "openfin",
     "hadouken",
-    "electron",
-    "minuet"
+    "electron"
   ],
   "files": [
     "dist"

@@ -139,8 +139,7 @@ gulp.task('dts', ['build-staging'], function () {
         [
             stagingOutput + "/src/Default/default.d.ts",
             stagingOutput + "/src/Electron/electron.d.ts",
-            stagingOutput + "/src/OpenFin/openfin.d.ts",
-            stagingOutput + "/src/Minuet/minuet.d.ts"
+            stagingOutput + "/src/OpenFin/openfin.d.ts"
         ], { base: stagingOutput + "/src" }))
         .on('finish', function () {
             dts.bundle({
