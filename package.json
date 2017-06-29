@@ -6,14 +6,13 @@
   "main": "dist/desktop.js",
   "types": "dist/desktopjs.d.ts",
   "license": "Apache-2.0",
-  "private": true,
-  "author": {
-    "name": "desktopJS",
-    "email": "desktopjs@morganstanley.com"
-  },
+  "author": "Morgan Stanley",
   "repository": {
     "type": "git",
     "url": "https://github.com/Morgan-Stanley/desktopJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Morgan-Stanley/desktopJS/issues"
   },
   "keywords": [
     "container",
