@@ -12,6 +12,7 @@ var gulp = require('gulp'),
     webserver = require('gulp-webserver'),
     replace = require('gulp-replace'),
     instanbulEnforcer = require('gulp-istanbul-enforcer'),
+    typedoc = require('gulp-typedoc'),
     remap = require('remap-istanbul/lib/gulpRemapIstanbul'),
     rollup = require('rollup'),
     nodeResolve = require('rollup-plugin-node-resolve'),
@@ -152,6 +153,22 @@ gulp.task('dts', ['build-staging'], function () {
         });
 });
 
+gulp.task("docs", function () {
+    return gulp
+        .src(['src/**/**.ts'])
+        .pipe(typedoc({
+            mode: "modules",
+            target: "ES6",
+            module: "umd",
+            includeDeclarations: true,
+            excludeExternals: true,
+            excludePrivate: true,
+            out: "docs/",
+            hideGenerator: true,
+            ignoreCompilerErrors: true
+        }));
+});
+
 /** Take js coverage json and remap to typescript.  Output html and text */
 function remapCoverageFiles() {
     return gulp.src(coverageFile)
@@ -183,7 +200,7 @@ gulp.task("server", function () {
         }));
 });
 
-gulp.task('bundle', ['tslint', 'clean', 'build', 'test', 'dts', 'compress']);
+gulp.task('bundle', ['tslint', 'clean', 'build', 'test','dts', 'compress', 'docs']);
 
 gulp.task('watch', function () {
     gulp.watch(src, ['bundle']);
