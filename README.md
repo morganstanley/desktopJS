@@ -14,7 +14,7 @@ container agnostic and provide portability when muliple container depoyments are
 Usage
 ---------------
 
-The first step is to simply resolve the current container. This enumerates
+The first step is to simply [resolve](https://morgan-stanley.github.io/desktopJS/modules/_registry_.html#resolvecontainer) the current [container](https://morgan-stanley.github.io/desktopJS/interfaces/_container_.container.html). This enumerates
 all registered containers (including your own custom container or derived custom implementations) and
 returns the container implementation that matches.
 
@@ -23,7 +23,7 @@ var container = desktopJS.resolveContainer();
 console.log("Container: " + container.hostType);
 ```
 
-Interact with the container via a single api instead of having conditional code or applications
+Interact with the [container](https://morgan-stanley.github.io/desktopJS/interfaces/_container_.container.html) via a single api instead of having conditional code or applications
 based on deployment.
 
 ```
