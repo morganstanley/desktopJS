@@ -166,7 +166,10 @@ gulp.task("docs", function () {
             out: "docs/",
             hideGenerator: true,
             ignoreCompilerErrors: true
-        }));
+        }))
+        .on('end', function () {
+            require('fs').writeFileSync('docs/.nojekyll', '');
+        });
 });
 
 /** Take js coverage json and remap to typescript.  Output html and text */
