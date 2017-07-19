@@ -1,8 +1,8 @@
 import * as ContainerRegistry from "../registry";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow } from "../window";
-import { ContainerBase } from "../container";
+import { WebContainerBase } from "../container";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
-import { NotificationOptions } from "../notification";
+import { NotificationOptions, ContainerNotification } from "../notification";
 import { TrayIconDetails } from "../tray";
 import { MenuItem } from "../menu";
 import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../ipc";
@@ -119,7 +119,7 @@ export class ElectronMessageBus implements MessageBus {
 /**
  * @extends ContainerBase
  */
-export class ElectronContainer extends ContainerBase {
+export class ElectronContainer extends WebContainerBase {
     protected isRemote: Boolean = true;
     protected mainWindow: ElectronContainerWindow;
     protected electron: any;
@@ -129,14 +129,21 @@ export class ElectronContainer extends ContainerBase {
     protected menu: any;
     protected internalIpc: NodeJS.EventEmitter;
 
+    /**
+     * Gets or sets whether to replace the native web Notification API with a wrapper around showNotification.
+     * @type {boolean}
+     * @default true
+     */
+    public static replaceNotificationApi: boolean = true;
+
     public static readonly windowOptionsMap: PropertyMap = {
         taskbar: { target: "skipTaskbar", convert: (value: any, from: any, to: any) => { return !value; } }
     };
 
     public windowOptionsMap: PropertyMap = ElectronContainer.windowOptionsMap;
 
-    public constructor(electron?: any, ipc?: NodeJS.EventEmitter | any) {
-        super();
+    public constructor(electron?: any, ipc?: NodeJS.EventEmitter | any, win?: any) {
+        super(win);
         this.hostType = "Electron";
 
         try {
@@ -168,6 +175,23 @@ export class ElectronContainer extends ContainerBase {
             }
         } catch (e) {
             console.error(e);
+        }
+
+        this.registerNotificationsApi();
+    }
+
+    protected registerNotificationsApi() {
+        if (ElectronContainer.replaceNotificationApi && typeof this.globalWindow !== "undefined" && this.globalWindow) {
+            // Define owningContainer for closure to inner class
+            const owningContainer: ElectronContainer = this; // tslint:disable-line
+
+            this.globalWindow["Notification"] = class ElectronNotification extends ContainerNotification {
+                constructor(title: string, options?: NotificationOptions) {
+                    super(title, options);
+                    options["notification"] = this;
+                    owningContainer.showNotification(title, options);
+                }
+            };
         }
     }
 
@@ -215,7 +239,7 @@ export class ElectronContainer extends ContainerBase {
         return this.wrapWindow(electronWindow);
     }
 
-    public showNotification(options: NotificationOptions) {
+    public showNotification(title: string, options?: NotificationOptions) {
         throw new TypeError("showNotification requires an implementation.");
     }
 

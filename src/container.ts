@@ -56,7 +56,7 @@ export abstract class ContainerBase implements Container {
 
     abstract createWindow(url: string, options?: any): ContainerWindow;
 
-    showNotification(options: NotificationOptions) {
+    showNotification(title: string, options?: NotificationOptions) {
         throw new TypeError("Notifications not supported by this container");
     }
 

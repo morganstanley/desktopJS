@@ -4,6 +4,6 @@
   "description": "desktopJS Demo",
   "main": "electron.js",
   "dependencies": {
-    "node-notifier": "^5.1.2"
+    "electron-notify": "^0.1.0"
   }
 }

@@ -30,12 +30,13 @@ desktopJS.Default.DefaultContainerWindow.prototype.getSnapshot = function () {
 };
 */
 
-desktopJS.Electron.ElectronContainer.prototype.showNotification = function (options) {
-	notifier = (this.isRemote) ? this.electron.require("node-notifier") : require("node-notifier");
+desktopJS.Electron.ElectronContainer.prototype.showNotification = function (title, options) {
+	notifier = (this.isRemote) ? this.electron.require("electron-notify") : require("electron-notify");
 
 	notifier.notify({
-		title: options.title,
-		message: options.message
+		title: title,
+		text: options.body,
+		onClickFunc: function () { options["notification"].onclick(); }
 	});
 };
 
@@ -72,7 +73,12 @@ visibilityButton.onclick = function () {
 };
 
 notificationButton.onclick = function () {
-	container.showNotification({ title: "Title", message: "Message", url: "notification.html" });
+	Notification.requestPermission().then(function (permission) {
+		if (permission === "granted") {
+			var notification = new Notification("test", { body: "Message", url: "notification.html" });
+			notification.onclick = () => window.alert("Notification clicked");
+		}
+	});
 };
 
 trayIconButton.onclick = function () {

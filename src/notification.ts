@@ -1,13 +1,50 @@
 export class NotificationOptions {
-    title?: string;
     url?: string;
-    message?: string;
+    body?: string;
 }
 
 export interface ContainerNotificationManager {
     /**
      * Display a notification.
-     * @param {NotificationOptions} options Notification options.
+     * @param {string} title Defines a title for the notification.  Depending on container and choice of notification mechanism, this might not be shown.
+     * @param {NotificationOptions} [options] Notification options.
      */
-    showNotification(options: NotificationOptions);
+    showNotification(title: string, options?: NotificationOptions);
+}
+
+export abstract class ContainerNotification {
+    /**
+     * A string representing the current permission to display notifications.
+     */
+    static permission: string = "granted";
+
+    /**
+     * A handler for the click event.  It is triggered each time the user clicks the notification.
+     */
+    onclick: any;
+
+    /**
+     * A handler for the error event.  It is triggered each the the notification encounters an error.
+     */
+    onerror: any;
+
+    /**
+     * Requests permission from the user to display notifications.
+     * @param {NotificationPermissionCallback} [callback] An optional callback function that is called with the permission value. Depcrecated in favor of the promise return value
+     * @returns {Promise<string>} A Promise that resolves to the permission picked by the user.
+     */
+    static requestPermission(callback?: NotificationPermissionCallback): Promise<string> { // tslint:disable-line
+        if (callback) {
+            callback(ContainerNotification.permission);
+        }
+        return Promise.resolve(ContainerNotification.permission);
+    }
+
+    /**
+     * Creates a new Notification object instance which represents a user notification.
+     * @param {string} title Defines a title for the notification.  Depending on container and choice of notification mechanism, this might not be shown.
+     * @param {NotificationOptions} [options] Notification options.
+     */
+    constructor(title: string, options?: NotificationOptions) { // tslint:disable-line
+    }
 }

@@ -133,7 +133,7 @@ describe("OpenFinContainerWindow", () => {
         win.close().then(() => {
             expect(innerWin.close).toHaveBeenCalled();
         }).then(done);
-    });    
+    });
 
     it("isShowing", (done) => {
         spyOn(innerWin, "isShowing").and.callThrough();
@@ -181,10 +181,11 @@ describe("OpenFinContainerWindow", () => {
 describe("OpenFinContainer", () => {
     let desktop: any;
     let container: OpenFinContainer;
+    let globalWindow: any = {};
 
     beforeEach(() => {
         desktop = new MockDesktop();
-        container = new OpenFinContainer(desktop);
+        container = new OpenFinContainer(desktop, globalWindow);
     });
 
     it("hostType is OpenFin", () => {
@@ -260,23 +261,37 @@ describe("OpenFinContainer", () => {
         });
     });
 
-    it("showNotification passes message and invokes underlying notification api", () => {
-        spyOn(desktop, "Notification").and.stub();
-        container.showNotification({ title: "title", message: "Test message", url: "notification.html" });
-        expect(desktop.Notification).toHaveBeenCalledWith({ url: "notification.html", message: { message: "Test message" } });
+    describe("notifications", () => {
+        it("showNotification passes message and invokes underlying notification api", () => {
+            spyOn(desktop, "Notification").and.stub();
+            container.showNotification("title", { body: "Test message", url: "notification.html" });
+            expect(desktop.Notification).toHaveBeenCalledWith({ url: "notification.html", message: "Test message" });
+        });
+
+        it("requestPermission granted", (done) => {
+            globalWindow["Notification"].requestPermission((permission) => {
+                expect(permission).toEqual("granted");
+            }).then(done);
+        });
+
+        it("notification api delegates to showNotification", () => {
+            spyOn(container, "showNotification").and.stub();
+            new globalWindow["Notification"]("title", { body: "Test message" });
+            expect(container.showNotification).toHaveBeenCalled();;
+        });
     });
 
-    it ("getMenuHtml is non null and equal to static default", ()=> {
+    it("getMenuHtml is non null and equal to static default", () => {
         expect((<any>container).getMenuHtml()).toEqual(OpenFinContainer.menuHtml);
     });
 
-    it ("getMenuItemHtml with icon has embedded icon in span", () => {
-        const menuItem: MenuItem = { id: "ID", label: "Label",  icon: "Icon" };
+    it("getMenuItemHtml with icon has embedded icon in span", () => {
+        const menuItem: MenuItem = { id: "ID", label: "Label", icon: "Icon" };
         const menuItemHtml: string = (<any>container).getMenuItemHtml(menuItem);
         expect(menuItemHtml).toEqual(`<li class="context-menu-item" onclick="fin.desktop.InterApplicationBus.send('uuid', null, 'TrayIcon_ContextMenuClick_${container.uuid}', { id: '${menuItem.id}' });this.close()"><span><img align="absmiddle" class="context-menu-image" src="${menuItem.icon}" /></span>Label</li>`);
     });
 
-    it ("getMenuItemHtml with no icon has nbsp; in span", () => {
+    it("getMenuItemHtml with no icon has nbsp; in span", () => {
         const menuItem: MenuItem = { id: "ID", label: "Label" };
         const menuItemHtml: string = (<any>container).getMenuItemHtml(menuItem);
         expect(menuItemHtml).toEqual(`<li class="context-menu-item" onclick="fin.desktop.InterApplicationBus.send('uuid', null, 'TrayIcon_ContextMenuClick_${container.uuid}', { id: '${menuItem.id}' });this.close()"><span>&nbsp;</span>Label</li>`);
