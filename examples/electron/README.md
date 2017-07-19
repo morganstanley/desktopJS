@@ -82,17 +82,17 @@ In order to show notifications while hosted in Electron, it is necessary for you
 developer to provide a polyfill of showNotification.  This allows you the flexibility
 to use the node module of your choice for displaying notifications. 
 
-Here is an example polyfill using node-notifier.
+Here is an example polyfill using electron-notify.
 
 ```
-desktopJS.Electron.ElectronContainer.prototype.showNotification = function(options) {
+desktopJS.Electron.ElectronContainer.prototype.showNotification = function(title, options) {
 	notifier = (this.isRemote)
-         ? this.electron.require("node-notifier")
-         : require("node-notifier");
+         ? this.electron.require("electron-notify")
+         : require("electron-notify");
 
 	notifier.notify({
-		title: options.title,
-		message: options.message
+		title: title,
+		text: options.body
 	});
 };
 ```

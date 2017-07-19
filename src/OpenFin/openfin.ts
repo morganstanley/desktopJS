@@ -2,7 +2,7 @@ import * as ContainerRegistry from "../registry";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow } from "../window";
 import { WebContainerBase } from "../container";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
-import { NotificationOptions } from "../notification";
+import { NotificationOptions, ContainerNotification } from "../notification";
 import { TrayIconDetails } from "../tray";
 import { MenuItem } from "../menu";
 import { Guid } from "../guid";
@@ -136,6 +136,13 @@ export class OpenFinContainer extends WebContainerBase {
     private static readonly trayIconMenuLeftOffset: number = 4;
     private static readonly trayIconMenuTopOffset: number = 23;
 
+    /**
+     * Gets or sets whether to replce the native web Notification API with OpenFin notifications.
+     * @type {boolean}
+     * @default true
+     */
+    public static replaceNotificationApi: boolean = true;
+
     public static readonly windowOptionsMap: PropertyMap = {
         x: { target: "defaultLeft" },
         y: { target: "defaultTop" },
@@ -147,6 +154,12 @@ export class OpenFinContainer extends WebContainerBase {
     };
 
     public windowOptionsMap: PropertyMap = OpenFinContainer.windowOptionsMap;
+
+    public static readonly notificationOptionsMap: PropertyMap = {
+        body: { target: "message" }
+    };
+
+    public notificationOptionsMap: PropertyMap = OpenFinContainer.notificationOptionsMap;
 
     /* tslint:disable */
     public static menuHtml: string =
@@ -206,12 +219,34 @@ export class OpenFinContainer extends WebContainerBase {
     </html>`;
     /* tslint:enable */
 
-    public constructor(desktop?: fin.OpenFinDesktop) {
-        super();
+    public constructor(desktop?: fin.OpenFinDesktop, win?: Window) {
+        super(win);
         this.desktop = desktop || fin.desktop;
         this.hostType = "OpenFin";
 
         this.ipc = new OpenFinMessageBus(this.desktop.InterApplicationBus, (<any>this.desktop.Application.getCurrent()).uuid);
+        this.registerNotificationsApi();
+    }
+
+    protected registerNotificationsApi() {
+        if (OpenFinContainer.replaceNotificationApi && typeof this.globalWindow !== "undefined" && this.globalWindow) {
+            // Define owningContainer for closure to inner class
+            const owningContainer: OpenFinContainer = this; // tslint:disable-line
+
+            this.globalWindow["Notification"] = class OpenFinNotification extends ContainerNotification {
+                constructor(title: string, options?: NotificationOptions) {
+                    super(title, options);
+
+                    options["notification"] = this;
+
+                    // Forward OpenFin notification events back to Notification API
+                    options["onClick"] = (event) => { if (this.onclick) { this.onclick(event); } };
+                    options["onError"] = (event) => { if (this.onerror) { this.onerror(event); } };
+
+                    owningContainer.showNotification(title, options);
+                }
+            };
+        }
     }
 
     public getMainWindow(): ContainerWindow {
@@ -258,11 +293,8 @@ export class OpenFinContainer extends WebContainerBase {
         return this.wrapWindow(new this.desktop.Window(newOptions));
     }
 
-    public showNotification(options: NotificationOptions) {
-        const msg = new this.desktop.Notification({
-            url: options.url,
-            message: { message: options.message }
-        });
+    public showNotification(title: string, options?: NotificationOptions) {
+        const msg = new this.desktop.Notification(ObjectTransform.transformProperties(options, this.notificationOptionsMap));
     }
 
     protected getMenuHtml() {

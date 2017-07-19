@@ -189,7 +189,7 @@ export class DefaultContainer extends WebContainerBase {
         return this.wrapWindow(window);
     }
 
-    public showNotification(options: NotificationOptions) {
+    public showNotification(title: string, options?: NotificationOptions) {
         if (!("Notification" in this.globalWindow)) {
             console.warn("Notifications not supported");
             return;
@@ -199,7 +199,7 @@ export class DefaultContainer extends WebContainerBase {
             if (permission === "denied") {
                 console.warn("Notifications not permitted");
             } else if (permission === "granted") {
-                new (<any>this.globalWindow).Notification(options.title, { body: options.message }); // tslint:disable-line
+                new (<any>this.globalWindow).Notification(title, options); // tslint:disable-line
             }
         });
     }

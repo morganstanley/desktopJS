@@ -124,6 +124,7 @@ describe("ElectronContainerWindow", () => {
 describe("ElectronContainer", () => {
     let electron: any;
     let container: ElectronContainer;
+    let globalWindow: any = {};
     let windows: MockWindow[] = [new MockWindow(), new MockWindow()];
 
     beforeEach(() => {
@@ -147,7 +148,7 @@ describe("ElectronContainer", () => {
             require: (type: string) => { return {} },
             getCurrentWindow: () => { return windows[0]; }
         };
-        container = new ElectronContainer(electron, new MockIpc());
+        container = new ElectronContainer(electron, new MockIpc(), globalWindow);
     });
 
     it("hostType is Electron", () => {
@@ -188,9 +189,21 @@ describe("ElectronContainer", () => {
         expect((<any>container).tray).toHaveBeenCalled();
     });
 
-    describe("showNotification", () => {
-        it("Throws Not implemented", () => {
-            expect(() => container.showNotification({})).toThrowError(TypeError);
+    describe("notifications", () => {
+        it("showNotification throws not implemented", () => {
+            expect(() => container.showNotification("title", {})).toThrowError(TypeError);
+        });
+
+        it("requestPermission granted", (done) => {
+            globalWindow["Notification"].requestPermission((permission) => {
+                expect(permission).toEqual("granted");
+            }).then(done);
+        });
+
+        it("notification api delegates to showNotification", () => {
+            spyOn(container, "showNotification").and.stub();
+            new globalWindow["Notification"]("title", { body: "Test message" });
+            expect(container.showNotification).toHaveBeenCalled();;
         });
     });
 

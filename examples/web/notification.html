@@ -5,10 +5,16 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
+
+    <script>
+        function onNotificationMessage(message) {
+            document.getElementById('message').innerHTML = message;
+        }
+    </script>
 </head>
 
 <body>
-    Notification
+    <div id="message"></div>
 </body>
 
 </html>
