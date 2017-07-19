@@ -137,7 +137,7 @@ export class OpenFinContainer extends WebContainerBase {
     private static readonly trayIconMenuTopOffset: number = 23;
 
     /**
-     * Gets or sets whether to replce the native web Notification API with OpenFin notifications.
+     * Gets or sets whether to replace the native web Notification API with OpenFin notifications.
      * @type {boolean}
      * @default true
      */

@@ -130,7 +130,7 @@ export class ElectronContainer extends WebContainerBase {
     protected internalIpc: NodeJS.EventEmitter;
 
     /**
-     * Gets or sets whether to replce the native web Notification API with a wrapper around showNotification.
+     * Gets or sets whether to replace the native web Notification API with a wrapper around showNotification.
      * @type {boolean}
      * @default true
      */
