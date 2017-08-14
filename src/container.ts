@@ -88,6 +88,8 @@ export abstract class ContainerBase implements Container {
 
     protected abstract closeAllWindows(excludeSelf?: Boolean): Promise<void>;
 
+    public abstract getAllWindows(): Promise<ContainerWindow[]>;
+
     public loadLayout(name: string): Promise<PersistedWindowLayout> {
         return new Promise<PersistedWindowLayout>((resolve, reject) => {
             this.closeAllWindows(true).then(() => {

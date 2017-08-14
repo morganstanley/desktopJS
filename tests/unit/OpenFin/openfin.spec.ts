@@ -11,7 +11,7 @@ class MockDesktop {
         setTrayIcon() { }
     }
 
-    Window(): MockWindow { return new MockWindow(); }
+    Window: any = MockWindow;
     Notification(): any { return {}; }
     InterApplicationBus(): any { return new MockInterApplicationBus(); }
     Application: any = {
@@ -49,7 +49,7 @@ class MockWindow {
 
     static getCurrent(): any { return MockWindow.singleton; }
 
-    getParentWindow(): any { return {}; }
+    getParentWindow(): any { return MockWindow.singleton; }
 
     focus(callback: () => void, error: (reason) => void): any {
         callback();
@@ -192,6 +192,12 @@ describe("OpenFinContainer", () => {
         expect(container.hostType).toEqual("OpenFin");
     });
 
+    it("getMainWindow returns wrapped inner window", () => {
+        const win: OpenFinContainerWindow = container.getMainWindow();
+        expect(win).toBeDefined();
+        expect(win.containerWindow).toEqual(MockWindow.singleton);
+    });
+
     describe("createWindow", () => {
         beforeEach(() => {
             spyOn(desktop, "Window").and.stub();
@@ -237,6 +243,15 @@ describe("OpenFinContainer", () => {
         });
 
         describe("window management", () => {
+            it ("getAllWindows returns wrapped native windows", (done) => {
+                container.getAllWindows().then(windows => {
+                    expect(windows).not.toBeNull();
+                    expect(windows.length).toEqual(2);
+                    expect(windows[0].containerWindow).toEqual(MockWindow.singleton);
+                    done();
+                });
+            });
+
             it("closeAllWindows invokes window.close", (done) => {
                 spyOn(MockWindow.singleton, "close").and.callThrough();
                 (<any>container).closeAllWindows().then(done).catch(error => {

@@ -217,6 +217,17 @@ export class DefaultContainer extends WebContainerBase {
         });
     }
 
+    public getAllWindows(): Promise<ContainerWindow[]> {
+        return new Promise<ContainerWindow[]>((resolve, reject) => {
+            const windows: ContainerWindow[] = [];
+            const trackedWindows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+            for (const key in trackedWindows) {
+                windows.push(trackedWindows[key]);
+            }
+            resolve(windows);
+        });
+    }
+
     public saveLayout(name: string): Promise<PersistedWindowLayout> {
         const layout = new PersistedWindowLayout();
 

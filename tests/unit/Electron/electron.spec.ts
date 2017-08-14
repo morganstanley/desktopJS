@@ -216,6 +216,14 @@ describe("ElectronContainer", () => {
             container = new ElectronContainer(electron, new MockIpc());
         });
 
+        it("getAllWindows returns wrapped native windows", (done) => {
+            container.getAllWindows().then(wins => {
+                expect(wins).not.toBeNull();
+                expect(wins.length).toEqual(windows.length);
+                done();
+            });
+        });
+
         it("closeAllWindows excluding self skips current window", (done) => {
             spyOn(electron, "getCurrentWindow").and.callThrough();
             spyOn(windows[0], "close").and.callThrough();
