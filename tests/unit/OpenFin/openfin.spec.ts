@@ -198,6 +198,12 @@ describe("OpenFinContainer", () => {
         expect(win.containerWindow).toEqual(MockWindow.singleton);
     });
 
+    it("getCurrentWindow returns wrapped inner window", () => {
+        const win: OpenFinContainerWindow = container.getCurrentWindow();
+        expect(win).toBeDefined();
+        expect(win.containerWindow).toEqual(MockWindow.singleton);
+    });
+
     describe("createWindow", () => {
         beforeEach(() => {
             spyOn(desktop, "Window").and.stub();

@@ -146,6 +146,10 @@ export class DefaultContainer extends WebContainerBase {
         return this.mainWindow;
     }
 
+    public getCurrentWindow(): ContainerWindow {
+        return this.wrapWindow(this.globalWindow);
+    }
+
     protected getWindowOptions(options?: any): any {
         return ObjectTransform.transformProperties(options, this.windowOptionsMap);
     }

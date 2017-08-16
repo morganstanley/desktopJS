@@ -168,12 +168,23 @@ describe("ElectronContainer", () => {
         expect((<any>container).menu).toEqual(electron.Menu);
     });
 
-    it("getCurrentWindow returns wrapped inner getCurrentWindow", () => {
+    it("getMainWindow returns wrapped window", () => {
         const innerWin: any = new MockWindow();
         spyOn(electron, "getCurrentWindow").and.returnValue(innerWin);
         const win: ElectronContainerWindow = container.getMainWindow();
 
         expect(win).toBeDefined();
+        expect(electron.getCurrentWindow).toHaveBeenCalled();
+        expect(win.containerWindow).toEqual(innerWin);
+    });
+
+    it("getCurrentWindow returns wrapped inner getCurrentWindow", () => {
+        const innerWin: any = new MockWindow();
+        spyOn(electron, "getCurrentWindow").and.returnValue(innerWin);
+        const win: ElectronContainerWindow = container.getCurrentWindow();
+
+        expect(win).toBeDefined();
+        expect(electron.getCurrentWindow).toHaveBeenCalled();
         expect(win.containerWindow).toEqual(innerWin);
     });
 

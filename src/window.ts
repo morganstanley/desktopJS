@@ -34,6 +34,12 @@ export interface ContainerWindowManager {
     getMainWindow(): ContainerWindow;
 
     /**
+     * Gets the current ContainerWindow
+     * @returns {ContainerWindow} The current ContainerWindow
+     */
+    getCurrentWindow(): ContainerWindow;
+
+    /**
      * Retrieves a list of {@link ContainerWindow} wrapped native windows.
      * @returns {Promise<ContainerWindow[]>} - A promise that returns an array of {@link ContainerWindow} if resolved
      */

@@ -201,10 +201,14 @@ export class ElectronContainer extends WebContainerBase {
             while (win.getParentWindow()) {
                 win = win.getParentWindow();
             }
-            this.mainWindow = new ElectronContainerWindow(win);
+            this.mainWindow = this.wrapWindow(win);
         }
 
         return this.mainWindow;
+    }
+
+    public getCurrentWindow(): ContainerWindow {
+        return this.wrapWindow(this.electron.getCurrentWindow());
     }
 
     protected getWindowOptions(options?: any): any {
