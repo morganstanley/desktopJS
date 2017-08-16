@@ -251,7 +251,7 @@ export class OpenFinContainer extends WebContainerBase {
 
     public getMainWindow(): ContainerWindow {
         if (!this.mainWindow) {
-            this.mainWindow = new OpenFinContainerWindow(this.desktop.Window.getCurrent().getParentWindow());
+            this.mainWindow = this.wrapWindow(this.desktop.Application.getCurrent().getWindow());
         }
 
         return this.mainWindow;
@@ -405,7 +405,7 @@ export class OpenFinContainer extends WebContainerBase {
     public getAllWindows(): Promise<ContainerWindow[]> {
         return new Promise<ContainerWindow[]>((resolve, reject) => {
             this.desktop.Application.getCurrent().getChildWindows(windows => {
-                windows.push(this.desktop.Window.getCurrent());
+                windows.push(this.desktop.Application.getCurrent().getWindow());
                 resolve(windows.map(window => this.wrapWindow(window)));
             }, reject);
         });
