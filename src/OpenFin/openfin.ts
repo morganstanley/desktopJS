@@ -402,6 +402,15 @@ export class OpenFinContainer extends WebContainerBase {
         });
     }
 
+    public getAllWindows(): Promise<ContainerWindow[]> {
+        return new Promise<ContainerWindow[]>((resolve, reject) => {
+            this.desktop.Application.getCurrent().getChildWindows(windows => {
+                windows.push(this.desktop.Window.getCurrent());
+                resolve(windows.map(window => this.wrapWindow(window)));
+            }, reject);
+        });
+    }
+
     public saveLayout(name: string): Promise<PersistedWindowLayout> {
         const layout = new PersistedWindowLayout();
 

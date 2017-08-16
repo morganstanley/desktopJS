@@ -34,6 +34,12 @@ export interface ContainerWindowManager {
     getMainWindow(): ContainerWindow;
 
     /**
+     * Retrieves a list of {@link ContainerWindow} wrapped native windows.
+     * @returns {Promise<ContainerWindow[]>} - A promise that returns an array of {@link ContainerWindow} if resolved
+     */
+    getAllWindows(): Promise<ContainerWindow[]>;
+
+    /**
      * Creates a new ContainerWindow.
      * @param {string} url url
      * @param {any} options (Optional)
