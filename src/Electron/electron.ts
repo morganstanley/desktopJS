@@ -270,6 +270,10 @@ export class ElectronContainer extends WebContainerBase {
         });
     }
 
+    public getAllWindows(): Promise<ContainerWindow[]> {
+        return Promise.resolve(this.browserWindow.getAllWindows().map(window => this.wrapWindow(window)));
+    }
+
     public saveLayout(name: string): Promise<PersistedWindowLayout> {
         const layout = new PersistedWindowLayout();
 

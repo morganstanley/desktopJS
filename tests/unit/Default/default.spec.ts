@@ -151,6 +151,20 @@ describe("DefaultContainer", () => {
     });
 
     describe("window management", () => {
+        it("getAllWindows returns wrapped native windows", (done) => {
+            window[DefaultContainer.windowsPropertyKey] = {
+                "1": new MockWindow(),
+                "2": new MockWindow()
+            };
+            
+            let container: DefaultContainer = new DefaultContainer(window);
+            container.getAllWindows().then(wins => {
+                expect(wins).not.toBeNull();
+                expect(wins.length).toEqual(2);
+                done();
+            });
+        });
+        
         it("closeAllWindows invokes window.close", (done) => {
             let container: DefaultContainer = new DefaultContainer(window);
             spyOn(window, "close").and.callThrough();
