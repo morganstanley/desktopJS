@@ -54,6 +54,8 @@ export abstract class ContainerBase implements Container {
 
     abstract getMainWindow(): ContainerWindow;
 
+    abstract getCurrentWindow(): ContainerWindow;
+
     abstract createWindow(url: string, options?: any): ContainerWindow;
 
     showNotification(title: string, options?: NotificationOptions) {

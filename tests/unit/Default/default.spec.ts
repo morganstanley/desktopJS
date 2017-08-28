@@ -128,6 +128,14 @@ describe("DefaultContainer", () => {
         expect(win.containerWindow).toEqual(window);
     });
 
+    it("getCurrentWindow returns DefaultContainerWindow wrapping scoped window", () => {
+        let container: DefaultContainer = new DefaultContainer(window);
+        let win: DefaultContainerWindow = container.getCurrentWindow();
+        expect(win).toBeDefined();
+        expect(win.containerWindow).toEqual(window);
+    });
+   
+
     describe("Notifications", () => {
         it("showNotification warns about not being implemented", () => {
             let container: DefaultContainer = new DefaultContainer(window);
