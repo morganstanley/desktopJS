@@ -203,7 +203,7 @@ gulp.task("server", function () {
         }));
 });
 
-gulp.task('bundle', ['tslint', 'clean', 'build', 'test', 'dts', 'compress', 'docs']);
+gulp.task('bundle', ['tslint', 'clean', 'build', 'test', 'dts', 'compress']);
 
 gulp.task('watch', function () {
     gulp.watch(src, ['bundle']);
