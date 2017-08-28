@@ -104,7 +104,7 @@ childFocusButton.onclick = function () {
 };
 
 screenshotButton.onclick = function () {
-	container.getMainWindow().getSnapshot().then(function (data) {
+	container.getCurrentWindow().getSnapshot().then(function (data) {
 		previewImage.src = data;
 	}).catch(function (error) { window.alert(error); });
 };

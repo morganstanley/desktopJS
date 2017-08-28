@@ -257,6 +257,10 @@ export class OpenFinContainer extends WebContainerBase {
         return this.mainWindow;
     }
 
+    public getCurrentWindow(): ContainerWindow {
+        return this.wrapWindow(this.desktop.Window.getCurrent());
+    }
+
     protected getWindowOptions(options?: any): any {
         const newOptions = ObjectTransform.transformProperties(options, this.windowOptionsMap);
 
