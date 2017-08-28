@@ -5,10 +5,9 @@ import { MenuItem } from "../../../src/menu";
 class MockDesktop {
     public static application: any = {
         uuid: "uuid",
-        getChildWindows(callback) {
-            callback([MockWindow.singleton]);
-        },
-        setTrayIcon() { }
+        getChildWindows(callback) { callback([MockWindow.singleton]); },
+        setTrayIcon() { },
+        getWindow() { return MockWindow.singleton; }
     }
 
     Window: any = MockWindow;
@@ -249,7 +248,7 @@ describe("OpenFinContainer", () => {
         });
 
         describe("window management", () => {
-            it ("getAllWindows returns wrapped native windows", (done) => {
+            it("getAllWindows returns wrapped native windows", (done) => {
                 container.getAllWindows().then(windows => {
                     expect(windows).not.toBeNull();
                     expect(windows.length).toEqual(2);
