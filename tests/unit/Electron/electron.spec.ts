@@ -118,6 +118,16 @@ describe("ElectronContainerWindow", () => {
                 expect(innerWin.capturePage).toHaveBeenCalled();
             }).then(done);
         });
+
+        it("getBounds retrieves underlying window position", (done) => {
+            win.getBounds().then(bounds => {
+                expect(bounds).toBeDefined();
+                expect(bounds.x).toEqual(0);
+                expect(bounds.y).toEqual(1);
+                expect(bounds.width).toEqual(2);
+                expect(bounds.height).toEqual(3);
+            }).then(done);
+        });
     });
 });
 

@@ -10,7 +10,10 @@ class MockWindow {
     public addEventListener(type: string, listener: any): void { this.listener = listener; }
     public removeEventListener(type: string, listener: any): void { }
     public postMessage(message: string, origin: string): void { };
-
+    public screenX: any =  0;
+    public screenY: any = 1;
+    public outerWidth: any = 2;
+    public outerHeight: any = 3;
     location: any = { origin: "origin" };
 }
 
@@ -60,6 +63,16 @@ describe("DefaultContainerWindow", () => {
         spyOn(win, "close").and.callThrough();
         win.close().then(() => {
             expect(win.close).toHaveBeenCalled();
+        }).then(done);
+    });
+
+    it("getBounds retrieves underlying window position", (done) => {
+        win.getBounds().then(bounds => {
+            expect(bounds).toBeDefined();
+            expect(bounds.x).toEqual(0);
+            expect(bounds.y).toEqual(1);
+            expect(bounds.width).toEqual(2);
+            expect(bounds.height).toEqual(3);
         }).then(done);
     });
 });

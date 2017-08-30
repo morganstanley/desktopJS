@@ -1,5 +1,5 @@
 import * as ContainerRegistry from "../registry";
-import { ContainerWindow, PersistedWindowLayout, PersistedWindow } from "../window";
+import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
 import { WebContainerBase } from "../container";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions, ContainerNotification } from "../notification";
@@ -59,6 +59,14 @@ export class OpenFinContainerWindow implements ContainerWindow {
                 (snapshot) => resolve("data:image/png;base64," + snapshot),
                 (reason) => reject(reason)
             );
+        });
+    }
+
+    public getBounds(): Promise<Rectangle> {
+        return new Promise<Rectangle>((resolve, reject) => {
+            this.containerWindow.getBounds(
+                bounds => resolve(new Rectangle(bounds.left, bounds.top, bounds.width, bounds.height)),
+                reject);
         });
     }
 }
