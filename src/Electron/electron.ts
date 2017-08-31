@@ -67,6 +67,13 @@ export class ElectronContainerWindow implements ContainerWindow {
             resolve(this.containerWindow.getBounds());
         });
     }
+
+    public setBounds(bounds: Rectangle): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.containerWindow.setBounds(bounds);
+            resolve();
+        });
+    }
 }
 
 /**

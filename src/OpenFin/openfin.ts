@@ -69,6 +69,12 @@ export class OpenFinContainerWindow implements ContainerWindow {
                 reject);
         });
     }
+
+    public setBounds(bounds: Rectangle): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.containerWindow.setBounds(bounds.x, bounds.y, bounds.width, bounds.height, resolve, reject);
+        });
+    }
 }
 
 /**

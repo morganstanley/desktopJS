@@ -10,6 +10,8 @@ class MockWindow {
     public addEventListener(type: string, listener: any): void { this.listener = listener; }
     public removeEventListener(type: string, listener: any): void { }
     public postMessage(message: string, origin: string): void { };
+    public moveTo(x: number, y: number): void { };
+    public resizeTo(width: number, height: number): void { }
     public screenX: any =  0;
     public screenY: any = 1;
     public outerWidth: any = 2;
@@ -73,6 +75,15 @@ describe("DefaultContainerWindow", () => {
             expect(bounds.y).toEqual(1);
             expect(bounds.width).toEqual(2);
             expect(bounds.height).toEqual(3);
+        }).then(done);
+    });
+
+    it("setBounds sets underlying window position", (done) => {
+        spyOn(win.containerWindow, "moveTo").and.callThrough()
+        spyOn(win.containerWindow, "resizeTo").and.callThrough();
+        win.setBounds({ x: 0, y: 1, width: 2, height: 3 }).then(() => {
+            expect(win.containerWindow.moveTo).toHaveBeenCalledWith(0, 1);
+            expect(win.containerWindow.resizeTo).toHaveBeenCalledWith(2, 3);
         }).then(done);
     });
 });

@@ -56,6 +56,11 @@ export interface ContainerWindow {
 
     /** Gets the current bounds of the window. */
     getBounds(): Promise<Rectangle>;
+
+    /** Set the current bounds of the window.
+     * @param {Rectangle} bounds
+     */
+    setBounds(bounds: Rectangle): Promise<void>;
 }
 
 /** Represents window management capability */

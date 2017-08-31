@@ -49,6 +49,14 @@ export class DefaultContainerWindow implements ContainerWindow {
             resolve(new Rectangle(this.containerWindow.screenX, this.containerWindow.screenY, this.containerWindow.outerWidth, this.containerWindow.outerHeight));
         });
     }
+
+    public setBounds(bounds: Rectangle): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.containerWindow.moveTo(bounds.x, bounds.y);
+            this.containerWindow.resizeTo(bounds.width, bounds.height);
+            resolve();
+        });
+    }
 }
 
 /**

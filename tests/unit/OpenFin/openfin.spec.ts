@@ -85,6 +85,11 @@ class MockWindow {
         return {};
     }
 
+    setBounds(x: number, y: number, width: number, height: number, callback: () => void, error: (reason) => void): any {
+        callback();
+        return {};
+    }
+
     getOptions(callback: (options: fin.WindowOptions) => void, error: (reason) => void): any {
         callback({ url: "url" });
         return {};
@@ -182,6 +187,13 @@ describe("OpenFinContainerWindow", () => {
                 expect(bounds.y).toEqual(1);
                 expect(bounds.width).toEqual(2);
                 expect(bounds.height).toEqual(3);
+            }).then(done);
+        });
+
+        it("setBounds sets underlying window position", (done) => {
+            spyOn(win.containerWindow, "setBounds").and.callThrough()
+            win.setBounds({ x: 0, y: 1, width: 2, height: 3 }).then(() => {
+                expect(win.containerWindow.setBounds).toHaveBeenCalledWith(0, 1, 2, 3, jasmine.any(Function), jasmine.any(Function));
             }).then(done);
         });
     });
