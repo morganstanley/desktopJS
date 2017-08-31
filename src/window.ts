@@ -1,6 +1,36 @@
 import { TrayIconDetails } from "./tray";
 import { MenuItem } from "./menu";
 
+/** Represents the bounds of a rectangle */
+export class Rectangle { // tslint:disable-line
+    /** The x coordinate of the origin of the rectangle
+     * @type {number}
+     */
+    public readonly x: number;
+
+    /** The y coordinate of the origin of the rectangle
+     * @type {number}
+     */
+    public readonly y: number;
+
+    /** The width of the rectangle
+     * @type {number}
+     */
+    public readonly width: number;
+
+    /** The height of the rectangle
+     * @type {number}
+     */
+    public readonly height: number;
+
+    constructor(x: number, y: number, width: number, height: number) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+}
+
 /** Represents a container window. */
 export interface ContainerWindow {
     /** The underlying concrete container window. */
@@ -23,6 +53,14 @@ export interface ContainerWindow {
 
     /** Gets a base64 encoded snapshot of the window. */
     getSnapshot(): Promise<string>;
+
+    /** Gets the current bounds of the window. */
+    getBounds(): Promise<Rectangle>;
+
+    /** Set the current bounds of the window.
+     * @param {Rectangle} bounds
+     */
+    setBounds(bounds: Rectangle): Promise<void>;
 }
 
 /** Represents window management capability */

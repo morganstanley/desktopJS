@@ -1,5 +1,5 @@
 import * as ContainerRegistry from "../registry";
-import { ContainerWindow, PersistedWindowLayout, PersistedWindow } from "../window";
+import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
 import { WebContainerBase } from "../container";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions, ContainerNotification } from "../notification";
@@ -59,6 +59,19 @@ export class ElectronContainerWindow implements ContainerWindow {
             this.containerWindow.capturePage((snapshot) => {
                 resolve("data:image/png;base64," + snapshot.toPNG().toString("base64"));
             });
+        });
+    }
+
+    public getBounds(): Promise<Rectangle> {
+        return new Promise<Rectangle>(resolve => {
+            resolve(this.containerWindow.getBounds());
+        });
+    }
+
+    public setBounds(bounds: Rectangle): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.containerWindow.setBounds(bounds);
+            resolve();
         });
     }
 }

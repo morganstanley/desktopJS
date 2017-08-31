@@ -1,5 +1,5 @@
 import { WebContainerBase } from "../container";
-import { ContainerWindow, PersistedWindowLayout, PersistedWindow } from "../window";
+import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
 import { NotificationOptions } from "../notification";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { Guid } from "../guid";
@@ -42,6 +42,20 @@ export class DefaultContainerWindow implements ContainerWindow {
 
     public getSnapshot(): Promise<string> {
         return Promise.reject("getSnapshot requires an implementation.");
+    }
+
+    public getBounds(): Promise<Rectangle> {
+        return new Promise<Rectangle>(resolve => {
+            resolve(new Rectangle(this.containerWindow.screenX, this.containerWindow.screenY, this.containerWindow.outerWidth, this.containerWindow.outerHeight));
+        });
+    }
+
+    public setBounds(bounds: Rectangle): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.containerWindow.moveTo(bounds.x, bounds.y);
+            this.containerWindow.resizeTo(bounds.width, bounds.height);
+            resolve();
+        });
     }
 }
 
@@ -240,7 +254,7 @@ export class DefaultContainer extends WebContainerBase {
             for (const key in windows) {
                 const win = windows[key];
                 if (this.globalWindow !== win) {
-                    layout.windows.push({ name: win.name, url: win.location.toString(), bounds: { x: win.screenX, y: win.screenY, width: win.innerWidth, height: win.innerHeight } });
+                    layout.windows.push({ name: win.name, url: win.location.toString(), bounds: { x: win.screenX, y: win.screenY, width: win.outerWidth, height: win.outerHeight } });
                 }
             }
 

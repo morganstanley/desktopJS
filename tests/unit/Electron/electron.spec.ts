@@ -28,6 +28,8 @@ class MockWindow {
     }
 
     public getBounds(): any { return { x: 0, y: 1, width: 2, height: 3 }; }
+
+    public setBounds(bounds: {x: number, y: number, width: number, height: number}): void { }
 }
 
 class MockCapture {
@@ -116,6 +118,24 @@ describe("ElectronContainerWindow", () => {
             }).then(() => {
                 expect(success).toEqual(true);
                 expect(innerWin.capturePage).toHaveBeenCalled();
+            }).then(done);
+        });
+
+        it("getBounds retrieves underlying window position", (done) => {
+            win.getBounds().then(bounds => {
+                expect(bounds).toBeDefined();
+                expect(bounds.x).toEqual(0);
+                expect(bounds.y).toEqual(1);
+                expect(bounds.width).toEqual(2);
+                expect(bounds.height).toEqual(3);
+            }).then(done);
+        });
+
+        it("setBounds sets underlying window position", (done) => {
+            spyOn(win.containerWindow, "setBounds").and.callThrough()
+            const bounds = { x: 0, y: 1, width: 2, height: 3 };
+            win.setBounds(bounds).then(() => {
+                expect(win.containerWindow.setBounds).toHaveBeenCalledWith(bounds);
             }).then(done);
         });
     });
