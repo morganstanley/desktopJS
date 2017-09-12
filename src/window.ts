@@ -1,5 +1,6 @@
 import { TrayIconDetails } from "./tray";
 import { MenuItem } from "./menu";
+import { EventEmitter, EventArgs } from "./events";
 
 /** Represents the bounds of a rectangle */
 export class Rectangle { // tslint:disable-line
@@ -31,36 +32,85 @@ export class Rectangle { // tslint:disable-line
     }
 }
 
+export type WindowEventType =
+    "move" |
+    "resize" |
+    "close" |
+    "closed" |
+    "focus" |
+    "blur" |
+    "maximize" |
+    "minimize" |
+    "restore"
+;
+
 /** Represents a container window. */
-export interface ContainerWindow {
+export abstract class ContainerWindow extends EventEmitter {
     /** The underlying concrete container window. */
-    readonly containerWindow: any;
+    public readonly containerWindow: any;
+
+    public constructor(wrap: any) {
+        super();
+        this.containerWindow = wrap;
+    }
 
     /** Gives focus to the window. */
-    focus(): Promise<void>;
+    public abstract focus(): Promise<void>;
 
     /** Shows the window if hidden. */
-    show(): Promise<void>;
+    public abstract show(): Promise<void>;
 
     /** Hides the window if showing. */
-    hide(): Promise<void>;
+    public abstract hide(): Promise<void>;
 
     /** Try to close the window.  This has the same effect as clicking the close button on the window. */
-    close(): Promise<void>;
+    public abstract close(): Promise<void>;
 
     /** Determines whether the window is currently showing. */
-    isShowing(): Promise<boolean>;
+    public abstract isShowing(): Promise<boolean>;
 
     /** Gets a base64 encoded snapshot of the window. */
-    getSnapshot(): Promise<string>;
+    public abstract getSnapshot(): Promise<string>;
 
     /** Gets the current bounds of the window. */
-    getBounds(): Promise<Rectangle>;
+    public abstract getBounds(): Promise<Rectangle>;
 
     /** Set the current bounds of the window.
      * @param {Rectangle} bounds
      */
-    setBounds(bounds: Rectangle): Promise<void>;
+    public abstract setBounds(bounds: Rectangle): Promise<void>;
+
+    /**
+     * Override to provide custom container logic for adding an event handler.
+     */
+    protected abstract attachListener(eventName: WindowEventType, listener: (event: EventArgs) => void): void;
+
+    /**
+     * Registers an event listener on the specified event.
+     * @param eventName {WindowEventType} eventName The type of the event.
+     * @param listener {(event: EventArgs) => void} The event handler function.
+     */
+    public addListener(eventName: WindowEventType, listener: (event: EventArgs) => void): any {
+        const callback = this.registerAndWrapListener(eventName, listener);
+        this.attachListener(eventName, callback);
+        return super.addListener(eventName, callback);
+    }
+
+    /**
+     * Override to provide custom container logic for removing an event handler.
+     */
+    protected abstract detachListener(eventName: WindowEventType, listener: (event: EventArgs) => void): void;
+
+    /**
+     * Removes a previous registered event listener from the specified event.
+     * @param eventName {WindowEventType} eventName The type of the event.
+     * @param listener {(event: EventArgs) => void} The event handler function.
+     */
+    public removeListener(eventName: WindowEventType, listener: (event: EventArgs) => void): any {
+        const callback = this.unwrapAndUnRegisterListener(listener) || listener;
+        this.detachListener(eventName, callback);
+        return super.removeListener(eventName, callback);
+    }
 }
 
 /** Represents window management capability */

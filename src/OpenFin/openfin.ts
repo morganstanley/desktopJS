@@ -13,14 +13,23 @@ ContainerRegistry.registerContainer("OpenFin", {
     create: () => new OpenFinContainer()
 });
 
+const windowEventMap = {
+    move: "bounds-changing",
+    resize: "bounds-changed",
+    close: "close-requested",
+    focus: "focused",
+    blur: "blurred",
+    maximize: "maximized",
+    minimize: "minimized",
+    restore: "restored"
+};
+
 /**
  * @augments ContainerWindow
  */
-export class OpenFinContainerWindow implements ContainerWindow {
-    public containerWindow: any;
-
+export class OpenFinContainerWindow extends ContainerWindow {
     public constructor(wrap: any) {
-        this.containerWindow = wrap;
+        super(wrap);
     }
 
     public focus(): Promise<void> {
@@ -74,6 +83,14 @@ export class OpenFinContainerWindow implements ContainerWindow {
         return new Promise<void>((resolve, reject) => {
             this.containerWindow.setBounds(bounds.x, bounds.y, bounds.width, bounds.height, resolve, reject);
         });
+    }
+
+    protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
+        this.containerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
+    }
+
+    protected detachListener(eventName: string, listener: (...args: any[]) => void): any {
+        this.containerWindow.removeEventListener(windowEventMap[eventName] || eventName, listener);
     }
 }
 
