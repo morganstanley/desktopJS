@@ -94,6 +94,10 @@ class MockWindow {
         callback({ url: "url" });
         return {};
     }
+
+    addEventListener(eventName: string, listener: any): void { }
+
+    removeEventListener(eventName: string, listener: any): void { }
 }
 
 describe("OpenFinContainerWindow", () => {
@@ -195,6 +199,36 @@ describe("OpenFinContainerWindow", () => {
             win.setBounds({ x: 0, y: 1, width: 2, height: 3 }).then(() => {
                 expect(win.containerWindow.setBounds).toHaveBeenCalledWith(0, 1, 2, 3, jasmine.any(Function), jasmine.any(Function));
             }).then(done);
+        });
+
+        describe("addListener", () => {
+            it("addListener calls underlying OpenFin window addEventListener with mapped event name", () => {
+                spyOn(win.containerWindow, "addEventListener").and.callThrough()
+                win.addListener("move", () => { });
+                expect(win.containerWindow.addEventListener).toHaveBeenCalledWith("bounds-changing", jasmine.any(Function));
+            });
+
+            it("addListener calls underlying OpenFin window addEventListener with unmapped event name", () => {
+                const unmappedEvent = "closed";
+                spyOn(win.containerWindow, "addEventListener").and.callThrough()
+                win.addListener(unmappedEvent, () => { });
+                expect(win.containerWindow.addEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
+            });
+        });
+
+        describe("removeListener", () => {
+            it("removeListener calls underlying OpenFin window removeEventListener with mapped event name", () => {
+                spyOn(win.containerWindow, "removeEventListener").and.callThrough()
+                win.removeListener("move", () => { });
+                expect(win.containerWindow.removeEventListener).toHaveBeenCalledWith("bounds-changing", jasmine.any(Function));
+            });
+
+            it("removeListener calls underlying OpenFin window removeEventListener with unmapped event name", () => {
+                const unmappedEvent = "closed";
+                spyOn(win.containerWindow, "removeEventListener").and.callThrough()
+                win.removeListener(unmappedEvent, () => { });
+                expect(win.containerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
+            });
         });
     });
 });

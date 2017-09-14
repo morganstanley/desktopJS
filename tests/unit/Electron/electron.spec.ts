@@ -30,6 +30,10 @@ class MockWindow {
     public getBounds(): any { return { x: 0, y: 1, width: 2, height: 3 }; }
 
     public setBounds(bounds: {x: number, y: number, width: number, height: number}): void { }
+
+    public addListener(eventName: string, listener: any): void { }
+    
+    public removeListener(eventName: string, listener: any): void { }
 }
 
 class MockCapture {
@@ -137,6 +141,18 @@ describe("ElectronContainerWindow", () => {
             win.setBounds(bounds).then(() => {
                 expect(win.containerWindow.setBounds).toHaveBeenCalledWith(bounds);
             }).then(done);
+        });
+
+        it("addListener calls underlying Electron window addListener", () => {
+            spyOn(win.containerWindow, "addListener").and.callThrough()
+            win.addListener("move", () => {});
+            expect(win.containerWindow.addListener).toHaveBeenCalledWith("move", jasmine.any(Function));
+        });
+
+        it("removeListener calls underlying Electron window removeListener", () => {
+            spyOn(win.containerWindow, "removeListener").and.callThrough()
+            win.removeListener("move", () => {});
+            expect(win.containerWindow.removeListener).toHaveBeenCalledWith("move", jasmine.any(Function));
         });
     });
 });

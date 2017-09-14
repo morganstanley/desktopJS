@@ -18,14 +18,14 @@ ContainerRegistry.registerContainer("Electron", {
     create: () => new ElectronContainer()
 });
 
+const windowEventMap = {};
+
 /**
  * @augments ContainerWindow
  */
-export class ElectronContainerWindow implements ContainerWindow {
-    public containerWindow: any;
-
+export class ElectronContainerWindow extends ContainerWindow {
     public constructor(wrap: any) {
-        this.containerWindow = wrap;
+        super(wrap);
     }
 
     public focus(): Promise<void> {
@@ -73,6 +73,14 @@ export class ElectronContainerWindow implements ContainerWindow {
             this.containerWindow.setBounds(bounds);
             resolve();
         });
+    }
+
+    protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
+        this.containerWindow.addListener(windowEventMap[eventName] || eventName, listener);
+    }
+
+    protected detachListener(eventName: string, listener: (...args: any[]) => void): void {
+        this.containerWindow.removeListener(windowEventMap[eventName] || eventName, listener);
     }
 }
 

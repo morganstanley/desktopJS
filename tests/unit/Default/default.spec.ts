@@ -12,7 +12,7 @@ class MockWindow {
     public postMessage(message: string, origin: string): void { };
     public moveTo(x: number, y: number): void { };
     public resizeTo(width: number, height: number): void { }
-    public screenX: any =  0;
+    public screenX: any = 0;
     public screenY: any = 1;
     public outerWidth: any = 2;
     public outerHeight: any = 3;
@@ -86,6 +86,36 @@ describe("DefaultContainerWindow", () => {
             expect(win.containerWindow.resizeTo).toHaveBeenCalledWith(2, 3);
         }).then(done);
     });
+
+    describe("addListener", () => {
+        it("addListener calls underlying window addEventListener with mapped event name", () => {
+            spyOn(win.containerWindow, "addEventListener").and.callThrough()
+            win.addListener("close", () => { });
+            expect(win.containerWindow.addEventListener).toHaveBeenCalledWith("unload", jasmine.any(Function));
+        });
+
+        it("addListener calls underlying window addEventListener with unmapped event name", () => {
+            const unmappedEvent = "resize";
+            spyOn(win.containerWindow, "addEventListener").and.callThrough()
+            win.addListener(unmappedEvent, () => { });
+            expect(win.containerWindow.addEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
+        });
+    });
+
+    describe("removeListener", () => {
+        it("removeListener calls underlying window removeEventListener with mapped event name", () => {
+            spyOn(win.containerWindow, "removeEventListener").and.callThrough()
+            win.removeListener("close", () => { });
+            expect(win.containerWindow.removeEventListener).toHaveBeenCalledWith("unload", jasmine.any(Function));
+        });
+
+        it("removeListener calls underlying window removeEventListener with unmapped event name", () => {
+            const unmappedEvent = "resize";
+            spyOn(win.containerWindow, "removeEventListener").and.callThrough()
+            win.removeListener(unmappedEvent, () => { });
+            expect(win.containerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
+        });
+    });
 });
 
 describe("DefaultContainer", () => {
@@ -158,7 +188,7 @@ describe("DefaultContainer", () => {
         expect(win).toBeDefined();
         expect(win.containerWindow).toEqual(window);
     });
-   
+
 
     describe("Notifications", () => {
         it("showNotification warns about not being implemented", () => {
@@ -188,7 +218,7 @@ describe("DefaultContainer", () => {
                 "1": new MockWindow(),
                 "2": new MockWindow()
             };
-            
+
             let container: DefaultContainer = new DefaultContainer(window);
             container.getAllWindows().then(wins => {
                 expect(wins).not.toBeNull();
@@ -196,7 +226,7 @@ describe("DefaultContainer", () => {
                 done();
             });
         });
-        
+
         it("closeAllWindows invokes window.close", (done) => {
             let container: DefaultContainer = new DefaultContainer(window);
             spyOn(window, "close").and.callThrough();

@@ -7,14 +7,16 @@ import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../ipc";
 
 declare var Notification: any;
 
+const windowEventMap = {
+    close: "unload"
+};
+
 /**
  * @augments ContainerWindow
  */
-export class DefaultContainerWindow implements ContainerWindow {
-    public containerWindow: any;
-
+export class DefaultContainerWindow extends ContainerWindow {
     public constructor(wrap: any) {
-        this.containerWindow = wrap;
+        super(wrap);
     }
 
     public focus(): Promise<void> {
@@ -56,6 +58,14 @@ export class DefaultContainerWindow implements ContainerWindow {
             this.containerWindow.resizeTo(bounds.width, bounds.height);
             resolve();
         });
+    }
+
+    protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
+        this.containerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
+    }
+
+    protected detachListener(eventName: string, listener: (...args: any[]) => void): void {
+        this.containerWindow.removeEventListener(windowEventMap[eventName] || eventName, listener);
     }
 }
 
