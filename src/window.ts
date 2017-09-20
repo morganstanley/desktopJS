@@ -90,7 +90,7 @@ export abstract class ContainerWindow extends EventEmitter {
      * @param eventName {WindowEventType} eventName The type of the event.
      * @param listener {(event: EventArgs) => void} The event handler function.
      */
-    public addListener(eventName: WindowEventType, listener: (event: EventArgs) => void): any {
+    public addListener(eventName: WindowEventType, listener: (event: EventArgs) => void): this {
         const callback = this.registerAndWrapListener(eventName, listener);
         this.attachListener(eventName, callback);
         return super.addListener(eventName, callback);
@@ -106,7 +106,7 @@ export abstract class ContainerWindow extends EventEmitter {
      * @param eventName {WindowEventType} eventName The type of the event.
      * @param listener {(event: EventArgs) => void} The event handler function.
      */
-    public removeListener(eventName: WindowEventType, listener: (event: EventArgs) => void): any {
+    public removeListener(eventName: WindowEventType, listener: (event: EventArgs) => void): this {
         const callback = this.unwrapAndUnRegisterListener(listener) || listener;
         this.detachListener(eventName, callback);
         return super.removeListener(eventName, callback);

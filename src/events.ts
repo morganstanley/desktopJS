@@ -22,7 +22,7 @@ export abstract class EventEmitter {
      * @param eventName {string} eventName The type of the event.
      * @param listener {(event: EventArgs) => void} The event handler function.
      */
-    public addListener(eventName: string, listener: (event: EventArgs) => void): any {
+    public addListener(eventName: string, listener: (event: EventArgs) => void): this {
         (this.eventListeners[eventName] = this.eventListeners[eventName] || []).push(listener);
         return this;
     }
@@ -50,7 +50,7 @@ export abstract class EventEmitter {
      * @param eventName {string} eventName The type of the event.
      * @param listener {(event: EventArgs) => void} The event handler function.
      */
-    public removeListener(eventName: string, listener: (event: EventArgs) => void): any {
+    public removeListener(eventName: string, listener: (event: EventArgs) => void): this {
         const listeners = this.listeners(eventName);
 
         if (listeners) {
