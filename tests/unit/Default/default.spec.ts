@@ -79,41 +79,41 @@ describe("DefaultContainerWindow", () => {
     });
 
     it("setBounds sets underlying window position", (done) => {
-        spyOn(win.containerWindow, "moveTo").and.callThrough()
-        spyOn(win.containerWindow, "resizeTo").and.callThrough();
+        spyOn(win.innerWindow, "moveTo").and.callThrough()
+        spyOn(win.innerWindow, "resizeTo").and.callThrough();
         win.setBounds({ x: 0, y: 1, width: 2, height: 3 }).then(() => {
-            expect(win.containerWindow.moveTo).toHaveBeenCalledWith(0, 1);
-            expect(win.containerWindow.resizeTo).toHaveBeenCalledWith(2, 3);
+            expect(win.innerWindow.moveTo).toHaveBeenCalledWith(0, 1);
+            expect(win.innerWindow.resizeTo).toHaveBeenCalledWith(2, 3);
         }).then(done);
     });
 
     describe("addListener", () => {
         it("addListener calls underlying window addEventListener with mapped event name", () => {
-            spyOn(win.containerWindow, "addEventListener").and.callThrough()
+            spyOn(win.innerWindow, "addEventListener").and.callThrough()
             win.addListener("close", () => { });
-            expect(win.containerWindow.addEventListener).toHaveBeenCalledWith("unload", jasmine.any(Function));
+            expect(win.innerWindow.addEventListener).toHaveBeenCalledWith("unload", jasmine.any(Function));
         });
 
         it("addListener calls underlying window addEventListener with unmapped event name", () => {
             const unmappedEvent = "resize";
-            spyOn(win.containerWindow, "addEventListener").and.callThrough()
+            spyOn(win.innerWindow, "addEventListener").and.callThrough()
             win.addListener(unmappedEvent, () => { });
-            expect(win.containerWindow.addEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
+            expect(win.innerWindow.addEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
         });
     });
 
     describe("removeListener", () => {
         it("removeListener calls underlying window removeEventListener with mapped event name", () => {
-            spyOn(win.containerWindow, "removeEventListener").and.callThrough()
+            spyOn(win.innerWindow, "removeEventListener").and.callThrough()
             win.removeListener("close", () => { });
-            expect(win.containerWindow.removeEventListener).toHaveBeenCalledWith("unload", jasmine.any(Function));
+            expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith("unload", jasmine.any(Function));
         });
 
         it("removeListener calls underlying window removeEventListener with unmapped event name", () => {
             const unmappedEvent = "resize";
-            spyOn(win.containerWindow, "removeEventListener").and.callThrough()
+            spyOn(win.innerWindow, "removeEventListener").and.callThrough()
             win.removeListener(unmappedEvent, () => { });
-            expect(win.containerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
+            expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
         });
     });
 });
@@ -161,14 +161,14 @@ describe("DefaultContainer", () => {
         });
 
         it("Window is addded to windows", () => {
-            let newWin: any = container.createWindow("url").containerWindow;
+            let newWin: any = container.createWindow("url").innerWindow;
             expect(newWin[DefaultContainer.windowUuidPropertyKey]).toBeDefined();
             expect(newWin[DefaultContainer.windowsPropertyKey]).toBeDefined();
             expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
         });
 
         it("Window is removed from windows on close", () => {
-            let newWin: any = container.createWindow("url").containerWindow;
+            let newWin: any = container.createWindow("url").innerWindow;
             expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
             newWin.listener("unload", {});
             expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeUndefined();
@@ -179,14 +179,14 @@ describe("DefaultContainer", () => {
         let container: DefaultContainer = new DefaultContainer(window);
         let win: DefaultContainerWindow = container.getMainWindow();
         expect(win).toBeDefined();
-        expect(win.containerWindow).toEqual(window);
+        expect(win.innerWindow).toEqual(window);
     });
 
     it("getCurrentWindow returns DefaultContainerWindow wrapping scoped window", () => {
         let container: DefaultContainer = new DefaultContainer(window);
         let win: DefaultContainerWindow = container.getCurrentWindow();
         expect(win).toBeDefined();
-        expect(win.containerWindow).toEqual(window);
+        expect(win.innerWindow).toEqual(window);
     });
 
 

@@ -111,8 +111,8 @@ describe("OpenFinContainerWindow", () => {
 
     it("Wrapped window is retrievable", () => {
         expect(win).toBeDefined();
-        expect(win.containerWindow).toBeDefined();
-        expect(win.containerWindow).toEqual(innerWin);
+        expect(win.innerWindow).toBeDefined();
+        expect(win.innerWindow).toEqual(innerWin);
     });
 
     it("focus", (done) => {
@@ -195,39 +195,39 @@ describe("OpenFinContainerWindow", () => {
         });
 
         it("setBounds sets underlying window position", (done) => {
-            spyOn(win.containerWindow, "setBounds").and.callThrough()
+            spyOn(win.innerWindow, "setBounds").and.callThrough()
             win.setBounds({ x: 0, y: 1, width: 2, height: 3 }).then(() => {
-                expect(win.containerWindow.setBounds).toHaveBeenCalledWith(0, 1, 2, 3, jasmine.any(Function), jasmine.any(Function));
+                expect(win.innerWindow.setBounds).toHaveBeenCalledWith(0, 1, 2, 3, jasmine.any(Function), jasmine.any(Function));
             }).then(done);
         });
 
         describe("addListener", () => {
             it("addListener calls underlying OpenFin window addEventListener with mapped event name", () => {
-                spyOn(win.containerWindow, "addEventListener").and.callThrough()
+                spyOn(win.innerWindow, "addEventListener").and.callThrough()
                 win.addListener("move", () => { });
-                expect(win.containerWindow.addEventListener).toHaveBeenCalledWith("bounds-changing", jasmine.any(Function));
+                expect(win.innerWindow.addEventListener).toHaveBeenCalledWith("bounds-changing", jasmine.any(Function));
             });
 
             it("addListener calls underlying OpenFin window addEventListener with unmapped event name", () => {
                 const unmappedEvent = "closed";
-                spyOn(win.containerWindow, "addEventListener").and.callThrough()
+                spyOn(win.innerWindow, "addEventListener").and.callThrough()
                 win.addListener(unmappedEvent, () => { });
-                expect(win.containerWindow.addEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
+                expect(win.innerWindow.addEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
             });
         });
 
         describe("removeListener", () => {
             it("removeListener calls underlying OpenFin window removeEventListener with mapped event name", () => {
-                spyOn(win.containerWindow, "removeEventListener").and.callThrough()
+                spyOn(win.innerWindow, "removeEventListener").and.callThrough()
                 win.removeListener("move", () => { });
-                expect(win.containerWindow.removeEventListener).toHaveBeenCalledWith("bounds-changing", jasmine.any(Function));
+                expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith("bounds-changing", jasmine.any(Function));
             });
 
             it("removeListener calls underlying OpenFin window removeEventListener with unmapped event name", () => {
                 const unmappedEvent = "closed";
-                spyOn(win.containerWindow, "removeEventListener").and.callThrough()
+                spyOn(win.innerWindow, "removeEventListener").and.callThrough()
                 win.removeListener(unmappedEvent, () => { });
-                expect(win.containerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
+                expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
             });
         });
     });
@@ -250,13 +250,13 @@ describe("OpenFinContainer", () => {
     it("getMainWindow returns wrapped inner window", () => {
         const win: OpenFinContainerWindow = container.getMainWindow();
         expect(win).toBeDefined();
-        expect(win.containerWindow).toEqual(MockWindow.singleton);
+        expect(win.innerWindow).toEqual(MockWindow.singleton);
     });
 
     it("getCurrentWindow returns wrapped inner window", () => {
         const win: OpenFinContainerWindow = container.getCurrentWindow();
         expect(win).toBeDefined();
-        expect(win.containerWindow).toEqual(MockWindow.singleton);
+        expect(win.innerWindow).toEqual(MockWindow.singleton);
     });
 
     describe("createWindow", () => {
@@ -308,7 +308,7 @@ describe("OpenFinContainer", () => {
                 container.getAllWindows().then(windows => {
                     expect(windows).not.toBeNull();
                     expect(windows.length).toEqual(2);
-                    expect(windows[0].containerWindow).toEqual(MockWindow.singleton);
+                    expect(windows[0].innerWindow).toEqual(MockWindow.singleton);
                     done();
                 });
             });

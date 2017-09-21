@@ -47,11 +47,11 @@ export type WindowEventType =
 /** Represents a container window. */
 export abstract class ContainerWindow extends EventEmitter {
     /** The underlying concrete container window. */
-    public readonly containerWindow: any;
+    public readonly innerWindow: any;
 
     public constructor(wrap: any) {
         super();
-        this.containerWindow = wrap;
+        this.innerWindow = wrap;
     }
 
     /** Gives focus to the window. */

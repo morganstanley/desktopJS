@@ -34,37 +34,37 @@ export class OpenFinContainerWindow extends ContainerWindow {
 
     public focus(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.containerWindow.focus(resolve, reject);
+            this.innerWindow.focus(resolve, reject);
         });
     }
 
     public show(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.containerWindow.show(resolve, reject);
+            this.innerWindow.show(resolve, reject);
         });
     }
 
     public hide(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.containerWindow.hide(resolve, reject);
+            this.innerWindow.hide(resolve, reject);
         });
     }
 
     public close(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.containerWindow.close(false, resolve, reject);
+            this.innerWindow.close(false, resolve, reject);
         });
     }
 
     public isShowing(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            this.containerWindow.isShowing(resolve, reject);
+            this.innerWindow.isShowing(resolve, reject);
         });
     }
 
     public getSnapshot(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            this.containerWindow.getSnapshot(
+            this.innerWindow.getSnapshot(
                 (snapshot) => resolve("data:image/png;base64," + snapshot),
                 (reason) => reject(reason)
             );
@@ -73,7 +73,7 @@ export class OpenFinContainerWindow extends ContainerWindow {
 
     public getBounds(): Promise<Rectangle> {
         return new Promise<Rectangle>((resolve, reject) => {
-            this.containerWindow.getBounds(
+            this.innerWindow.getBounds(
                 bounds => resolve(new Rectangle(bounds.left, bounds.top, bounds.width, bounds.height)),
                 reject);
         });
@@ -81,16 +81,16 @@ export class OpenFinContainerWindow extends ContainerWindow {
 
     public setBounds(bounds: Rectangle): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.containerWindow.setBounds(bounds.x, bounds.y, bounds.width, bounds.height, resolve, reject);
+            this.innerWindow.setBounds(bounds.x, bounds.y, bounds.width, bounds.height, resolve, reject);
         });
     }
 
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
-        this.containerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
+        this.innerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
     }
 
     protected detachListener(eventName: string, listener: (...args: any[]) => void): any {
-        this.containerWindow.removeEventListener(windowEventMap[eventName] || eventName, listener);
+        this.innerWindow.removeEventListener(windowEventMap[eventName] || eventName, listener);
     }
 }
 
