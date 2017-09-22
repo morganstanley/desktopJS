@@ -64,8 +64,8 @@ describe("ElectronContainerWindow", () => {
 
     it("Wrapped window is retrievable", () => {
         expect(win).toBeDefined();
-        expect(win.containerWindow).toBeDefined();
-        expect(win.containerWindow).toEqual(innerWin);
+        expect(win.innerWindow).toBeDefined();
+        expect(win.innerWindow).toEqual(innerWin);
     });
 
     describe("Window members", () => {
@@ -136,23 +136,23 @@ describe("ElectronContainerWindow", () => {
         });
 
         it("setBounds sets underlying window position", (done) => {
-            spyOn(win.containerWindow, "setBounds").and.callThrough()
+            spyOn(win.innerWindow, "setBounds").and.callThrough()
             const bounds = { x: 0, y: 1, width: 2, height: 3 };
             win.setBounds(bounds).then(() => {
-                expect(win.containerWindow.setBounds).toHaveBeenCalledWith(bounds);
+                expect(win.innerWindow.setBounds).toHaveBeenCalledWith(bounds);
             }).then(done);
         });
 
         it("addListener calls underlying Electron window addListener", () => {
-            spyOn(win.containerWindow, "addListener").and.callThrough()
+            spyOn(win.innerWindow, "addListener").and.callThrough()
             win.addListener("move", () => {});
-            expect(win.containerWindow.addListener).toHaveBeenCalledWith("move", jasmine.any(Function));
+            expect(win.innerWindow.addListener).toHaveBeenCalledWith("move", jasmine.any(Function));
         });
 
         it("removeListener calls underlying Electron window removeListener", () => {
-            spyOn(win.containerWindow, "removeListener").and.callThrough()
+            spyOn(win.innerWindow, "removeListener").and.callThrough()
             win.removeListener("move", () => {});
-            expect(win.containerWindow.removeListener).toHaveBeenCalledWith("move", jasmine.any(Function));
+            expect(win.innerWindow.removeListener).toHaveBeenCalledWith("move", jasmine.any(Function));
         });
     });
 });
@@ -211,7 +211,7 @@ describe("ElectronContainer", () => {
 
         expect(win).toBeDefined();
         expect(electron.getCurrentWindow).toHaveBeenCalled();
-        expect(win.containerWindow).toEqual(innerWin);
+        expect(win.innerWindow).toEqual(innerWin);
     });
 
     it("getCurrentWindow returns wrapped inner getCurrentWindow", () => {
@@ -221,7 +221,7 @@ describe("ElectronContainer", () => {
 
         expect(win).toBeDefined();
         expect(electron.getCurrentWindow).toHaveBeenCalled();
-        expect(win.containerWindow).toEqual(innerWin);
+        expect(win.innerWindow).toEqual(innerWin);
     });
 
     it("createWindow", () => {

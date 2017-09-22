@@ -20,7 +20,7 @@ export class DefaultContainerWindow extends ContainerWindow {
     }
 
     public focus(): Promise<void> {
-        this.containerWindow.focus();
+        this.innerWindow.focus();
         return Promise.resolve();
     }
 
@@ -33,7 +33,7 @@ export class DefaultContainerWindow extends ContainerWindow {
     }
 
     public close(): Promise<void> {
-        this.containerWindow.close();
+        this.innerWindow.close();
         return Promise.resolve();
     }
 
@@ -48,24 +48,24 @@ export class DefaultContainerWindow extends ContainerWindow {
 
     public getBounds(): Promise<Rectangle> {
         return new Promise<Rectangle>(resolve => {
-            resolve(new Rectangle(this.containerWindow.screenX, this.containerWindow.screenY, this.containerWindow.outerWidth, this.containerWindow.outerHeight));
+            resolve(new Rectangle(this.innerWindow.screenX, this.innerWindow.screenY, this.innerWindow.outerWidth, this.innerWindow.outerHeight));
         });
     }
 
     public setBounds(bounds: Rectangle): Promise<void> {
         return new Promise<void>(resolve => {
-            this.containerWindow.moveTo(bounds.x, bounds.y);
-            this.containerWindow.resizeTo(bounds.width, bounds.height);
+            this.innerWindow.moveTo(bounds.x, bounds.y);
+            this.innerWindow.resizeTo(bounds.width, bounds.height);
             resolve();
         });
     }
 
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
-        this.containerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
+        this.innerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
     }
 
     protected detachListener(eventName: string, listener: (...args: any[]) => void): void {
-        this.containerWindow.removeEventListener(windowEventMap[eventName] || eventName, listener);
+        this.innerWindow.removeEventListener(windowEventMap[eventName] || eventName, listener);
     }
 }
 

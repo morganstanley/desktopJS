@@ -29,34 +29,34 @@ export class ElectronContainerWindow extends ContainerWindow {
     }
 
     public focus(): Promise<void> {
-        this.containerWindow.focus();
+        this.innerWindow.focus();
         return Promise.resolve();
     }
 
     public show(): Promise<void> {
-        this.containerWindow.show();
+        this.innerWindow.show();
         return Promise.resolve();
     }
 
     public hide(): Promise<void> {
-        this.containerWindow.hide();
+        this.innerWindow.hide();
         return Promise.resolve();
     }
 
     public close(): Promise<void> {
-        this.containerWindow.close();
+        this.innerWindow.close();
         return Promise.resolve();
     }
 
     public isShowing(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            resolve(this.containerWindow.isVisible());
+            resolve(this.innerWindow.isVisible());
         });
     }
 
     public getSnapshot(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            this.containerWindow.capturePage((snapshot) => {
+            this.innerWindow.capturePage((snapshot) => {
                 resolve("data:image/png;base64," + snapshot.toPNG().toString("base64"));
             });
         });
@@ -64,23 +64,23 @@ export class ElectronContainerWindow extends ContainerWindow {
 
     public getBounds(): Promise<Rectangle> {
         return new Promise<Rectangle>(resolve => {
-            resolve(this.containerWindow.getBounds());
+            resolve(this.innerWindow.getBounds());
         });
     }
 
     public setBounds(bounds: Rectangle): Promise<void> {
         return new Promise<void>(resolve => {
-            this.containerWindow.setBounds(bounds);
+            this.innerWindow.setBounds(bounds);
             resolve();
         });
     }
 
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
-        this.containerWindow.addListener(windowEventMap[eventName] || eventName, listener);
+        this.innerWindow.addListener(windowEventMap[eventName] || eventName, listener);
     }
 
     protected detachListener(eventName: string, listener: (...args: any[]) => void): void {
-        this.containerWindow.removeListener(windowEventMap[eventName] || eventName, listener);
+        this.innerWindow.removeListener(windowEventMap[eventName] || eventName, listener);
     }
 }
 
