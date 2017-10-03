@@ -230,6 +230,11 @@ describe("ElectronContainer", () => {
         expect((<any>container).browserWindow).toHaveBeenCalledWith({ x: "x", skipTaskbar: true });
     });
 
+    it("createWindow fires window-created", (done) => {
+        container.addListener("window-created", () => done());
+        container.createWindow("url");
+    });
+
     it("addTrayIcon", () => {
         spyOn<any>(container, "tray").and.callThrough();
         container.addTrayIcon({ text: "text", icon: "icon" }, () => { }, [{ id: "id", label: "label", click: () => { } }]);

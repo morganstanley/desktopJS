@@ -173,6 +173,11 @@ describe("DefaultContainer", () => {
             newWin.listener("unload", {});
             expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeUndefined();
         });
+
+        it("createWindow fires window-created", (done) => {
+            container.addListener("window-created", () => done());
+            container.createWindow("url");
+        });
     });
 
     it("getMainWindow returns DefaultContainerWindow wrapping scoped window", () => {

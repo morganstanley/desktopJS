@@ -1,9 +1,25 @@
 import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, PersistedWindow } from "./window";
 import { ContainerNotificationManager } from "./notification";
+import { EventEmitter, EventArgs } from "./events";
 import { MessageBus } from "./ipc";
 import { TrayIconDetails } from "./tray";
 import { MenuItem } from "./menu";
 import { Guid } from "./guid";
+
+export type ContainerEventType =
+    "window-created" |
+    "layout-loaded" |
+    "layout-saved";
+
+export class WindowEventArgs extends EventArgs {
+    public readonly window: ContainerWindow;
+}
+
+export class LayoutEventArgs extends EventArgs {
+    public readonly layout: PersistedWindowLayout;
+}
+
+export type ContainerEventArgs = EventArgs | WindowEventArgs | LayoutEventArgs;
 
 /**
  * Represents a concrete container.
@@ -46,7 +62,7 @@ export interface Container extends ContainerWindowManager, ContainerNotification
  * Represents a common Container to be used as a base for any custom Container implementation.
  * @augments Container
  */
-export abstract class ContainerBase implements Container {
+export abstract class ContainerBase extends EventEmitter implements Container {
     public hostType: string;
     public uuid: string = Guid.newGuid();
 
@@ -86,6 +102,7 @@ export abstract class ContainerBase implements Container {
         layouts[name] = layout;
 
         this.storage.setItem(ContainerBase.layoutsPropertyKey, JSON.stringify(layouts));
+        this.emit("layout-saved", { sender: this, name: "layout-loaded", layout: layout });
     }
 
     protected abstract closeAllWindows(excludeSelf?: Boolean): Promise<void>;
@@ -104,6 +121,7 @@ export abstract class ContainerBase implements Container {
                     }
                 }
 
+                this.emit("layout-loaded", { sender: this, name: "layout-loaded", layout: layout });
                 resolve(layout);
             });
         });
@@ -121,6 +139,18 @@ export abstract class ContainerBase implements Container {
 
             resolve(undefined);
         });
+    }
+
+    public addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { // tslint:disable-line
+        return super.addListener(eventName, listener);
+    }
+
+    public removeListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { // tslint:disable-line
+        return super.removeListener(eventName, listener);
+    }
+
+    public emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs) { // tslint:disable-line
+        super.emit(eventName, eventArgs);
     }
 }
 
