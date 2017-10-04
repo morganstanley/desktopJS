@@ -325,7 +325,9 @@ export class OpenFinContainer extends WebContainerBase {
             newOptions.name = Guid.newGuid();
         }
 
-        return this.wrapWindow(new this.desktop.Window(newOptions));
+        const newWindow = this.wrapWindow(new this.desktop.Window(newOptions));
+        this.emit("window-created", { sender: this, name: "window-created", window: newWindow });
+        return newWindow;
     }
 
     public showNotification(title: string, options?: NotificationOptions) {

@@ -42,6 +42,11 @@ desktopJS.Electron.ElectronContainer.prototype.showNotification = function (titl
 
 document.addEventListener("DOMContentLoaded", function (event) {
 	hostName.innerHTML = container.hostType + "<br />" + container.uuid;
+
+	container.addListener("window-created", (e) => console.log("Window created"));
+	container.addListener("layout-loaded", (e) => console.log("Layout loaded"));
+	container.addListener("layout-saved", (e) => console.log("Layout saved"));
+
 	subscribe();
 });
 

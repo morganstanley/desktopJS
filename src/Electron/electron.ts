@@ -261,7 +261,9 @@ export class ElectronContainer extends WebContainerBase {
 
         electronWindow.loadURL(url);
 
-        return this.wrapWindow(electronWindow);
+        const newWindow = this.wrapWindow(electronWindow);
+        this.emit("window-created", { sender: this, name: "window-created", window: newWindow });
+        return newWindow;
     }
 
     public showNotification(title: string, options?: NotificationOptions) {

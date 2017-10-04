@@ -1,11 +1,11 @@
 export class EventArgs {
     public readonly sender: any;
 
-    public readonly innerEvent: any;
+    public readonly innerEvent?: any;
 
     public readonly name: string;
 
-    constructor(sender: any, name: string, innerEvent: any) {
+    constructor(sender: any, name: string, innerEvent?: any) {
         this.sender = sender;
         this.name = name;
         this.innerEvent = innerEvent;

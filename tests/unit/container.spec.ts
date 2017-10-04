@@ -80,8 +80,25 @@ describe("container", () => {
                 });
             });
 
+            it("loadLayout firews layout-loaded", (done) => {
+                container.addListener("layout-loaded", (e) => {
+                    done();
+                });
+                
+                container.loadLayout("Test");
+            });
+
             it("saveLayoutToStorage", () => {
                 const layout: PersistedWindowLayout = new PersistedWindowLayout();
+                container.saveLayoutToStorage("Test", layout);
+            });
+
+            it("saveLayoutToStorage fires layout-saved", (done) => {
+                const layout: PersistedWindowLayout = new PersistedWindowLayout();
+                container.addListener("layout-saved", (e) => {
+                    expect((<any>e).layout).toEqual(layout);
+                    done();
+                });
                 container.saveLayoutToStorage("Test", layout);
             });
 
@@ -90,6 +107,20 @@ describe("container", () => {
                     expect(layouts).toBeDefined();
                     done();
                 });
+            });
+        });
+
+        describe("instance events", () => {
+            it("addListener", done => {
+                container.addListener("window-created", e => done());
+                container.emit("window-created", { sender: this, name: "window-created" });
+            });
+
+            it("removeListener", () => {
+                const callback = e => fail();
+                container.addListener("window-created", callback);
+                container.removeListener("window-created", callback);
+                container.emit("window-created", { sender: this, name: "window-created" });
             });
         });
     });

@@ -214,7 +214,9 @@ export class DefaultContainer extends WebContainerBase {
         // Propagate the global windows object to the new window
         window[DefaultContainer.windowsPropertyKey] = windows;
 
-        return this.wrapWindow(window);
+        const newWindow = this.wrapWindow(window);
+        this.emit("window-created", { sender: this, name: "window-created", window: newWindow });
+        return newWindow;
     }
 
     public showNotification(title: string, options?: NotificationOptions) {

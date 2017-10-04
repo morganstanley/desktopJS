@@ -43,8 +43,8 @@ describe("EventEmitter", () => {
             expect(event).toEqual(args);
             done();
         };
-        emitter.addListener(args.type, callback);
-        emitter.emit(args.type, args);
+        emitter.addListener(args.name, callback);
+        emitter.emit(args.name, args);
     });
 
     it("registerAndWrapListener", (done) => {

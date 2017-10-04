@@ -303,6 +303,11 @@ describe("OpenFinContainer", () => {
             );
         });
 
+        it("createWindow fires window-created", (done) => {
+            container.addListener("window-created", () => done());
+            container.createWindow("url");
+        });
+
         describe("window management", () => {
             it("getAllWindows returns wrapped native windows", (done) => {
                 container.getAllWindows().then(windows => {
