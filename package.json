@@ -2,7 +2,7 @@
   "name": "@morgan-stanley/desktopjs",
   "title": "desktopJS",
   "description": "Library for abstracting common container hosting",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "main": "dist/desktop.js",
   "types": "dist/desktopjs.d.ts",
   "license": "Apache-2.0",
