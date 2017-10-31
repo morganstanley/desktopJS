@@ -208,8 +208,13 @@ export class DefaultContainer extends WebContainerBase {
         const uuid = window[DefaultContainer.windowUuidPropertyKey] = Guid.newGuid();
         windows[uuid] = window;
 
-        // Attach beforeunload handler to window to cleanup reference on global windows object
-        window.addEventListener("beforeunload", (event) => delete windows[uuid]);
+        // Attach event handlers on window to cleanup reference on global windows object.  beforeunload -> unload to prevent
+        // unload being called on open within Chrome.
+        window.addEventListener("beforeunload", () => {
+            window.addEventListener("unload", () => {
+                delete windows[uuid];
+            });
+        });
 
         // Propagate the global windows object to the new window
         window[DefaultContainer.windowsPropertyKey] = windows;

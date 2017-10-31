@@ -170,6 +170,7 @@ describe("DefaultContainer", () => {
         it("Window is removed from windows on close", () => {
             let newWin: any = container.createWindow("url").innerWindow;
             expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
+            newWin.listener("beforeunload", {});
             newWin.listener("unload", {});
             expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeUndefined();
         });
