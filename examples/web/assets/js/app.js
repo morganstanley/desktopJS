@@ -43,9 +43,13 @@ desktopJS.Electron.ElectronContainer.prototype.showNotification = function (titl
 document.addEventListener("DOMContentLoaded", function (event) {
 	hostName.innerHTML = container.hostType + "<br />" + container.uuid;
 
-	container.addListener("window-created", (e) => console.log("Window created"));
+	container.addListener("window-created", (e) => console.log("Window created: " + e.window + ", " + e.windowId + ", " + e.windowName));
 	container.addListener("layout-loaded", (e) => console.log("Layout loaded"));
 	container.addListener("layout-saved", (e) => console.log("Layout saved"));
+
+	desktopJS.Container.addListener("window-created", (e) => console.log("Window created - static: " + e.windowId + ", " + e.windowName));
+	desktopJS.Container.addListener("layout-saved", (e) => console.log("Layout saved - static: " + e.layoutName));
+	desktopJS.Container.addListener("layout-loaded", (e) => console.log("Layout loaded - static: " + e.layoutName));
 
 	subscribe();
 });

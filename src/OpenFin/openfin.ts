@@ -1,6 +1,6 @@
 import * as ContainerRegistry from "../registry";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
-import { WebContainerBase } from "../container";
+import { Container, WebContainerBase } from "../container";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions, ContainerNotification } from "../notification";
 import { TrayIconDetails } from "../tray";
@@ -326,7 +326,8 @@ export class OpenFinContainer extends WebContainerBase {
         }
 
         const newWindow = this.wrapWindow(new this.desktop.Window(newOptions));
-        this.emit("window-created", { sender: this, name: "window-created", window: newWindow });
+        this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: newOptions.name, windowName: newOptions.name });
+        Container.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
         return newWindow;
     }
 

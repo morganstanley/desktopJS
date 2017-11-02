@@ -1,4 +1,4 @@
-import { WebContainerBase } from "../container";
+import { Container, WebContainerBase } from "../container";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
 import { NotificationOptions } from "../notification";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
@@ -96,7 +96,10 @@ export class DefaultMessageBus implements MessageBus {
                 }
             });
 
-            this.container.globalWindow.addEventListener("message", subscription.listener);
+            if (this.container.globalWindow && this.container.globalWindow.addEventListener) {
+                this.container.globalWindow.addEventListener("message", subscription.listener);
+            }
+
             resolve(subscription);
         });
     }
@@ -108,8 +111,10 @@ export class DefaultMessageBus implements MessageBus {
     publish<T>(topic: string, message: T, options?: MessageBusOptions): Promise<void> {
         // Get list of windows from global (set by opener on creation) or fallback to opener global in case
         // there is a race condition of getting here before the opener set the global for us
-        const windows: Window[] = this.container.globalWindow[DefaultContainer.windowsPropertyKey]
-            || (this.container.globalWindow.opener && this.container.globalWindow.opener[DefaultContainer.windowsPropertyKey]);
+        const windows: Window[] = (this.container.globalWindow)
+                                    ?  this.container.globalWindow[DefaultContainer.windowsPropertyKey]
+                                       || (this.container.globalWindow.opener && this.container.globalWindow.opener[DefaultContainer.windowsPropertyKey])
+                                    : [];
 
         if (windows) {
             for (const key in windows) {
@@ -220,7 +225,8 @@ export class DefaultContainer extends WebContainerBase {
         window[DefaultContainer.windowsPropertyKey] = windows;
 
         const newWindow = this.wrapWindow(window);
-        this.emit("window-created", { sender: this, name: "window-created", window: newWindow });
+        this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: uuid, windowName: newOptions.name });
+        Container.emit("window-created", { name: "window-created", windowId: uuid, windowName: newOptions.name });
         return newWindow;
     }
 

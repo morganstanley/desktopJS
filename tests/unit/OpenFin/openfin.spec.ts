@@ -12,7 +12,7 @@ class MockDesktop {
 
     Window: any = MockWindow;
     Notification(): any { return {}; }
-    InterApplicationBus(): any { return new MockInterApplicationBus(); }
+    InterApplicationBus: any = new MockInterApplicationBus();
     Application: any = {
         getCurrent() {
             return MockDesktop.application;
