@@ -1,5 +1,6 @@
 ![desktopJS](https://raw.githubusercontent.com/wiki/morgan-stanley/desktopJS/images/logo.png)
 ==========
+[![npm version](https://badge.fury.io/js/%40morgan-stanley%2Fdesktopjs.svg)](https://www.npmjs.com/package/@morgan-stanley/desktopjs)
 [![Build Status](https://travis-ci.org/Morgan-Stanley/desktopJS.svg?branch=master)](https://travis-ci.org/Morgan-Stanley/desktopJS)
 [![codecov](https://codecov.io/gh/Morgan-Stanley/desktopJS/branch/master/graph/badge.svg)](https://codecov.io/gh/Morgan-Stanley/desktopJS)
 [![devDependencies Status](https://david-dm.org/Morgan-Stanley/desktopJS/dev-status.svg)](https://david-dm.org/Morgan-Stanley/desktopJS?type=dev)
@@ -15,7 +16,7 @@ container agnostic and provide portability when muliple container depoyments are
 Usage
 ---------------
 
-The first step is to simply [resolve](https://morgan-stanley.github.io/desktopJS/modules/_registry_.html#resolvecontainer) the current [container](https://morgan-stanley.github.io/desktopJS/interfaces/_container_.container.html). This enumerates
+The first step is to simply [resolve](https://morgan-stanley.github.io/desktopJS/modules/_registry_.html#resolvecontainer) the current [container](https://morgan-stanley.github.io/desktopJS/classes/_container_.container.html). This enumerates
 all registered containers (including your own custom container or derived custom implementations) and
 returns the container implementation that matches.
 
@@ -24,7 +25,7 @@ var container = desktopJS.resolveContainer();
 console.log("Container: " + container.hostType);
 ```
 
-Interact with the [container](https://morgan-stanley.github.io/desktopJS/interfaces/_container_.container.html) via a single api instead of having conditional code or applications
+Interact with the [container](https://morgan-stanley.github.io/desktopJS/classes/_container_.container.html) via a single api instead of having conditional code or applications
 based on deployment.
 
 ```
@@ -74,7 +75,7 @@ codebase.
 The tests can be run independent of the build.
 
 ```
-npm run test
+$ npm run test
 ```
 
 A task is provided for [Visual Studio Code](https://code.visualstudio.com/) users that can be launched
