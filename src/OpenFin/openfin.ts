@@ -328,6 +328,7 @@ export class OpenFinContainer extends WebContainerBase {
         const newWindow = this.wrapWindow(new this.desktop.Window(newOptions));
         this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: newOptions.name, windowName: newOptions.name });
         Container.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
+        ContainerWindow.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
         return newWindow;
     }
 

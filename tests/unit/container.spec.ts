@@ -2,12 +2,12 @@ import { Container, ContainerBase, WebContainerBase } from "../../src/container"
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow } from "../../src/window";
 import { NotificationOptions } from "../../src/notification";
 import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../../src/ipc";
-import { EventArgs } from "../../src/events";
+import { EventArgs, EventEmitter } from "../../src/events";
 
 class MockContainer extends ContainerBase {
 }
 
-class MockMessageBus implements MessageBus {
+export class MockMessageBus implements MessageBus { // tslint:disable-line
     private listener: any;
 
     subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
@@ -26,7 +26,7 @@ class MockMessageBus implements MessageBus {
     }
 }
 
-class TestContainer extends ContainerBase {
+export class TestContainer extends ContainerBase {
     getMainWindow(): ContainerWindow {
         return undefined;
     }
@@ -72,6 +72,7 @@ describe("container", () => {
 
     beforeEach(() => {
         container = new TestContainer();
+        (<any>EventEmitter).staticEventListeners = new Map();
     });
 
     it("ipc is defined", () => {
@@ -98,7 +99,7 @@ describe("container", () => {
             const args = new EventArgs(undefined, "TestEvent", {});
             spyOn(container.ipc, "publish").and.callThrough();
             Container.emit(args.name, args);
-            expect(container.ipc.publish).toHaveBeenCalledWith("desktopJS.static-event", { eventName: args.name, eventArgs: args });
+            expect(container.ipc.publish).toHaveBeenCalledWith("desktopJS.static-event", { eventName: "container-" + args.name, eventArgs: args });
         });
     });
 

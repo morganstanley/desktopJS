@@ -265,6 +265,7 @@ export class ElectronContainer extends WebContainerBase {
         const newWindow = this.wrapWindow(electronWindow);
         this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: electronWindow.id, windowName: windowName });
         Container.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
+        ContainerWindow.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
         return newWindow;
     }
 

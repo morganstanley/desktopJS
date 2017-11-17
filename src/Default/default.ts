@@ -227,6 +227,7 @@ export class DefaultContainer extends WebContainerBase {
         const newWindow = this.wrapWindow(window);
         this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: uuid, windowName: newOptions.name });
         Container.emit("window-created", { name: "window-created", windowId: uuid, windowName: newOptions.name });
+        ContainerWindow.emit("window-created", { name: "window-created", windowId: uuid, windowName: newOptions.name });
         return newWindow;
     }
 

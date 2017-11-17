@@ -47,7 +47,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
 	container.addListener("layout-loaded", (e) => console.log("Layout loaded"));
 	container.addListener("layout-saved", (e) => console.log("Layout saved"));
 
-	desktopJS.Container.addListener("window-created", (e) => console.log("Window created - static: " + e.windowId + ", " + e.windowName));
+	desktopJS.Container.addListener("window-created", (e) => console.log("Window created - static (Container): " + e.windowId + ", " + e.windowName));
+	desktopJS.ContainerWindow.addListener("window-created", (e) => console.log("Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
 	desktopJS.Container.addListener("layout-saved", (e) => console.log("Layout saved - static: " + e.layoutName));
 	desktopJS.Container.addListener("layout-loaded", (e) => console.log("Layout loaded - static: " + e.layoutName));
 

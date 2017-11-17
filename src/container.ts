@@ -1,4 +1,4 @@
-import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, PersistedWindow } from "./window";
+import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, PersistedWindow, WindowEventArgs } from "./window";
 import { ContainerNotificationManager } from "./notification";
 import { EventEmitter, EventArgs } from "./events";
 import { MessageBus } from "./ipc";
@@ -10,12 +10,6 @@ export type ContainerEventType =
     "window-created" |
     "layout-loaded" |
     "layout-saved";
-
-export class WindowEventArgs extends EventArgs {
-    public readonly window?: ContainerWindow;
-    public readonly windowId: string;
-    public readonly windowName?: string;
-}
 
 export class LayoutEventArgs extends EventArgs {
     public readonly layout?: PersistedWindowLayout;
@@ -30,6 +24,8 @@ export type ContainerEventArgs = EventArgs | WindowEventArgs | LayoutEventArgs;
  * @extends ContainerNotificationManager
  */
 export abstract class Container extends EventEmitter implements ContainerWindowManager, ContainerNotificationManager {
+    private static readonly staticEventScopePrefix: string = "container-";
+
     private static _ipc: MessageBus; // tslint:disable-line
 
     /**
@@ -43,8 +39,6 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
      * @type {string}
      */
     public abstract uuid: string;
-
-    private static staticEmitter: EventEmitter = new EventEmitter();
 
     public abstract getMainWindow(): ContainerWindow;
 
@@ -75,11 +69,7 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
     }
 
     public static set ipc(value: MessageBus) {
-        Container._ipc = value;
-
-        // If a MessageBus exists for the container then redefine the static emitter to be based on that bus
-        // When a MessageBus is never defined, then the events only publish within current window
-        Container.staticEmitter = new EventEmitter(value);
+        EventEmitter.ipc = Container._ipc = value;
     }
 
     /**
@@ -106,24 +96,24 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
         return super.removeListener(eventName, listener);
     }
 
-    public emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs) { // tslint:disable-line
+    public emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs): void { // tslint:disable-line
         super.emit(eventName, eventArgs);
     }
 
-    public static addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void) { // tslint:disable-line
-        if (Container.staticEmitter) { Container.staticEmitter.addListener(eventName, listener); }
+    public static addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): void { // tslint:disable-line
+        EventEmitter.addListener(Container.staticEventScopePrefix + eventName, listener);
     }
 
-    public static removeListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void) { // tslint:disable-line
-        if (Container.staticEmitter) { Container.staticEmitter.removeListener(eventName, listener); }
+    public static removeListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): void { // tslint:disable-line
+        EventEmitter.removeListener(Container.staticEventScopePrefix + eventName, listener);
     }
 
-    public static emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs) { // tslint:disable-line
-        if (Container.staticEmitter) { Container.staticEmitter.emit(eventName, eventArgs, Container.ipc); }
+    public static emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs): void { // tslint:disable-line
+        EventEmitter.emit(Container.staticEventScopePrefix + eventName, eventArgs, Container.ipc);
     }
 
     public static listeners(eventName: string): ((event: EventArgs) => void)[] { // tslint:disable-line
-        return Container.staticEmitter.listeners(eventName);
+        return EventEmitter.listeners(Container.staticEventScopePrefix + eventName);
     }
 }
 
