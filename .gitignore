@@ -7,3 +7,4 @@ dist/
 .rpt2_cache/
 build/
 docs/
+package-lock.json

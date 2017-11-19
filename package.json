@@ -3,7 +3,7 @@
   "title": "desktopJS",
   "description": "Library for abstracting common container hosting",
   "version": "1.0.0",
-  "publishConfig":{
+  "publishConfig": {
     "access": "public"
   },
   "main": "dist/desktop.js",
