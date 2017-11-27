@@ -32,6 +32,14 @@ export class OpenFinContainerWindow extends ContainerWindow {
         super(wrap);
     }
 
+    public get id(): string {
+        return this.name;  // Reuse name since it is the unique identifier
+    }
+
+    public get name(): string {
+        return this.innerWindow.name;
+    }
+
     public focus(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.innerWindow.focus(resolve, reject);
@@ -447,6 +455,15 @@ export class OpenFinContainer extends WebContainerBase {
                 windows.push(this.desktop.Application.getCurrent().getWindow());
                 resolve(windows.map(window => this.wrapWindow(window)));
             }, reject);
+        });
+    }
+
+    public getWindow(id: string): Promise<ContainerWindow | null> {
+        return new Promise<ContainerWindow>((resolve, reject) => {
+            this.desktop.Application.getCurrent().getChildWindows(windows => {
+                const win = windows.find(window => window.name === id);
+                resolve(win ? this.wrapWindow(win) : null);
+            });
         });
     }
 

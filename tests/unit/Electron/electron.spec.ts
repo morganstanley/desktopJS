@@ -3,6 +3,7 @@ import { MessageBusSubscription } from "../../../src/ipc";
 
 class MockWindow {
     public name: string;
+    public id: number;
 
     constructor(name?: string) {
         this.name = name;
@@ -66,6 +67,16 @@ describe("ElectronContainerWindow", () => {
         expect(win).toBeDefined();
         expect(win.innerWindow).toBeDefined();
         expect(win.innerWindow).toEqual(innerWin);
+    });
+
+    it ("id returns underlying id", () => {
+        innerWin.id = "ID";
+        expect(win.id).toEqual("ID");
+    });
+
+    it ("name returns underlying name", () => {
+        innerWin.name = "NAME";
+        expect(win.name).toEqual("NAME");
     });
 
     describe("Window members", () => {
@@ -262,7 +273,8 @@ describe("ElectronContainer", () => {
     describe("window management", () => {
         beforeEach(() => {
             electron.BrowserWindow = {
-                getAllWindows(): MockWindow[] { return windows; }
+                getAllWindows(): MockWindow[] { return windows; },
+                fromId(): any {  };
             };
 
             container = new ElectronContainer(electron, new MockIpc());
@@ -273,6 +285,24 @@ describe("ElectronContainer", () => {
                 expect(wins).not.toBeNull();
                 expect(wins.length).toEqual(windows.length);
                 done();
+            });
+        });
+
+        describe("getWindow", () => {
+            it("getWindow returns wrapped window", (done) => {
+                spyOn(electron.BrowserWindow, "fromId").and.returnValue(new MockWindow());
+                container.getWindow("1").then(win => {
+                    expect(electron.BrowserWindow.fromId).toHaveBeenCalledWith("1");
+                    expect(win).toBeDefined();
+                    done();
+                });
+            });
+
+            it ("getWindow with unknown id returns null", (done) => {
+                container.getWindow("DoesNotExist").then(win => {
+                    expect(win).toBeNull();
+                    done();
+                });
             });
         });
 

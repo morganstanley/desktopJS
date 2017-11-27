@@ -44,7 +44,13 @@ class MockInterApplicationBus {
 }
 
 class MockWindow {
-    static singleton: MockWindow = new MockWindow();
+    static singleton: MockWindow = new MockWindow("Singleton");
+
+    constructor(name?: string) {
+        this.name = name;
+    }
+
+    public name: string;
 
     static getCurrent(): any { return MockWindow.singleton; }
 
@@ -105,7 +111,7 @@ describe("OpenFinContainerWindow", () => {
     let win: OpenFinContainerWindow;
 
     beforeEach(() => {
-        innerWin = new MockWindow;
+        innerWin = new MockWindow();
         win = new OpenFinContainerWindow(innerWin);
     });
 
@@ -113,6 +119,16 @@ describe("OpenFinContainerWindow", () => {
         expect(win).toBeDefined();
         expect(win.innerWindow).toBeDefined();
         expect(win.innerWindow).toEqual(innerWin);
+    });
+
+    it ("id returns underlying name", () => {
+        innerWin.name = "NAME";
+        expect(win.id).toEqual("NAME");
+    });
+
+    it ("name returns underlying name", () => {
+        innerWin.name = "NAME";
+        expect(win.name).toEqual("NAME");
     });
 
     it("focus", (done) => {
@@ -315,6 +331,23 @@ describe("OpenFinContainer", () => {
                     expect(windows.length).toEqual(2);
                     expect(windows[0].innerWindow).toEqual(MockWindow.singleton);
                     done();
+                });
+            });
+
+            describe("getWindow", () => {
+                it("getWindow returns wrapped window", (done) => {
+                    container.getWindow("Singleton").then(win => {
+                        expect(win).toBeDefined();
+                        expect(win.id).toEqual("Singleton");
+                        done();
+                    });
+                });
+
+                it ("getWindow with unknown id returns null", (done) => {
+                    container.getWindow("DoesNotExist").then(win => {
+                        expect(win).toBeNull();
+                        done();
+                    });
                 });
             });
 

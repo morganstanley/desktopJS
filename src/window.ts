@@ -60,6 +60,10 @@ export abstract class ContainerWindow extends EventEmitter {
     /** The underlying concrete container window. */
     public readonly innerWindow: any;
 
+    public readonly id: string;
+
+    public readonly name: string;
+
     public constructor(wrap: any) {
         super();
         this.innerWindow = wrap;
@@ -159,6 +163,12 @@ export interface ContainerWindowManager {
      * @returns {Promise<ContainerWindow[]>} - A promise that returns an array of {@link ContainerWindow} if resolved
      */
     getAllWindows(): Promise<ContainerWindow[]>;
+
+    /**
+     * Retrieve a {@link ContainerWindow} with provided id.
+     * @returns {Promise<ContainerWindow>} - A promise that returns a {ContainerWindow} if resolved
+     */
+    getWindow(id: string): Promise<ContainerWindow | null>;
 
     /**
      * Creates a new ContainerWindow.

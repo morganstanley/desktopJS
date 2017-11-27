@@ -29,6 +29,14 @@ export class ElectronContainerWindow extends ContainerWindow {
         super(wrap);
     }
 
+    public get id(): string {
+        return this.innerWindow.id;
+    }
+
+    public get name(): string {
+        return this.innerWindow.name;
+    }
+
     public focus(): Promise<void> {
         this.innerWindow.focus();
         return Promise.resolve();
@@ -302,6 +310,13 @@ export class ElectronContainer extends WebContainerBase {
 
     public getAllWindows(): Promise<ContainerWindow[]> {
         return Promise.resolve(this.browserWindow.getAllWindows().map(window => this.wrapWindow(window)));
+    }
+
+    public getWindow(id: string): Promise<ContainerWindow | null> {
+        return new Promise<ContainerWindow>((resolve, reject) => {
+            const win = this.browserWindow.fromId(id);
+            resolve(win ? this.wrapWindow(win) : null);
+        });
     }
 
     public saveLayout(name: string): Promise<PersistedWindowLayout> {
