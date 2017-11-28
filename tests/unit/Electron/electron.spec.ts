@@ -172,7 +172,7 @@ describe("ElectronContainer", () => {
     let electron: any;
     let container: ElectronContainer;
     let globalWindow: any = {};
-    let windows: MockWindow[] = [new MockWindow(), new MockWindow()];
+    let windows: MockWindow[] = [new MockWindow(), new MockWindow("Name")];
 
     beforeEach(() => {
         electron = {
@@ -289,17 +289,31 @@ describe("ElectronContainer", () => {
         });
 
         describe("getWindow", () => {
-            it("getWindow returns wrapped window", (done) => {
+            it("getWindowById returns wrapped window", (done) => {
                 spyOn(electron.BrowserWindow, "fromId").and.returnValue(new MockWindow());
-                container.getWindow("1").then(win => {
+                container.getWindowById("1").then(win => {
                     expect(electron.BrowserWindow.fromId).toHaveBeenCalledWith("1");
                     expect(win).toBeDefined();
                     done();
                 });
             });
 
-            it ("getWindow with unknown id returns null", (done) => {
-                container.getWindow("DoesNotExist").then(win => {
+            it ("getWindowById with unknown id returns null", (done) => {
+                container.getWindowById("DoesNotExist").then(win => {
+                    expect(win).toBeNull();
+                    done();
+                });
+            });
+
+            it("getWindowByName returns wrapped window", (done) => {
+                container.getWindowByName("Name").then(win => {
+                    expect(win).toBeDefined();
+                    done();
+                });
+            });
+
+            it ("getWindowByName with unknown name returns null", (done) => {
+                container.getWindowByName("DoesNotExist").then(win => {
                     expect(win).toBeNull();
                     done();
                 });

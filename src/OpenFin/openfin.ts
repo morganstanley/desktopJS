@@ -458,10 +458,14 @@ export class OpenFinContainer extends WebContainerBase {
         });
     }
 
-    public getWindow(id: string): Promise<ContainerWindow | null> {
+    public getWindowById(id: string): Promise<ContainerWindow | null> {
+        return this.getWindowByName(id);
+    }
+
+    public getWindowByName(name: string): Promise<ContainerWindow | null> {
         return new Promise<ContainerWindow>((resolve, reject) => {
             this.desktop.Application.getCurrent().getChildWindows(windows => {
-                const win = windows.find(window => window.name === id);
+                const win = windows.find(window => window.name === name);
                 resolve(win ? this.wrapWindow(win) : null);
             });
         });

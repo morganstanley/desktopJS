@@ -168,7 +168,13 @@ export interface ContainerWindowManager {
      * Retrieve a {@link ContainerWindow} with provided id.
      * @returns {Promise<ContainerWindow>} - A promise that returns a {ContainerWindow} if resolved
      */
-    getWindow(id: string): Promise<ContainerWindow | null>;
+    getWindowById(id: string): Promise<ContainerWindow | null>;
+
+    /**
+     * Retrieve a {@link ContainerWindow} with provided name.
+     * @returns {Promise<ContainerWindow>} - A promise that returns a {ContainerWindow} if resolved
+     */
+    getWindowByName(name: string): Promise<ContainerWindow | null>;
 
     /**
      * Creates a new ContainerWindow.

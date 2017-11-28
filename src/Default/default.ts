@@ -278,10 +278,24 @@ export class DefaultContainer extends WebContainerBase {
         });
     }
 
-    public getWindow(id: string): Promise<ContainerWindow | null> {
+    public getWindowById(id: string): Promise<ContainerWindow | null> {
         return new Promise<ContainerWindow>((resolve, reject) => {
             const win = this.globalWindow[DefaultContainer.windowsPropertyKey][id];
             resolve(win ? this.wrapWindow(win) : null);
+        });
+    }
+
+    public getWindowByName(name: string): Promise<ContainerWindow | null> {
+        return new Promise<ContainerWindow>((resolve, reject) => {
+            const trackedWindows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+            for (const key in trackedWindows) {
+                if (trackedWindows[key][DefaultContainer.windowNamePropertyKey] === name) {
+                    resolve(this.wrapWindow(trackedWindows[key]));
+                    return;
+                }
+            }
+
+            resolve(null);
         });
     }
 

@@ -335,16 +335,31 @@ describe("OpenFinContainer", () => {
             });
 
             describe("getWindow", () => {
-                it("getWindow returns wrapped window", (done) => {
-                    container.getWindow("Singleton").then(win => {
+                it("getWindowById returns wrapped window", (done) => {
+                    container.getWindowById("Singleton").then(win => {
                         expect(win).toBeDefined();
                         expect(win.id).toEqual("Singleton");
                         done();
                     });
                 });
 
-                it ("getWindow with unknown id returns null", (done) => {
-                    container.getWindow("DoesNotExist").then(win => {
+                it ("getWindowById with unknown id returns null", (done) => {
+                    container.getWindowById("DoesNotExist").then(win => {
+                        expect(win).toBeNull();
+                        done();
+                    });
+                });
+
+                it("getWindowByName returns wrapped window", (done) => {
+                    container.getWindowByName("Singleton").then(win => {
+                        expect(win).toBeDefined();
+                        expect(win.id).toEqual("Singleton");
+                        done();
+                    });
+                });
+
+                it ("getWindowByName with unknown name returns null", (done) => {
+                    container.getWindowByName("DoesNotExist").then(win => {
                         expect(win).toBeNull();
                         done();
                     });

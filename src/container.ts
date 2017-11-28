@@ -64,7 +64,9 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
 
     public abstract getAllWindows(): Promise<ContainerWindow[]>;
 
-    public abstract getWindow(id: string): Promise<ContainerWindow | null>;
+    public abstract getWindowById(id: string): Promise<ContainerWindow | null>;
+
+    public abstract getWindowByName(name: string): Promise<ContainerWindow | null>;
 
     public static get ipc(): MessageBus {
         return Container._ipc;

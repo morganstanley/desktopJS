@@ -249,22 +249,45 @@ describe("DefaultContainer", () => {
                 container = new DefaultContainer(window);
             });
 
-            it("getWindow returns wrapped window", (done) => {
+            it("getWindowById returns wrapped window", (done) => {
                 window[DefaultContainer.windowsPropertyKey] = {
                     "1": new MockWindow(),
                     "2": new MockWindow(),
                     "3": new MockWindow()
                 };
 
-                container.getWindow("1").then(win => {
+                container.getWindowById("1").then(win => {
                     expect(win).toBeDefined();
                     expect(win.innerWindow).toEqual(window[DefaultContainer.windowsPropertyKey]["1"]);
                     done();
                 });
             });
 
-            it ("getWindow with unknown id returns null", (done) => {
-                container.getWindow("DoesNotExist").then(win => {
+            it ("getWindowById with unknown id returns null", (done) => {
+                container.getWindowById("DoesNotExist").then(win => {
+                    expect(win).toBeNull();
+                    done();
+                });
+            });
+
+            it("getWindowByName returns wrapped window", (done) => {
+                window[DefaultContainer.windowsPropertyKey] = {
+                    "1": new MockWindow(),
+                    "2": new MockWindow(),
+                    "3": new MockWindow()
+                };
+
+                window[DefaultContainer.windowsPropertyKey]["1"][DefaultContainer.windowNamePropertyKey] = "Name";
+
+                container.getWindowByName("Name").then(win => {
+                    expect(win).toBeDefined();
+                    expect(win.innerWindow).toEqual(window[DefaultContainer.windowsPropertyKey]["1"]);
+                    done();
+                });
+            });
+
+            it ("getWindowByName with unknown name returns null", (done) => {
+                container.getWindowByName("DoesNotExist").then(win => {
                     expect(win).toBeNull();
                     done();
                 });
