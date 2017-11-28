@@ -19,6 +19,14 @@ export class DefaultContainerWindow extends ContainerWindow {
         super(wrap);
     }
 
+    public get id(): string {
+        return this.innerWindow[DefaultContainer.windowUuidPropertyKey];
+    }
+
+    public get name(): string {
+        return this.innerWindow[DefaultContainer.windowNamePropertyKey];
+    }
+
     public focus(): Promise<void> {
         this.innerWindow.focus();
         return Promise.resolve();
@@ -267,6 +275,27 @@ export class DefaultContainer extends WebContainerBase {
                 windows.push(trackedWindows[key]);
             }
             resolve(windows);
+        });
+    }
+
+    public getWindowById(id: string): Promise<ContainerWindow | null> {
+        return new Promise<ContainerWindow>((resolve, reject) => {
+            const win = this.globalWindow[DefaultContainer.windowsPropertyKey][id];
+            resolve(win ? this.wrapWindow(win) : null);
+        });
+    }
+
+    public getWindowByName(name: string): Promise<ContainerWindow | null> {
+        return new Promise<ContainerWindow>((resolve, reject) => {
+            const trackedWindows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+            for (const key in trackedWindows) {
+                if (trackedWindows[key][DefaultContainer.windowNamePropertyKey] === name) {
+                    resolve(this.wrapWindow(trackedWindows[key]));
+                    return;
+                }
+            }
+
+            resolve(null);
         });
     }
 
