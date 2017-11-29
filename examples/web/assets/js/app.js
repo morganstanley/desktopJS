@@ -83,7 +83,7 @@ visibilityButton.onclick = function () {
 };
 
 notificationButton.onclick = function () {
-	Notification.requestPermission().then(function (permission) {
+	Notification.requestPermission(function(permission) {
 		if (permission === "granted") {
 			var notification = new Notification("test", { body: "Message", url: "notification.html" });
 			notification.onclick = () => window.alert("Notification clicked");
