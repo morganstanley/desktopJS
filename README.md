@@ -98,5 +98,5 @@ or it is recommended to define a custom keyboard binding.
 Examples
 --------
 Examples showcasing usage of desktopJS for various containers and scenarios can be found under
-the [examples](examples/README.md) directory.
+the [examples](https://github.com/Morgan-Stanley/desktopJS/tree/master/examples) directory.
 
