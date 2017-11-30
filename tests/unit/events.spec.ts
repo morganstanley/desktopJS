@@ -47,6 +47,16 @@ describe("EventEmitter", () => {
         emitter.emit(args.name, args);
     });
 
+    it("static emit invokes callbacks", (done) => {
+        const args = new EventArgs(undefined, "TestEvent", {});
+        const callback = (event: EventArgs) => {
+            expect(event).toEqual(args);
+            done();
+        };
+        EventEmitter.addListener(args.name, callback);
+        EventEmitter.emit(args.name, args);
+    });
+
     it("registerAndWrapListener", (done) => {
         const listener = (event: EventArgs) => { done(); };
         const wrappedCallback = emitter.registerAndWrapListener("TestEvent", listener);

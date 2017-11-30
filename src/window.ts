@@ -1,6 +1,8 @@
+import { Container } from "./container";
 import { TrayIconDetails } from "./tray";
 import { MenuItem } from "./menu";
 import { EventEmitter, EventArgs } from "./events";
+import { MessageBus } from "./ipc";
 
 /** Represents the bounds of a rectangle */
 export class Rectangle { // tslint:disable-line
@@ -33,6 +35,7 @@ export class Rectangle { // tslint:disable-line
 }
 
 export type WindowEventType =
+    "window-created" |
     "move" |
     "resize" |
     "close" |
@@ -44,15 +47,27 @@ export type WindowEventType =
     "restore"
 ;
 
+export class WindowEventArgs extends EventArgs {
+    public readonly window?: ContainerWindow;
+    public readonly windowId: string;
+    public readonly windowName?: string;
+}
+
 /** Represents a container window. */
 export abstract class ContainerWindow extends EventEmitter {
+    private static readonly staticEventScopePrefix: string = "containerwindow-";
+
     /** The underlying concrete container window. */
     public readonly innerWindow: any;
+
+    public readonly id: string;
+
+    public readonly name: string;
 
     public constructor(wrap: any) {
         super();
         this.innerWindow = wrap;
-    }
+   }
 
     /** Gives focus to the window. */
     public abstract focus(): Promise<void>;
@@ -111,6 +126,22 @@ export abstract class ContainerWindow extends EventEmitter {
         this.detachListener(eventName, callback);
         return super.removeListener(eventName, callback);
     }
+
+    public static addListener(eventName: WindowEventType, listener: (event: WindowEventArgs) => void): void { // tslint:disable-line
+        EventEmitter.addListener(ContainerWindow.staticEventScopePrefix + eventName, listener);
+    }
+
+    public static removeListener(eventName: WindowEventType, listener: (event: WindowEventArgs) => void): void { // tslint:disable-line
+        EventEmitter.removeListener(ContainerWindow.staticEventScopePrefix + eventName, listener);
+    }
+
+    public static emit(eventName: WindowEventType, eventArgs: WindowEventArgs): void { // tslint:disable-line
+        EventEmitter.emit(ContainerWindow.staticEventScopePrefix + eventName, eventArgs, Container.ipc);
+    }
+
+    public static listeners(eventName: string): ((event: EventArgs) => void)[] { // tslint:disable-line
+        return EventEmitter.listeners(ContainerWindow.staticEventScopePrefix + eventName);
+    }
 }
 
 /** Represents window management capability */
@@ -132,6 +163,18 @@ export interface ContainerWindowManager {
      * @returns {Promise<ContainerWindow[]>} - A promise that returns an array of {@link ContainerWindow} if resolved
      */
     getAllWindows(): Promise<ContainerWindow[]>;
+
+    /**
+     * Retrieve a {@link ContainerWindow} with provided id.
+     * @returns {Promise<ContainerWindow>} - A promise that returns a {ContainerWindow} if resolved
+     */
+    getWindowById(id: string): Promise<ContainerWindow | null>;
+
+    /**
+     * Retrieve a {@link ContainerWindow} with provided name.
+     * @returns {Promise<ContainerWindow>} - A promise that returns a {ContainerWindow} if resolved
+     */
+    getWindowByName(name: string): Promise<ContainerWindow | null>;
 
     /**
      * Creates a new ContainerWindow.

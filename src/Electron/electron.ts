@@ -1,10 +1,11 @@
 import * as ContainerRegistry from "../registry";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
-import { WebContainerBase } from "../container";
+import { Container, WebContainerBase } from "../container";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions, ContainerNotification } from "../notification";
 import { TrayIconDetails } from "../tray";
 import { MenuItem } from "../menu";
+import { Guid } from "../guid";
 import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../ipc";
 
 ContainerRegistry.registerContainer("Electron", {
@@ -26,6 +27,14 @@ const windowEventMap = {};
 export class ElectronContainerWindow extends ContainerWindow {
     public constructor(wrap: any) {
         super(wrap);
+    }
+
+    public get id(): string {
+        return this.innerWindow.id;
+    }
+
+    public get name(): string {
+        return this.innerWindow.name;
     }
 
     public focus(): Promise<void> {
@@ -121,7 +130,7 @@ export class ElectronMessageBus implements MessageBus {
         }
 
         // Broadcast to all windows or to the individual targeted window
-        if (this.browserWindow) {
+        if (this.browserWindow && this.browserWindow.getAllWindows) {
             for (const window of (this.browserWindow).getAllWindows()) {
                 if (options && options.name) {
                     if (options.name === window.name) {
@@ -243,7 +252,7 @@ export class ElectronContainer extends WebContainerBase {
     public createWindow(url: string, options?: any): ContainerWindow {
         const newOptions = this.getWindowOptions(options);
         const electronWindow: any = new this.browserWindow(newOptions);
-        const windowName = newOptions.name || url;
+        const windowName = newOptions.name || Guid.newGuid();
 
         /*
             If we are in the renderer process, we need to ipc to the main process
@@ -262,7 +271,9 @@ export class ElectronContainer extends WebContainerBase {
         electronWindow.loadURL(url);
 
         const newWindow = this.wrapWindow(electronWindow);
-        this.emit("window-created", { sender: this, name: "window-created", window: newWindow });
+        this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: electronWindow.id, windowName: windowName });
+        Container.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
+        ContainerWindow.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
         return newWindow;
     }
 
@@ -299,6 +310,20 @@ export class ElectronContainer extends WebContainerBase {
 
     public getAllWindows(): Promise<ContainerWindow[]> {
         return Promise.resolve(this.browserWindow.getAllWindows().map(window => this.wrapWindow(window)));
+    }
+
+    public getWindowById(id: string): Promise<ContainerWindow | null> {
+        return new Promise<ContainerWindow>((resolve, reject) => {
+            const win = this.browserWindow.fromId(id);
+            resolve(win ? this.wrapWindow(win) : null);
+        });
+    }
+
+    public getWindowByName(name: string): Promise<ContainerWindow | null> {
+        return new Promise<ContainerWindow>((resolve, reject) => {
+            const win = this.browserWindow.getAllWindows().find(window => window.name === name);
+            resolve(win ? this.wrapWindow(win) : null);
+        });
     }
 
     public saveLayout(name: string): Promise<PersistedWindowLayout> {

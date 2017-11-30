@@ -1,4 +1,4 @@
-import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, PersistedWindow } from "./window";
+import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, PersistedWindow, WindowEventArgs } from "./window";
 import { ContainerNotificationManager } from "./notification";
 import { EventEmitter, EventArgs } from "./events";
 import { MessageBus } from "./ipc";
@@ -11,12 +11,9 @@ export type ContainerEventType =
     "layout-loaded" |
     "layout-saved";
 
-export class WindowEventArgs extends EventArgs {
-    public readonly window: ContainerWindow;
-}
-
 export class LayoutEventArgs extends EventArgs {
-    public readonly layout: PersistedWindowLayout;
+    public readonly layout?: PersistedWindowLayout;
+    public readonly layoutName: string;
 }
 
 export type ContainerEventArgs = EventArgs | WindowEventArgs | LayoutEventArgs;
@@ -26,18 +23,34 @@ export type ContainerEventArgs = EventArgs | WindowEventArgs | LayoutEventArgs;
  * @extends ContainerWindowManager
  * @extends ContainerNotificationManager
  */
-export interface Container extends ContainerWindowManager, ContainerNotificationManager {
+export abstract class Container extends EventEmitter implements ContainerWindowManager, ContainerNotificationManager {
+    private static readonly staticEventScopePrefix: string = "container-";
+
+    private static _ipc: MessageBus; // tslint:disable-line
+
     /**
      * Display type of current Container.
      * @type {string}
      */
-    hostType: string;
+    public abstract hostType: string;
 
     /**
      * Unique v4 GUID for this Container instance
      * @type {string}
      */
-    uuid: string;
+    public abstract uuid: string;
+
+    public abstract getMainWindow(): ContainerWindow;
+
+    public abstract getCurrentWindow(): ContainerWindow;
+
+    public abstract createWindow(url: string, options?: any): ContainerWindow;
+
+    public abstract saveLayout(name: string): Promise<PersistedWindowLayout>;
+
+    public abstract loadLayout(name: string): Promise<PersistedWindowLayout>;
+
+    public abstract getLayouts(): Promise<PersistedWindowLayout[]>;
 
     /**
      * Adds an icon and context menu to the system notification area.
@@ -45,34 +58,78 @@ export interface Container extends ContainerWindowManager, ContainerNotification
      * @param listener (Optional) Callback for when the tray icon is clicked.
      * @param {MenuItem[]} menuItems (Optional) Context menu.
      */
-    addTrayIcon(details: TrayIconDetails, listener?: () => void, menuItems?: MenuItem[]);
+    public abstract addTrayIcon(details: TrayIconDetails, listener?: () => void, menuItems?: MenuItem[]);
+
+    public abstract showNotification(title: string, options?: NotificationOptions);
+
+    public abstract getAllWindows(): Promise<ContainerWindow[]>;
+
+    public abstract getWindowById(id: string): Promise<ContainerWindow | null>;
+
+    public abstract getWindowByName(name: string): Promise<ContainerWindow | null>;
+
+    public static get ipc(): MessageBus {
+        return Container._ipc;
+    }
+
+    public static set ipc(value: MessageBus) {
+        EventEmitter.ipc = Container._ipc = value;
+    }
 
     /**
      * A messaging bus for sending and receiving messages
      */
-    readonly ipc: MessageBus;
+    public get ipc(): MessageBus {
+        return Container.ipc;
+    }
+
+    public set ipc(value: MessageBus) {
+        Container.ipc = value;
+    }
 
     /**
      * Persistent storage
      */
-    storage: Storage;
+    public storage: Storage;
+
+    public addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { // tslint:disable-line
+        return super.addListener(eventName, listener);
+    }
+
+    public removeListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { // tslint:disable-line
+        return super.removeListener(eventName, listener);
+    }
+
+    public emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs): void { // tslint:disable-line
+        super.emit(eventName, eventArgs);
+    }
+
+    public static addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): void { // tslint:disable-line
+        EventEmitter.addListener(Container.staticEventScopePrefix + eventName, listener);
+    }
+
+    public static removeListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): void { // tslint:disable-line
+        EventEmitter.removeListener(Container.staticEventScopePrefix + eventName, listener);
+    }
+
+    public static emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs): void { // tslint:disable-line
+        EventEmitter.emit(Container.staticEventScopePrefix + eventName, eventArgs, Container.ipc);
+    }
+
+    public static listeners(eventName: string): ((event: EventArgs) => void)[] { // tslint:disable-line
+        return EventEmitter.listeners(Container.staticEventScopePrefix + eventName);
+    }
 }
 
 /**
  * Represents a common Container to be used as a base for any custom Container implementation.
  * @augments Container
  */
-export abstract class ContainerBase extends EventEmitter implements Container {
+export abstract class ContainerBase extends Container {
     public hostType: string;
     public uuid: string = Guid.newGuid();
 
     public static readonly layoutsPropertyKey: string = "desktopJS-layouts";
-
-    abstract getMainWindow(): ContainerWindow;
-
-    abstract getCurrentWindow(): ContainerWindow;
-
-    abstract createWindow(url: string, options?: any): ContainerWindow;
 
     showNotification(title: string, options?: NotificationOptions) {
         throw new TypeError("Notifications not supported by this container");
@@ -82,11 +139,9 @@ export abstract class ContainerBase extends EventEmitter implements Container {
         throw new TypeError("Tray icons are not supported by this container.");
     }
 
-    public ipc: MessageBus;
-
     public storage: Storage = (typeof window !== "undefined" && window)
-            ? window.localStorage
-            : undefined;
+        ? window.localStorage
+        : undefined;
 
     protected getLayoutFromStorage(name: string): PersistedWindowLayout {
         return JSON.parse(this.storage.getItem(ContainerBase.layoutsPropertyKey))[name];
@@ -102,12 +157,11 @@ export abstract class ContainerBase extends EventEmitter implements Container {
         layouts[name] = layout;
 
         this.storage.setItem(ContainerBase.layoutsPropertyKey, JSON.stringify(layouts));
-        this.emit("layout-saved", { sender: this, name: "layout-loaded", layout: layout });
+        this.emit("layout-saved", { sender: this, name: "layout-saved", layout: layout, layoutName: layout.name });
+        Container.emit("layout-saved", { name: "layout-saved", layout: layout, layoutName: layout.name });
     }
 
     protected abstract closeAllWindows(excludeSelf?: Boolean): Promise<void>;
-
-    public abstract getAllWindows(): Promise<ContainerWindow[]>;
 
     public loadLayout(name: string): Promise<PersistedWindowLayout> {
         return new Promise<PersistedWindowLayout>((resolve, reject) => {
@@ -121,13 +175,12 @@ export abstract class ContainerBase extends EventEmitter implements Container {
                     }
                 }
 
-                this.emit("layout-loaded", { sender: this, name: "layout-loaded", layout: layout });
+                this.emit("layout-loaded", { sender: this, name: "layout-loaded", layout: layout, layoutName: layout.name });
+                Container.emit("layout-loaded", { name: "layout-loaded", layout: layout, layoutName: layout.name });
                 resolve(layout);
             });
         });
     }
-
-    abstract saveLayout(name: string): Promise<PersistedWindowLayout>;
 
     public getLayouts(): Promise<PersistedWindowLayout[]> {
         return new Promise<PersistedWindowLayout[]>((resolve, reject) => {
@@ -139,18 +192,6 @@ export abstract class ContainerBase extends EventEmitter implements Container {
 
             resolve(undefined);
         });
-    }
-
-    public addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { // tslint:disable-line
-        return super.addListener(eventName, listener);
-    }
-
-    public removeListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { // tslint:disable-line
-        return super.removeListener(eventName, listener);
-    }
-
-    public emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs) { // tslint:disable-line
-        super.emit(eventName, eventArgs);
     }
 }
 

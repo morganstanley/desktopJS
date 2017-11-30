@@ -1,6 +1,6 @@
 import * as ContainerRegistry from "../registry";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
-import { WebContainerBase } from "../container";
+import { Container, WebContainerBase } from "../container";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions, ContainerNotification } from "../notification";
 import { TrayIconDetails } from "../tray";
@@ -30,6 +30,14 @@ const windowEventMap = {
 export class OpenFinContainerWindow extends ContainerWindow {
     public constructor(wrap: any) {
         super(wrap);
+    }
+
+    public get id(): string {
+        return this.name;  // Reuse name since it is the unique identifier
+    }
+
+    public get name(): string {
+        return this.innerWindow.name;
     }
 
     public focus(): Promise<void> {
@@ -326,7 +334,9 @@ export class OpenFinContainer extends WebContainerBase {
         }
 
         const newWindow = this.wrapWindow(new this.desktop.Window(newOptions));
-        this.emit("window-created", { sender: this, name: "window-created", window: newWindow });
+        this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: newOptions.name, windowName: newOptions.name });
+        Container.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
+        ContainerWindow.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
         return newWindow;
     }
 
@@ -445,6 +455,19 @@ export class OpenFinContainer extends WebContainerBase {
                 windows.push(this.desktop.Application.getCurrent().getWindow());
                 resolve(windows.map(window => this.wrapWindow(window)));
             }, reject);
+        });
+    }
+
+    public getWindowById(id: string): Promise<ContainerWindow | null> {
+        return this.getWindowByName(id);
+    }
+
+    public getWindowByName(name: string): Promise<ContainerWindow | null> {
+        return new Promise<ContainerWindow>((resolve, reject) => {
+            this.desktop.Application.getCurrent().getChildWindows(windows => {
+                const win = windows.find(window => window.name === name);
+                resolve(win ? this.wrapWindow(win) : null);
+            });
         });
     }
 

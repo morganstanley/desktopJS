@@ -127,7 +127,7 @@
         ],
         "jsdoc-format": true,
         "max-classes-per-file": [  // we generally recommend making one public class per file 
-            true,
+            false,
             4
         ],
         "max-file-line-count": [

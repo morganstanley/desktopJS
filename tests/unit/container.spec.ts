@@ -1,11 +1,32 @@
-import { ContainerBase, WebContainerBase } from "../../src/container";
+import { Container, ContainerBase, WebContainerBase } from "../../src/container";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow } from "../../src/window";
 import { NotificationOptions } from "../../src/notification";
+import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../../src/ipc";
+import { EventArgs, EventEmitter } from "../../src/events";
 
 class MockContainer extends ContainerBase {
 }
 
-class TestContainer extends ContainerBase {
+export class MockMessageBus implements MessageBus { // tslint:disable-line
+    private listener: any;
+
+    subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
+        this.listener = listener;
+        return Promise.resolve(undefined);
+    }
+
+    unsubscribe(subscription: MessageBusSubscription): Promise<void> {
+        this.listener = undefined;
+        return Promise.resolve();
+    }
+
+    publish<T>(topic: string, message: T, options?: MessageBusOptions): Promise<void> {
+        this.listener({ topic: topic }, message);
+        return Promise.resolve();
+    }
+}
+
+export class TestContainer extends ContainerBase {
     getMainWindow(): ContainerWindow {
         return undefined;
     }
@@ -16,6 +37,8 @@ class TestContainer extends ContainerBase {
 
     constructor() {
         super();
+
+        this.ipc = new MockMessageBus();
 
         this.storage = <any> {
             getItem(key: string): string {
@@ -48,7 +71,36 @@ describe("container", () => {
     let container: TestContainer;
 
     beforeEach(() => {
-        container = new TestContainer();;
+        container = new TestContainer();
+        (<any>EventEmitter).staticEventListeners = new Map();
+    });
+
+    it("ipc is defined", () => {
+        expect(container.ipc).toBeDefined();
+    });
+
+    describe("Static events", () => {
+        it("addListener adds callback to listeners", () => {
+            expect(Container.listeners("TestEvent").length).toEqual(0);
+            Container.addListener("TestEvent", (event: EventArgs) => { });
+            expect(Container.listeners("TestEvent").length).toEqual(1);
+        });
+
+        it("removeListener removes callback to listeners", () => {
+            expect(Container.listeners("TestEvent").length).toEqual(0);
+            const callback = (event: EventArgs) => { };
+            Container.addListener("TestEvent", callback);
+            expect(Container.listeners("TestEvent").length).toEqual(1);
+            Container.removeListener("TestEvent", callback);
+            expect(Container.listeners("TestEvent").length).toEqual(0);
+        });
+
+        it("emit invokes ipc publish", () => {
+            const args = new EventArgs(undefined, "TestEvent", {});
+            spyOn(container.ipc, "publish").and.callThrough();
+            Container.emit(args.name, args);
+            expect(container.ipc.publish).toHaveBeenCalledWith("desktopJS.static-event", { eventName: "container-" + args.name, eventArgs: args });
+        });
     });
 
     describe("ContainerBase", () => {

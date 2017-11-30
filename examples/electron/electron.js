@@ -8,8 +8,9 @@ function createWindow() {
     let container = desktopJS.resolveContainer();
 
     mainWindow = container.createWindow('http://localhost:8000');
-
-    container.addTrayIcon({ icon: __dirname + '\\..\\web\\favicon.ico', text: 'ContainerPOC' }, () => {
+ 
+    let trayIcon = electron.nativeImage.createFromPath(__dirname + '\\..\\web\\favicon.ico');
+    container.addTrayIcon({ icon: trayIcon, text: 'ContainerPOC' }, () => {
         mainWindow.isShowing().then((showing) => {
             if (showing) {
                 mainWindow.hide();

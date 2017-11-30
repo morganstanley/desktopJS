@@ -36,6 +36,16 @@ describe("DefaultContainerWindow", () => {
         });
     });
 
+    it ("id returns underlying id", () => {
+        mockWindow[DefaultContainer.windowUuidPropertyKey] = "UUID";
+        expect(win.id).toEqual("UUID");
+    });
+
+    it ("name returns underlying name", () => {
+        mockWindow[DefaultContainer.windowNamePropertyKey] = "NAME";
+        expect(win.name).toEqual("NAME");
+    });
+
     it("show throws no errors", () => {
         expect(win.show()).toBeDefined();
     });
@@ -135,7 +145,7 @@ describe("DefaultContainer", () => {
 
         beforeEach(() => {
             window = new MockWindow();
-            container = new DefaultContainer(window)
+            container = new DefaultContainer(window);
         });
 
         it("Returns a DefaultContainerWindow and invokes underlying window.open", () => {
@@ -195,7 +205,6 @@ describe("DefaultContainer", () => {
         expect(win.innerWindow).toEqual(window);
     });
 
-
     describe("Notifications", () => {
         it("showNotification warns about not being implemented", () => {
             let container: DefaultContainer = new DefaultContainer(window);
@@ -230,6 +239,58 @@ describe("DefaultContainer", () => {
                 expect(wins).not.toBeNull();
                 expect(wins.length).toEqual(2);
                 done();
+            });
+        });
+
+        describe("getWindow", () => {
+            let container: DefaultContainer;
+
+            beforeEach(() => {
+                container = new DefaultContainer(window);
+            });
+
+            it("getWindowById returns wrapped window", (done) => {
+                window[DefaultContainer.windowsPropertyKey] = {
+                    "1": new MockWindow(),
+                    "2": new MockWindow(),
+                    "3": new MockWindow()
+                };
+
+                container.getWindowById("1").then(win => {
+                    expect(win).toBeDefined();
+                    expect(win.innerWindow).toEqual(window[DefaultContainer.windowsPropertyKey]["1"]);
+                    done();
+                });
+            });
+
+            it ("getWindowById with unknown id returns null", (done) => {
+                container.getWindowById("DoesNotExist").then(win => {
+                    expect(win).toBeNull();
+                    done();
+                });
+            });
+
+            it("getWindowByName returns wrapped window", (done) => {
+                window[DefaultContainer.windowsPropertyKey] = {
+                    "1": new MockWindow(),
+                    "2": new MockWindow(),
+                    "3": new MockWindow()
+                };
+
+                window[DefaultContainer.windowsPropertyKey]["1"][DefaultContainer.windowNamePropertyKey] = "Name";
+
+                container.getWindowByName("Name").then(win => {
+                    expect(win).toBeDefined();
+                    expect(win.innerWindow).toEqual(window[DefaultContainer.windowsPropertyKey]["1"]);
+                    done();
+                });
+            });
+
+            it ("getWindowByName with unknown name returns null", (done) => {
+                container.getWindowByName("DoesNotExist").then(win => {
+                    expect(win).toBeNull();
+                    done();
+                });
             });
         });
 

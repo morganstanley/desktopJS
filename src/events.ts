@@ -1,5 +1,7 @@
+import { MessageBus } from "./ipc";
+
 export class EventArgs {
-    public readonly sender: any;
+    public readonly sender?: any;
 
     public readonly innerEvent?: any;
 
@@ -12,15 +14,19 @@ export class EventArgs {
     }
 }
 
-export abstract class EventEmitter {
+export class EventEmitter {
     private eventListeners: Map<string, ((event: EventArgs) => void)[]> = new Map();
+
+    private static staticEventListeners: Map<string, ((event: EventArgs) => void)[]> = new Map();
 
     private wrappedListeners: Map<(event: EventArgs) => void, (event: EventArgs) => void> = new Map();
 
+    private static readonly staticEventName: string = "desktopJS.static-event";
+
     /**
      * Registers an event listener on the specified event.
-     * @param eventName {string} eventName The type of the event.
-     * @param listener {(event: EventArgs) => void} The event handler function.
+     * @param {string} eventName The type of the event.
+     * @param {(event: EventArgs) => void} listener The event handler function.
      */
     public addListener(eventName: string, listener: (event: EventArgs) => void): this {
         (this.eventListeners[eventName] = this.eventListeners[eventName] || []).push(listener);
@@ -47,8 +53,8 @@ export abstract class EventEmitter {
 
     /**
      * Removes a previous registered event listener from the specified event.
-     * @param eventName {string} eventName The type of the event.
-     * @param listener {(event: EventArgs) => void} The event handler function.
+     * @param {string} eventName The type of the event.
+     * @param {(event: EventArgs) => void} listener The event handler function.
      */
     public removeListener(eventName: string, listener: (event: EventArgs) => void): this {
         const listeners = this.listeners(eventName);
@@ -65,7 +71,7 @@ export abstract class EventEmitter {
 
     /**
      * Gets an array of listeners for a specific event type.
-     * @param eventName {string} eventName The type of the event.
+     * @param {string} eventName eventName The type of the event.
      */
     public listeners(eventName: string): ((event: EventArgs) => void)[] {
         return (this.eventListeners[eventName] || []);
@@ -73,11 +79,66 @@ export abstract class EventEmitter {
 
     /**
      * Invokes each listener registered for the specified event type.
-     * @param eventName {string} eventName The type of the event.
+     * @param {string} eventName The type of the event.
+     * @param {MessageBus} ipc (Optional) The {MessageBus} in which to broadcast the event.
      */
     public emit(eventName: string, eventArgs: EventArgs) {
         for (const listener of this.listeners(eventName)) {
             listener(eventArgs);
+        }
+    }
+
+    /**
+     * Set message bus used for static event broadcasting across windows.
+     */
+    public static set ipc(value: MessageBus) {
+        if (value) {
+            value.subscribe(EventEmitter.staticEventName, (event: any, message: any) => {
+                EventEmitter.emit(message.eventName, message.eventArgs);
+            });
+        }
+    }
+
+    /**
+     * Registers an event listener on the specified static event.
+     * @param {string} eventName The type of the event.
+     * @param {(event: EventArgs) => void} listener The event handler function.
+     */
+    public static addListener(eventName: string, listener: (event: EventArgs) => void): void { // tslint:disable-line
+        (this.staticEventListeners[eventName] = this.staticEventListeners[eventName] || []).push(listener);
+    }
+
+    /**
+     * Removes a previous registered event listener from the specified static event.
+     * @param {string} eventName The type of the event.
+     * @param {(event: EventArgs) => void} listener The event handler function.
+     */
+    public static removeListener(eventName: string, listener: (event: EventArgs) => void): void { // tslint:disable-line
+        const listeners = EventEmitter.listeners(eventName);
+
+        if (listeners) {
+            const i = listeners.indexOf(listener);
+            if (i >= 0) {
+                listeners.splice(i, 1);
+            }
+        }
+    }
+
+    /**
+     * Gets an array of listeners for a specific static event type.
+     * @param {string} eventName eventName The type of the event.
+     */
+    public static listeners(eventName: string): ((event: EventArgs) => void)[] { // tslint:disable-line
+        return (this.staticEventListeners[eventName] || []);
+    }
+
+    public static emit(eventName: string, eventArgs: EventArgs, ipc?: MessageBus) { // tslint:disable-line
+        if (ipc && ipc.publish) {
+            ipc.publish(EventEmitter.staticEventName, { eventName: eventName, eventArgs: eventArgs });
+        } else {
+            for (const listener of EventEmitter.listeners(eventName)) {
+                listener(eventArgs);
+            }
         }
     }
 }
