@@ -18,6 +18,7 @@ var gulp = require('gulp'),
     nodeResolve = require('rollup-plugin-node-resolve'),
     commonjs = require('rollup-plugin-commonjs'),
     tsrollup = require('rollup-plugin-typescript'),
+    rollupReplace = require('rollup-plugin-replace'),
     typescript = require('typescript'),
     pkg = require('./package.json'),
     dts = require('dts-bundle'),
@@ -56,7 +57,10 @@ function createBundle(format, destination) {
         plugins: [
             tsrollup({ typescript: typescript }),
             nodeResolve(),
-            commonjs()
+            commonjs(),
+            rollupReplace({
+                PACKAGE_VERSION: pkg.version
+            })
         ]
     }).then(function (bundle) {
         bundle.write({

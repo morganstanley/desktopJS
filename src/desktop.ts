@@ -6,6 +6,7 @@ import * as Electron from "./Electron/electron";
 import * as OpenFin from "./OpenFin/openfin";
 
 const exportDesktopJS = {
+    get version(): string { return "PACKAGE_VERSION"; },
     Container,
     ContainerWindow,
     registerContainer,
