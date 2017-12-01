@@ -1,0 +1,75 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    overflow-y: scroll;
+
+    /* Margin bottom by footer height */
+    margin-bottom: 26px;
+    padding-bottom: 30px;
+}
+
+.footer {
+    /* Set the fixed height of the footer here */
+    height: 26px;
+    background-color: #f5f5f5;
+}
+  
+.navbar {
+    min-height: 40px;
+}
+
+.navbar-brand {
+    padding-top: 7px;
+    height: 40px;
+}
+
+body > .container-fluid {
+    padding: 55px 15px 0;
+}
+
+/* Disable active/focus border on links */
+a:focus,a:active {
+    outline: none !important;
+    box-shadow: none;
+}
+
+/* Disable active/focus border on buttons */
+.btn:focus,.btn:active {
+    outline: none !important;
+    box-shadow: none;
+}
+
+.footer > .container-fluid {
+    border-top: 1px solid silver;
+    padding-left: 7px;
+    padding-top: 5px;
+    font-size: 85%;
+}
+
+nav > .panel > .panel-heading {
+    padding: 5px 10px;
+}
+
+nav > .panel > .panel-body {
+    padding: 5px;
+}
+
+.nav > li > a {
+    padding: 5px 10px;
+}
+ 
+code {
+    font-size: 80%;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+}
+
+pre {
+    margin: 10px;
+}

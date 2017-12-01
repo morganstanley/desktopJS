@@ -6,39 +6,129 @@
     <meta charset="utf-8" />
     <title>desktopJS</title>
     <script type="text/javascript" src="desktop.js"></script>
+
+    <!-- Bootstrap/JQuery from CDN to make example simple -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="assets/css/app.css">
 </head>
 
 <body>
-    <div id="hostName"></div>
-    <br />
-    <button id="button-open-window">Open Window</button>
-    <button id="button-toggle-visiblity">Toggle Child Visibility</button>
-    <br />
-    <br />
-    <button id="button-notification">Notification</button>
-    <br />
-    <br />
-    <button id="button-tray-icon">Tray Icon</button>
-    <br />
-    <br />
-    <button id="button-child-focus">Child Focus</button>
-    <br />
-    <br />
-    <button id="button-screenshot">Screenshot</button>
-    <br />
-    <br />
-    <button id="button-loadlayout">Load Layout</button>
-    <button id="button-savelayout">Save Layout</button>
-    <br />
-    <br />
-    <button id="button-subscribe">Subscribe</button>
-    <button id="button-publish">Publish</button>
-    <input id="input-publish" value="FOO" />
-    <button id="button-unsubscribe">Unsubscribe</button>
-    <div id="text-messagebus"></div>
-    <br />
-    <br />
-    <img id="image-preview" />
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand active" data-toggle="pill" href="#windows" onclick="$('[href=\'#windows\']').tab('show');" tabindex="-1">
+                    <img height="30" src="assets/img/logo.png" alt="desktopJS" />
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="tab-content col-sm-9">
+                <div id="windows" class="tab-pane fade in active">
+                    <ul class="breadcrumb">
+                        <li>Examples</li>
+                        <li class="active">Windows</li>
+                    </ul>
+                    <button id="button-open-window" class="btn btn-sm btn-default">Open Window</button>
+                    <button id="button-toggle-visiblity" class="btn btn-sm btn-default">Toggle Child Visibility</button>
+                    <br />
+                    <br />
+                    <button id="button-child-focus" class="btn btn-sm btn-default">Child Focus</button>
+                </div>
+
+                <div id="notification" class="tab-pane fade">
+                    <ul class="breadcrumb">
+                        <li>Examples</li>
+                        <li class="active">Notification</li>
+                    </ul>
+                    <button id="button-notification" class="btn btn-sm btn-default">Notification</button>
+                </div>
+
+                <div id="tray" class="tab-pane fade">
+                    <ul class="breadcrumb">
+                        <li>Examples</li>
+                        <li class="active">Tray Icon</li>
+                    </ul>
+                    <button id="button-tray-icon" class="btn btn-sm btn-default">Tray Icon</button>
+                </div>
+
+                <div id="screenshot" class="tab-pane fade">
+                    <ul class="breadcrumb">
+                        <li>Examples</li>
+                        <li class="active">Screenshot</li>
+                    </ul>
+                    <button id="button-screenshot" class="btn btn-sm btn-default">Screenshot</button>
+                    <img id="image-preview" style="vertical-align: top" height="200" />
+                </div>
+
+                <div id="layout" class="tab-pane fade">
+                    <ul class="breadcrumb">
+                        <li>Examples</li>
+                        <li class="active">Layout</li>
+                    </ul>
+                    <button id="button-loadlayout" class="btn btn-sm btn-default">Load Layout</button>
+                    <button id="button-savelayout" class="btn btn-sm btn-default">Save Layout</button>
+                </div>
+
+                <div id="ipc" class="tab-pane fade">
+                    <ul class="breadcrumb">
+                        <li>Examples</li>
+                        <li class="active">Message Bus</li>
+                    </ul>
+                    <table>
+                        <tr>
+                            <td nowrap>
+                                <button id="button-subscribe" class="btn btn-sm btn-default">Subscribe</button>
+                                <button id="button-publish" class="btn btn-sm btn-default">Publish</button>
+                            </td>
+                            <td style="padding:5px">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-addon" id="input-label-message">message</span>
+                                    <input type="text" class="form-control" placeholder="Message" aria-describedby="input-label-message" id="input-publish" value="Test Message">
+                                </div>
+                            </td>
+                            <td nowrap>
+                                <button id="button-unsubscribe" class="btn btn-sm btn-default">Unsubscribe</button>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div id="text-messagebus"></div>
+                </div>
+            </div>
+
+            <nav class="col-sm-3">
+                <div class="panel panel-default" data-spy="affix" data-offset-top="10">
+                    <div class="panel-heading">Examples</div>
+                    <div class="panel-body">
+                        <ul class="nav nav-pills nav-stacked">
+                            <li class="active"><a data-toggle="pill" href="#windows">Windows</a></li>
+                            <li><a data-toggle="pill" href="#notification">Notification</a></li>
+                            <li><a data-toggle="pill" href="#tray">Tray Icon</a></li>
+                            <li><a data-toggle="pill" href="#screenshot">Screenshot</a></li>
+                            <li><a data-toggle="pill" href="#layout">Layout</a></li>
+                            <li><a data-toggle="pill" href="#ipc">Message Bus</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <footer class="footer navbar-fixed-bottom">
+        <div class="container-fluid">
+            <a href="#" data-toggle="popover" data-content="Container type and unique identifier" data-trigger="hover" data-placement="top">
+                <span class="text-muted" id="hostName"></span>
+            </a>
+        </div>
+    </footer>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
     <script type="text/javascript" src="assets/js/app.js"></script>
 </body>
