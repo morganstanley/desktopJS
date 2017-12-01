@@ -10,7 +10,7 @@
         "defaultHeight": 500,
         "saveWindowState": false,
         "defaultCentered": true,
-        "icon": "http://localhost:8000/assets/img/application.png"
+        "icon": "http://localhost:8000/favicon.ico"
     },
     "runtime": {
         "arguments": "",
