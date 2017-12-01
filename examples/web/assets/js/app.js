@@ -41,7 +41,7 @@ desktopJS.Electron.ElectronContainer.prototype.showNotification = function (titl
 };
 
 document.addEventListener("DOMContentLoaded", function (event) {
-	hostName.innerHTML = container.hostType + "<br />" + container.uuid;
+	hostName.innerHTML = container.hostType + " &#8226; " + container.uuid + " &#8226; "+ desktopJS.version;
 
 	container.addListener("window-created", (e) => console.log("Window created: " + e.window + ", " + e.windowId + ", " + e.windowName));
 	container.addListener("layout-loaded", (e) => console.log("Layout loaded"));
@@ -53,6 +53,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
 	desktopJS.Container.addListener("layout-loaded", (e) => console.log("Layout loaded - static: " + e.layoutName));
 
 	subscribe();
+
+	// If url is provided a hash, try to navigate to bootstrap tab if exists
+	var activeTab = $('[href="' + location.hash + '"]');
+	activeTab && activeTab.tab('show');
+
+	// Enable popovers
+	$('[data-toggle="popover"]').popover();
 });
 
 openWindowButton.onclick = function () {
@@ -60,7 +67,7 @@ openWindowButton.onclick = function () {
 		{
 			resizable: true,
 			x: 10, y: 10,
-			width: 500, height: 500,
+			width: 850, height: 500,
 			minWidth: 200, minHeight: 100, maxWidth: 800, maxHeight: 600,
 			taskbar: true, icon: "assets/img/application.png",
 			minimizable: true, maximizable: true,
