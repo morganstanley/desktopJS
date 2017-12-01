@@ -134,7 +134,7 @@ export class DefaultMessageBus implements MessageBus {
 
                 // Since there should be nothing listening, don't bother sending to non matching origin children
                 if (win.location.origin !== this.container.globalWindow.location.origin) {
-                    return;
+                    continue;
                 }
 
                 win.postMessage(JSON.stringify({ source: DefaultMessageBus.messageSource, topic: topic, message: message }), this.container.globalWindow.location.origin);
