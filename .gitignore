@@ -7,4 +7,5 @@ dist/
 .rpt2_cache/
 build/
 docs/
+.DS_Store
 package-lock.json
