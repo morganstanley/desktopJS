@@ -121,7 +121,7 @@ export class ElectronMessageBus implements MessageBus {
     }
 
     public publish<T>(topic: string, message: T, options?: MessageBusOptions): Promise<void> {
-        // Publish to main from renderer (send is not available on ipcMain)
+        // If publisher is targeting a window, do not send to main
         if (!options || !options.name) {
             if ((<any>this.ipc).send !== undefined) {
                 // Publish to main from renderer (send is not available on ipcMain)
