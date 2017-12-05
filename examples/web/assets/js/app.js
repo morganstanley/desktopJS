@@ -69,7 +69,7 @@ openWindowButton.onclick = function () {
 			x: 10, y: 10,
 			width: 850, height: 500,
 			minWidth: 200, minHeight: 100, maxWidth: 800, maxHeight: 600,
-			taskbar: true, icon: "assets/img/application.png",
+			taskbar: true,
 			minimizable: true, maximizable: true,
 			alwaysOnTop: false, center: false
 		});
