@@ -47,11 +47,16 @@ class MockCapture {
     }
 }
 
-class MockIpc {
+class MockMainIpc {
     public on(event: string | symbol, listener: Function) { return this; }
+    public addListener(event: string | symbol, listener: Function) { return this; }
     public removeListener(event: string | symbol, listener: Function) { return this; };
-    public send(channel: string, ...args: any[]) { }
     public sendSync(channel: string, ...args: any[]) { return {} };
+    public listeners(channel: string) { return [] }
+}
+
+class MockIpc extends MockMainIpc {
+    public send(channel: string, ...args: any[]) { }
 }
 
 describe("ElectronContainerWindow", () => {
@@ -400,6 +405,15 @@ describe("ElectronMessageBus", () => {
         spyOn(mockWindow.webContents, "send").and.callThrough();
         bus.publish("topic", message).then(done);
         expect(mockIpc.send).toHaveBeenCalledWith("topic", message);
+    });
+
+    it("publish in main invokes callback in main", () => {
+        const message: any = {};
+        const ipc = new MockMainIpc();
+        spyOn(ipc, "listeners").and.callThrough();
+        const localBus = new ElectronMessageBus(ipc, mockWindow);
+        localBus.publish("topic", message);
+        expect(ipc.listeners).toHaveBeenCalledWith("topic");
     });
 
     it("publish with optional name invokes underling send", (done) => {
