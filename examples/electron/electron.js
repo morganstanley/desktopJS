@@ -7,6 +7,8 @@ let mainWindow;
 function createWindow() {
     let container = desktopJS.resolveContainer();
 
+    desktopJS.ContainerWindow.addListener("window-created", (e) => console.log("Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
+
     mainWindow = container.createWindow('http://localhost:8000');
  
     let trayIcon = electron.nativeImage.createFromPath(__dirname + '\\..\\web\\favicon.ico');

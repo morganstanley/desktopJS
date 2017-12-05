@@ -122,10 +122,13 @@ export class ElectronMessageBus implements MessageBus {
 
     public publish<T>(topic: string, message: T, options?: MessageBusOptions): Promise<void> {
         // Publish to main from renderer (send is not available on ipcMain)
-        if ((<any>this.ipc).send !== undefined) {
-            // If publisher is targeting a window, do not send to main
-            if (!options || !options.name) {
+        if (!options || !options.name) {
+            if ((<any>this.ipc).send !== undefined) {
+                // Publish to main from renderer (send is not available on ipcMain)
                 (<any>this.ipc).send(topic, message);
+            } else {
+                // we are in main so invoke listener directly
+                this.ipc.listeners(topic).forEach(cb => cb({ topic: topic }, message));
             }
         }
 
