@@ -227,11 +227,8 @@ export class ElectronContainer extends WebContainerBase {
 
     public getMainWindow(): ContainerWindow {
         if (!this.mainWindow) {
-            let win = this.electron.getCurrentWindow();
-            while (win.getParentWindow()) {
-                win = win.getParentWindow();
-            }
-            this.mainWindow = this.wrapWindow(win);
+            const win = this.browserWindow.fromId(1);
+            this.mainWindow = win ? this.wrapWindow(win) : undefined;
         }
 
         return this.mainWindow;
