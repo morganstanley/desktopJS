@@ -25,8 +25,11 @@ const windowEventMap = {};
  * @augments ContainerWindow
  */
 export class ElectronContainerWindow extends ContainerWindow {
-    public constructor(wrap: any) {
+    private readonly container: ElectronContainer;
+
+    public constructor(wrap: any, container: ElectronContainer) {
         super(wrap);
+        this.container = container;
     }
 
     public get id(): string {
@@ -82,6 +85,32 @@ export class ElectronContainerWindow extends ContainerWindow {
             this.innerWindow.setBounds(bounds);
             resolve();
         });
+    }
+
+    public get allowGrouping() {
+        return true;
+    }
+
+    public getGroup(): Promise<any[]> {
+        return new Promise<ContainerWindow[]>(resolve => {
+            resolve((<any>this.container.internalIpc).sendSync("desktopJS.window-getGroup", { source: this.id }).map(id => {
+                return (id === this.id) ? this : this.container.wrapWindow(this.container.browserWindow.fromId(id));
+            }));
+        });
+    }
+
+    public joinGroup(target: ContainerWindow): Promise<void> {
+        if (!target || target.id === this.id) {
+            return Promise.resolve();
+        }
+
+        (<any>this.container.internalIpc).send("desktopJS.window-joinGroup", { source: this.id, target: target.id });
+        return Promise.resolve();
+    }
+
+    public leaveGroup(): Promise<void> {
+        (<any>this.container.internalIpc).send("desktopJS.window-leaveGroup", { source: this.id });
+        return Promise.resolve();
     }
 
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
@@ -157,10 +186,11 @@ export class ElectronContainer extends WebContainerBase {
     protected mainWindow: ElectronContainerWindow;
     protected electron: any;
     protected app: any;
-    protected browserWindow: any;
+    public browserWindow: any;
     protected tray: any;
     protected menu: any;
-    protected internalIpc: NodeJS.EventEmitter;
+    public internalIpc: NodeJS.EventEmitter;
+    private windowManager: ElectronWindowManager;
 
     /**
      * Gets or sets whether to replace the native web Notification API with a wrapper around showNotification.
@@ -200,11 +230,7 @@ export class ElectronContainer extends WebContainerBase {
             this.ipc = new ElectronMessageBus(this.internalIpc, this.browserWindow);
 
             if (!this.isRemote) {
-                this.internalIpc.on("setWindowName", (event: any, message: any) => {
-                    const { id, name } = message;
-                    this.browserWindow.fromId(id).name = name;
-                    event.returnValue = name;
-                });
+                this.windowManager = new ElectronWindowManager(this.internalIpc, this.browserWindow);
             }
         } catch (e) {
             console.error(e);
@@ -248,8 +274,8 @@ export class ElectronContainer extends WebContainerBase {
         return ObjectTransform.transformProperties(options, this.windowOptionsMap);
     }
 
-    protected wrapWindow(containerWindow: any) {
-        return new ElectronContainerWindow(containerWindow);
+    public wrapWindow(containerWindow: any) {
+        return new ElectronContainerWindow(containerWindow, this);
     }
 
     public createWindow(url: string, options?: any): ContainerWindow {
@@ -268,7 +294,7 @@ export class ElectronContainer extends WebContainerBase {
             main process we can just directly set the name.
         */
         electronWindow["name"] = (this.isRemote)
-            ? (<any>this.internalIpc).sendSync("setWindowName", { id: electronWindow.id, name: windowName })
+            ? (<any>this.internalIpc).sendSync("desktopJS.window-setname", { id: electronWindow.id, name: windowName })
             : windowName;
 
         electronWindow.loadURL(url);
@@ -343,4 +369,134 @@ export class ElectronContainer extends WebContainerBase {
             resolve(layout);
         });
     }
+}
+
+export class ElectronWindowManager {
+    private ipc: NodeJS.EventEmitter;
+    private browserWindow: any;
+
+    private lastBounds: Map<number, Rectangle> = new Map(); // BrowserWindow.id -> Rectangle
+    private ignoredWindows: number[] = []; // Array of BrowserWindow.id
+
+    public constructor(ipc?: NodeJS.EventEmitter, browserWindow?: any) {
+        this.ipc = ipc || require("electron").ipcMain;
+        this.browserWindow = browserWindow || require("electron").BrowserWindow;
+
+        this.ipc.on("desktopJS.window-setname", (event: any, message: any) => {
+            const { id, name } = message;
+            this.browserWindow.fromId(id).name = name;
+            event.returnValue = name;
+        });
+
+        this.ipc.on("desktopJS.window-joinGroup", (event: any, message: any) => {
+            const { "source": sourceId, "target": targetId } = message;
+            const source = this.browserWindow.fromId(sourceId);
+            const target = this.browserWindow.fromId(targetId);
+
+            this.groupWindows(target, source);
+        });
+
+        this.ipc.on("desktopJS.window-leaveGroup", (event: any, message: any) => {
+            const { "source": sourceId } = message;
+            this.ungroupWindows(this.browserWindow.fromId(sourceId));
+        });
+
+        this.ipc.on("desktopJS.window-getGroup", (event: any, message: any) => {
+            const { "source": sourceId } = message;
+            const group: string = this.browserWindow.fromId(sourceId).group;
+
+            event.returnValue = (group)
+                                    ? this.browserWindow.getAllWindows().filter(win => { return (win.group === group); }).map(win => win.id )
+                                    : [];
+        });
+    }
+
+    private registerWindowEvents(win: any) {
+        if (win && !win.moveHandler) {
+            this.lastBounds.set(win.id, win.getBounds());
+            win.moveHandler = (e) => this.handleMove(win);
+            win.on("move", win.moveHandler);
+        }
+    }
+
+    private unregisterWindowEvents(win: any) {
+        if (win && win.moveHandler) {
+            this.lastBounds.delete(win.id);
+            win.removeListener("move", win.moveHandler);
+            delete win.moveHandler;
+        }
+    }
+
+    public groupWindows(target: any, ...windows: any[]) {
+        for (const win of windows) {
+            win.group = target.group || (target.group = Guid.newGuid());
+            this.registerWindowEvents(win);
+        }
+
+        this.registerWindowEvents(target);
+    }
+
+    public ungroupWindows(...windows: any[]) {
+        // Unhook and clear group of all provided windows
+        for (const win of windows) {
+            this.unregisterWindowEvents(win);
+            win.group = null;
+        }
+
+        // Group all windows by group and for any group consisting of one window unhook and clear the group
+        this.groupBy<any>(this.browserWindow.getAllWindows(), "group").filter(group => group.key && group.values && group.values.length === 1).forEach(group => {
+            for (const win of group.values) {
+                this.unregisterWindowEvents(win);
+                win.group = null;
+            }
+        });
+    }
+
+    private handleMove(win: any): void {
+        // Grab the last bounds we had and the current and then store the current
+        const oldBounds = this.lastBounds.get(win.id);
+        const newBounds = win.getBounds();
+        this.lastBounds.set(win.id, newBounds);
+
+        // If the height or width change this is a resize and we should just exit out
+        if (oldBounds.width !== newBounds.width || oldBounds.height !== newBounds.height) {
+            return;
+        }
+
+        // Prevent cycles
+        if (this.ignoredWindows.indexOf(win.id) >= 0) {
+            return;
+        }
+
+        if (win.group) {
+            // Get all windows other windows in same group
+            const groupedWindows = this.browserWindow.getAllWindows().filter(window => { return (window.group === win.group && window.id !== win.id); });
+
+            if (groupedWindows && groupedWindows.length > 0) {
+                const diff = { x: oldBounds.x - newBounds.x, y: oldBounds.y - newBounds.y };
+
+                groupedWindows.forEach(groupedWindow => {
+                    const targetBounds = groupedWindow.getBounds();
+                    this.ignoredWindows.push(groupedWindow.id);
+                    groupedWindow.setBounds( { x: targetBounds.x - diff.x, y: targetBounds.y - diff.y, width: targetBounds.width, height: targetBounds.height }, true);
+                    this.ignoredWindows.splice(this.ignoredWindows.indexOf(groupedWindow.id), 1);
+                });
+            }
+        }
+    }
+
+    private groupBy<T>(array: T[], groupBy: any): { key: any, values: T[]}[] {
+        return array.reduce((accumulator, current) => {
+            const key = groupBy instanceof Function ? groupBy(current) : current[groupBy];
+            const group = accumulator.find((r) => r && r.key === key);
+
+            if (group) {
+                group.values.push(current);
+            } else {
+                accumulator.push({ key: key, values: [current] });
+            }
+
+            return accumulator;
+        }, []);
+     }
 }

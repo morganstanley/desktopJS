@@ -191,7 +191,7 @@ export class DefaultContainer extends WebContainerBase {
         return ObjectTransform.transformProperties(options, this.windowOptionsMap);
     }
 
-    protected wrapWindow(containerWindow: any) {
+    public wrapWindow(containerWindow: any) {
         return new DefaultContainerWindow(containerWindow);
     }
 

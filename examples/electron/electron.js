@@ -9,7 +9,7 @@ function createWindow() {
 
     desktopJS.ContainerWindow.addListener("window-created", (e) => console.log("Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
 
-    mainWindow = container.createWindow('http://localhost:8000');
+    mainWindow = container.createWindow('http://localhost:8000', { name: "desktopJS" });
  
     let trayIcon = electron.nativeImage.createFromPath(__dirname + '\\..\\web\\favicon.ico');
     container.addTrayIcon({ icon: trayIcon, text: 'ContainerPOC' }, () => {
@@ -26,11 +26,10 @@ function createWindow() {
 		console.log("Message received: " + message.symbol);
     });
 
-    /*
-    mainWindow.on("closed", function () {
+    mainWindow.addListener("closed", function () {
         mainWindow = null;
+        app.quit();
     });
-    */
 }
 
 app.on("ready", createWindow);
