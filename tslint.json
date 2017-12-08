@@ -71,7 +71,7 @@
         "no-misused-new": true,
         "no-regex-spaces": true,
         "no-sparse-arrays": true,
-        "no-stateless-class": true,
+        "no-stateless-class": false,
         "no-string-literal": false,
         "no-string-throw": true,
         "no-unnecessary-bind": true,

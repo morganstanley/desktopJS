@@ -19,6 +19,13 @@ ContainerRegistry.registerContainer("Electron", {
     create: () => new ElectronContainer()
 });
 
+class InternalMessageType {
+    public static readonly setName: string = "desktopJS.window-setname";
+    public static readonly getGroup: string = "desktopJS.window-getGroup";
+    public static readonly joinGroup: string = "desktopJS.window-joinGroup";
+    public static readonly leaveGroup: string = "desktopJS.window-leaveGroup";
+}
+
 const windowEventMap = {};
 
 /**
@@ -93,7 +100,7 @@ export class ElectronContainerWindow extends ContainerWindow {
 
     public getGroup(): Promise<any[]> {
         return new Promise<ContainerWindow[]>(resolve => {
-            resolve((<any>this.container.internalIpc).sendSync("desktopJS.window-getGroup", { source: this.id }).map(id => {
+            resolve((<any>this.container.internalIpc).sendSync(InternalMessageType.getGroup, { source: this.id }).map(id => {
                 return (id === this.id) ? this : this.container.wrapWindow(this.container.browserWindow.fromId(id));
             }));
         });
@@ -104,12 +111,12 @@ export class ElectronContainerWindow extends ContainerWindow {
             return Promise.resolve();
         }
 
-        (<any>this.container.internalIpc).send("desktopJS.window-joinGroup", { source: this.id, target: target.id });
+        (<any>this.container.internalIpc).send(InternalMessageType.joinGroup, { source: this.id, target: target.id });
         return Promise.resolve();
     }
 
     public leaveGroup(): Promise<void> {
-        (<any>this.container.internalIpc).send("desktopJS.window-leaveGroup", { source: this.id });
+        (<any>this.container.internalIpc).send(InternalMessageType.leaveGroup, { source: this.id });
         return Promise.resolve();
     }
 
@@ -294,7 +301,7 @@ export class ElectronContainer extends WebContainerBase {
             main process we can just directly set the name.
         */
         electronWindow["name"] = (this.isRemote)
-            ? (<any>this.internalIpc).sendSync("desktopJS.window-setname", { id: electronWindow.id, name: windowName })
+            ? (<any>this.internalIpc).sendSync(InternalMessageType.setName, { id: electronWindow.id, name: windowName })
             : windowName;
 
         electronWindow.loadURL(url);
@@ -382,13 +389,13 @@ export class ElectronWindowManager {
         this.ipc = ipc || require("electron").ipcMain;
         this.browserWindow = browserWindow || require("electron").BrowserWindow;
 
-        this.ipc.on("desktopJS.window-setname", (event: any, message: any) => {
+        this.ipc.on(InternalMessageType.setName, (event: any, message: any) => {
             const { id, name } = message;
             this.browserWindow.fromId(id).name = name;
             event.returnValue = name;
         });
 
-        this.ipc.on("desktopJS.window-joinGroup", (event: any, message: any) => {
+        this.ipc.on(InternalMessageType.joinGroup, (event: any, message: any) => {
             const { "source": sourceId, "target": targetId } = message;
             const source = this.browserWindow.fromId(sourceId);
             const target = this.browserWindow.fromId(targetId);
@@ -396,12 +403,12 @@ export class ElectronWindowManager {
             this.groupWindows(target, source);
         });
 
-        this.ipc.on("desktopJS.window-leaveGroup", (event: any, message: any) => {
+        this.ipc.on(InternalMessageType.leaveGroup, (event: any, message: any) => {
             const { "source": sourceId } = message;
             this.ungroupWindows(this.browserWindow.fromId(sourceId));
         });
 
-        this.ipc.on("desktopJS.window-getGroup", (event: any, message: any) => {
+        this.ipc.on(InternalMessageType.getGroup, (event: any, message: any) => {
             const { "source": sourceId } = message;
             const group: string = this.browserWindow.fromId(sourceId).group;
 
