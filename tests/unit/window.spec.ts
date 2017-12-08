@@ -3,6 +3,9 @@ import { ContainerWindow, WindowEventType, WindowEventArgs } from "../../src/win
 import { EventArgs, EventEmitter } from "../../src/events";
 import { TestContainer, MockMessageBus } from "./container.spec";
 
+class MockWindow extends ContainerWindow {
+}
+
 describe ("static events", () => {
     let container: TestContainer;
 
@@ -31,5 +34,30 @@ describe ("static events", () => {
         spyOn(container.ipc, "publish").and.callThrough();
         ContainerWindow.emit(<WindowEventType> args.name, <WindowEventArgs> args);
         expect(container.ipc.publish).toHaveBeenCalledWith("desktopJS.static-event", { eventName: "containerwindow-" + args.name, eventArgs: args });
+    });
+});
+
+describe("window grouping", () => {
+    it("allowGrouping is false", () => {
+        expect(new MockWindow(null).allowGrouping).toEqual(false);
+    });
+
+    it ("getGroup returns empty array", (done) => {
+        new MockWindow(null).getGroup().then(windows => {
+            expect(windows).toBeDefined();
+            expect(windows.length).toEqual(0);
+        }).then(done);
+    });
+
+    it ("joinGroup not supported", (done) => {
+        new MockWindow(null).joinGroup(null).catch(reason => {
+            expect(reason).toEqual("Not supported");
+        }).then(done);
+    });
+
+    it ("leaveGroup resolves", (done) => {
+        new MockWindow(null).leaveGroup().then(() => {
+            done();
+        });
     });
 });
