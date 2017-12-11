@@ -101,6 +101,10 @@ class MockWindow {
         return {};
     }
 
+    getGroup(callback: any, errorCallback: any) { }
+    joinGroup(target: any, callback: any, errorCallback: any) { }
+    leaveGroup(callback: any, errorCallback: any) { }
+
     addEventListener(eventName: string, listener: any): void { }
 
     removeEventListener(eventName: string, listener: any): void { }
@@ -245,6 +249,46 @@ describe("OpenFinContainerWindow", () => {
                 win.removeListener(unmappedEvent, () => { });
                 expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
             });
+        });
+    });
+
+    describe("window grouping", () => {
+        it("allowGrouping is true", () => {
+            expect(win.allowGrouping).toEqual(true);
+        });
+
+        it ("getGroup invokes underlying getGroup", (done) => {
+            spyOn(innerWin, "getGroup").and.callFake(resolve => {
+                resolve([ win ] );
+            });
+
+            win.getGroup().then(windows => {
+                expect(innerWin.getGroup).toHaveBeenCalled();
+                expect(windows).toBeDefined();
+                expect(windows.length).toEqual(1);
+            }).then(done);
+        });
+
+        it ("joinGroup invokes underlying joinGroup", (done) => {
+            spyOn(innerWin, "joinGroup").and.callFake((target, resolve) => resolve());
+            const window = new OpenFinContainerWindow(new MockWindow("Fake"));
+            win.joinGroup(window).then(() => {
+                expect(innerWin.joinGroup).toHaveBeenCalledWith(window.innerWindow, jasmine.any(Function), jasmine.any(Function));
+            }).then(done);
+        });
+
+        it ("joinGroup with source == target does not invoke joinGroup", (done) => {
+            spyOn(innerWin, "joinGroup").and.callFake((target, resolve) => resolve());
+            win.joinGroup(win).then(() => {
+                expect(innerWin.joinGroup).toHaveBeenCalledTimes(0);
+            }).then(done);
+        });
+
+        it ("leaveGroup invokes underlying leaveGroup", (done) => {
+            spyOn(innerWin, "leaveGroup").and.callFake(resolve => resolve());
+            win.leaveGroup().then(() => {
+                expect(innerWin.leaveGroup).toHaveBeenCalled();
+            }).then(done);
         });
     });
 });

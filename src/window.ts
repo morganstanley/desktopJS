@@ -95,6 +95,22 @@ export abstract class ContainerWindow extends EventEmitter {
      */
     public abstract setBounds(bounds: Rectangle): Promise<void>;
 
+    public get allowGrouping() {
+        return false;
+    }
+
+    public getGroup(): Promise<ContainerWindow[]> {
+        return Promise.resolve([]);
+    }
+
+    public joinGroup(target: ContainerWindow): Promise<void> {
+        return Promise.reject("Not supported");
+    }
+
+    public leaveGroup(): Promise<void> {
+        return Promise.resolve();
+    }
+
     /**
      * Override to provide custom container logic for adding an event handler.
      */

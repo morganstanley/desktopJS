@@ -93,6 +93,34 @@ export class OpenFinContainerWindow extends ContainerWindow {
         });
     }
 
+    public get allowGrouping() {
+        return true;
+    }
+
+    public getGroup(): Promise<ContainerWindow[]> {
+        return new Promise<ContainerWindow[]>((resolve, reject) => {
+            this.innerWindow.getGroup(windows => {
+                resolve(windows.map(window => new OpenFinContainerWindow(window)));
+            }, reject);
+        });
+    }
+
+    public joinGroup(target: ContainerWindow): Promise<void> {
+        if (!target || target.id === this.id) {
+            return Promise.resolve();
+        }
+
+        return new Promise<void>((resolve, reject) => {
+            this.innerWindow.joinGroup(target.innerWindow, resolve, reject);
+        });
+    }
+
+    public leaveGroup(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.innerWindow.leaveGroup(resolve, reject);
+        });
+    }
+
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
         this.innerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
     }
@@ -320,7 +348,7 @@ export class OpenFinContainer extends WebContainerBase {
         return newOptions;
     }
 
-    protected wrapWindow(containerWindow: any) {
+    public wrapWindow(containerWindow: any) {
         return new OpenFinContainerWindow(containerWindow);
     }
 
@@ -465,6 +493,7 @@ export class OpenFinContainer extends WebContainerBase {
     public getWindowByName(name: string): Promise<ContainerWindow | null> {
         return new Promise<ContainerWindow>((resolve, reject) => {
             this.desktop.Application.getCurrent().getChildWindows(windows => {
+                windows.push(this.desktop.Application.getCurrent().getWindow());
                 const win = windows.find(window => window.name === name);
                 resolve(win ? this.wrapWindow(win) : null);
             });
