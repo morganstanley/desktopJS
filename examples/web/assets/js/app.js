@@ -43,6 +43,9 @@ desktopJS.Electron.ElectronContainer.prototype.showNotification = function (titl
 document.addEventListener("DOMContentLoaded", function (event) {
 	hostName.innerHTML = container.hostType + " &#8226; " + container.uuid + " &#8226; "+ desktopJS.version;
 
+	$("#button-joingroup").prop("disabled", !container.getCurrentWindow().allowGrouping);
+	$("#button-leavegroup").prop("disabled", !container.getCurrentWindow().allowGrouping);
+
 	container.addListener("window-created", (e) => console.log("Window created: " + e.window + ", " + e.windowId + ", " + e.windowName));
 	container.addListener("layout-loaded", (e) => console.log("Layout loaded"));
 	container.addListener("layout-saved", (e) => console.log("Layout saved"));
@@ -68,8 +71,8 @@ openWindowButton.onclick = function () {
 			resizable: true,
 			x: 10, y: 10,
 			width: 850, height: 500,
-			minWidth: 200, minHeight: 100, maxWidth: 800, maxHeight: 600,
-			taskbar: true, icon: "assets/img/application.png",
+			minWidth: 200, minHeight: 100, maxWidth: 850, maxHeight: 600,
+			taskbar: true,
 			minimizable: true, maximizable: true,
 			alwaysOnTop: false, center: false
 		});
@@ -88,6 +91,16 @@ visibilityButton.onclick = function () {
 		}
 	});
 };
+
+$("#button-joingroup").click(function() {
+	container.getWindowByName("desktopJS").then(win => {
+		container.getCurrentWindow().joinGroup(win);
+	});	
+});
+
+$("#button-leavegroup").click(function() {
+	container.getCurrentWindow().leaveGroup();
+});
 
 notificationButton.onclick = function () {
 	Notification.requestPermission(function(permission) {

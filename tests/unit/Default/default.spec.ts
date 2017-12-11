@@ -126,6 +126,31 @@ describe("DefaultContainerWindow", () => {
             expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
         });
     });
+
+    describe("window grouping", () => {
+        it("allowGrouping is false", () => {
+            expect(new DefaultContainerWindow(null).allowGrouping).toEqual(false);
+        });
+
+        it ("getGroup returns empty array", (done) => {
+            new DefaultContainerWindow(null).getGroup().then(windows => {
+                expect(windows).toBeDefined();
+                expect(windows.length).toEqual(0);
+            }).then(done);
+        });
+
+        it ("joinGroup not supported", (done) => {
+            new DefaultContainerWindow(null).joinGroup(null).catch(reason => {
+                expect(reason).toEqual("Not supported");
+            }).then(done);
+        });
+
+        it ("leaveGroup resolves", (done) => {
+            new DefaultContainerWindow(null).leaveGroup().then(() => {
+                done();
+            });
+        });
+    });
 });
 
 describe("DefaultContainer", () => {
@@ -355,7 +380,6 @@ describe("DefaultMessageBus", () => {
         bus.unsubscribe({ topic: "topic", listener: callback }).then(done);
         expect(mockWindow.removeEventListener).toHaveBeenCalledWith("message", jasmine.any(Function));
     });
-
 
     it("publish invokes underling publish", (done) => {
         let message: any = { data: "data" };

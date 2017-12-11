@@ -22,7 +22,8 @@ var gulp = require('gulp'),
     typescript = require('typescript'),
     pkg = require('./package.json'),
     dts = require('dts-bundle'),
-    merge = require('merge2');
+    merge = require('merge2'),
+    runSequence = require('run-sequence');
 
 var src = ['src/**/*.ts'];
 var stagingSrc = ['**/*.ts', '!node_modules/**/*.ts', '**/*.spec.ts', '!node_modules/**/*.spec.ts'];
@@ -42,12 +43,12 @@ gulp.task('tslint', function () {
         .pipe(tslint.report({ summarizeFailureOutput: true }));
 });
 
-gulp.task('clean', ['clean-staging'], function () {
+gulp.task('clean', ['clean:staging'], function () {
     return gulp.src(dest, { read: false })
         .pipe(clean());
 });
 
-gulp.task('clean-staging', function () {
+gulp.task('clean:staging', function () {
     return gulp.src('build', { read: false })
         .pipe(clean());
 });
@@ -73,7 +74,7 @@ function createBundle(format, destination) {
     });
 }
 
-gulp.task('build', ['clean', 'tslint'], function () {
+gulp.task('build:main', [], function () {
     // Main bundle is umd
     return createBundle('umd', pkg.main)
         .then(function () {
@@ -89,7 +90,7 @@ gulp.task('build', ['clean', 'tslint'], function () {
         });
 });
 
-gulp.task('build-staging', ['clean-staging'], function () {
+gulp.task('build:staging', [], function () {
     var tsResult = gulp.src(stagingSrc)
         .pipe(sourcemaps.init())
         .pipe(tsStagingProject({
@@ -105,7 +106,7 @@ gulp.task('build-staging', ['clean-staging'], function () {
     ]);;
 });
 
-gulp.task('test', ['build-staging'], function () {
+gulp.task('test', ['build:staging'], function () {
     return gulp.src('build/src/**/*.js')
         .pipe(istanbul({ includeUntested: true }))
         .pipe(istanbul.hookRequire())
@@ -140,7 +141,7 @@ function injectModuleDeclarations(src) {
         .pipe(gulp.dest(stagingOutput + "/src"));
 }
 
-gulp.task('dts', ['build-staging'], function () {
+gulp.task('dts', [], function () {
     return injectModuleDeclarations(gulp.src(
         [
             stagingOutput + "/src/Default/default.d.ts",
@@ -190,7 +191,7 @@ function remapCoverageFiles() {
         }));
 };
 
-gulp.task('compress', ['build'], function (cb) {
+gulp.task('compress', [], function (cb) {
     return gulp.src(pkg.main)
         .pipe(sourcemaps.init({ loadMaps: true }))
         .pipe(uglify())
@@ -199,8 +200,8 @@ gulp.task('compress', ['build'], function (cb) {
         .pipe(gulp.dest(dest));
 });
 
-gulp.task("server", function () {
-    gulp.src(['examples/web', dest])
+gulp.task("server", [], function () {
+    return gulp.src(['examples/web', dest])
         .pipe(webserver({
             fallback: 'index.html',
             livereload: {
@@ -209,10 +210,16 @@ gulp.task("server", function () {
         }));
 });
 
-gulp.task('bundle', ['tslint', 'clean', 'build', 'test', 'dts', 'compress']);
-
-gulp.task('watch', function () {
-    gulp.watch(src, ['bundle']);
+gulp.task('build', [], function() {
+    return runSequence(['tslint', 'clean'], ['build:main', 'test'], ['dts', 'compress']);
 });
+
+gulp.task('watch', ['server'], function () {
+    gulp.watch(['src/**/*.*', 'tests/**/*.*'], function() {
+        return runSequence('tslint', ['build:main', 'test'], ['dts', 'compress']);
+    });
+});
+
+gulp.task('bundle', ['build']);
 
 gulp.task('default', ['bundle']);

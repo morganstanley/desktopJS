@@ -1,11 +1,37 @@
-import { ElectronContainer, ElectronContainerWindow, ElectronMessageBus } from "../../../src/Electron/electron";
+import { ElectronContainer, ElectronContainerWindow, ElectronMessageBus, ElectronWindowManager } from "../../../src/Electron/electron";
 import { MessageBusSubscription } from "../../../src/ipc";
 
-class MockWindow {
+class MockEventEmitter {
+    private eventListeners: Map<string, any> = new Map();
+    public addListener(eventName: string, listener: any): void {
+        (this.eventListeners[eventName] = this.eventListeners[eventName] || []).push(listener);
+    }
+    
+    public removeListener(eventName: string, listener: any): void { }
+
+    public on(eventName: string, listener: any): void {
+        this.addListener(eventName, listener);
+    }
+
+    public listeners(eventName: string): ((event: any) => void)[] {
+        return (this.eventListeners[eventName] || []);
+    }
+
+    public emit(eventName: string, ...eventArgs: any[]) {
+        for (const listener of this.listeners(eventName)) {
+            listener(...eventArgs);
+        }
+    }    
+}
+
+class MockWindow extends MockEventEmitter {
     public name: string;
     public id: number;
+    public group: string;
+    private bounds: any = { x: 0, y: 1, width: 2, height: 3 }
 
     constructor(name?: string) {
+        super();
         this.name = name;
     }
 
@@ -28,13 +54,12 @@ class MockWindow {
         getURL() { return "url"; }
     }
 
-    public getBounds(): any { return { x: 0, y: 1, width: 2, height: 3 }; }
+    public getBounds(): any { return this.bounds; }
 
-    public setBounds(bounds: {x: number, y: number, width: number, height: number}): void { }
-
-    public addListener(eventName: string, listener: any): void { }
-    
-    public removeListener(eventName: string, listener: any): void { }
+    public setBounds(bounds: {x: number, y: number, width: number, height: number}): void {
+        this.bounds = bounds;
+        this.emit("move", null);
+     }
 }
 
 class MockCapture {
@@ -47,20 +72,23 @@ class MockCapture {
     }
 }
 
-class MockIpc {
-    public on(event: string | symbol, listener: Function) { return this; }
-    public removeListener(event: string | symbol, listener: Function) { return this; };
-    public send(channel: string, ...args: any[]) { }
+class MockMainIpc extends MockEventEmitter {
     public sendSync(channel: string, ...args: any[]) { return {} };
+}
+
+class MockIpc extends MockMainIpc {
+    public send(channel: string, ...args: any[]) { }
 }
 
 describe("ElectronContainerWindow", () => {
     let innerWin: any;
     let win: ElectronContainerWindow;
+    let container: ElectronContainer;
 
     beforeEach(() => {
         innerWin = new MockWindow();
-        win = new ElectronContainerWindow(innerWin);
+        container = new ElectronContainer({ BrowserWindow: { fromId(): any {  } } }, new MockIpc(), {});
+        win = new ElectronContainerWindow(innerWin, container);
     });
 
     it("Wrapped window is retrievable", () => {
@@ -164,6 +192,55 @@ describe("ElectronContainerWindow", () => {
             spyOn(win.innerWindow, "removeListener").and.callThrough()
             win.removeListener("move", () => {});
             expect(win.innerWindow.removeListener).toHaveBeenCalledWith("move", jasmine.any(Function));
+        });
+    });
+
+    describe("window grouping", () => {
+        it("allowGrouping is true", () => {
+            expect(win.allowGrouping).toEqual(true);
+        });
+
+        it ("getGroup sends synchronous ipc message", (done) => {
+            spyOn(container.internalIpc, "sendSync").and.returnValue([ 1, 5, 2 ]);
+            spyOnProperty(win, "id", "get").and.returnValue(5);
+            spyOn(container, "wrapWindow").and.returnValue(new MockWindow());
+            spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
+
+            win.getGroup().then(windows => {
+                expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getGroup", { source: 5});
+                expect(container.wrapWindow).toHaveBeenCalledTimes(2);
+                expect(windows.length).toEqual(3);
+            }).then(done);
+        });
+
+        it ("joinGroup sends ipc message", (done) => {
+            spyOn(container.internalIpc, "send").and.callThrough();
+            spyOnProperty(win, "id", "get").and.returnValue(1);
+            const targetWin = new ElectronContainerWindow(innerWin, container);
+            spyOnProperty(targetWin, "id", "get").and.returnValue(2);
+
+            win.joinGroup(targetWin).then(() => {
+                expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-joinGroup", { source: 1, target: 2 });
+            }).then(done);
+        });
+
+        it ("joinGroup with source == target does not send ipc message", (done) => {
+            spyOn(container.internalIpc, "send").and.callThrough();
+            spyOnProperty(win, "id", "get").and.returnValue(1);
+            const targetWin = new ElectronContainerWindow(innerWin, container);
+            spyOnProperty(targetWin, "id", "get").and.returnValue(1);
+
+            win.joinGroup(targetWin).then(() => {
+                expect(container.internalIpc.send).toHaveBeenCalledTimes(0);
+            }).then(done);
+        });
+
+        it ("leaveGroup sends ipc message", (done) => {
+            spyOn(container.internalIpc, "send").and.callThrough();
+            spyOnProperty(win, "id", "get").and.returnValue(5);
+            win.leaveGroup().then(() => {
+                expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-leaveGroup", { source: 5});
+            }).then(done);
         });
     });
 });
@@ -402,8 +479,201 @@ describe("ElectronMessageBus", () => {
         expect(mockIpc.send).toHaveBeenCalledWith("topic", message);
     });
 
+    it("publish in main invokes callback in main", () => {
+        const message: any = {};
+        const ipc = new MockMainIpc();
+        spyOn(ipc, "listeners").and.callThrough();
+        const localBus = new ElectronMessageBus(ipc, mockWindow);
+        localBus.publish("topic", message);
+        expect(ipc.listeners).toHaveBeenCalledWith("topic");
+    });
+
     it("publish with optional name invokes underling send", (done) => {
         let message: any = {};
         bus.publish("topic", message, { name: "target" }).then(done);
+    });
+});
+
+describe("ElectronWindowManager", () => {
+    let mgr: ElectronWindowManager;
+
+    beforeEach(() => {
+        mgr = new ElectronWindowManager(new MockMainIpc(), { fromId(): any {}, getAllWindows(): any {} });
+    });
+
+    it ("subscribed to ipc", () => {
+        const ipc = new MockMainIpc();
+        spyOn(ipc, "on").and.callThrough();
+        new ElectronWindowManager(ipc, { });
+        expect(ipc.on).toHaveBeenCalledTimes(4);
+        expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-setname", jasmine.any(Function));
+        expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-joinGroup", jasmine.any(Function));
+        expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-leaveGroup", jasmine.any(Function));
+        expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-getGroup", jasmine.any(Function));
+    });
+
+    describe("main ipc handlers", () => {
+        it ("setname sets and returns supplied name", ()=> {
+            const win: MockWindow = new MockWindow();
+            spyOn(mgr.browserWindow, "fromId").and.returnValue(win);
+            const event: any = {};
+            mgr.ipc.emit("desktopJS.window-setname", event, { id: 1, name: "NewName" });
+            expect(win.name).toEqual("NewName");
+            expect(event.returnValue).toEqual("NewName");
+        });
+
+        it ("joinGroup invokes groupWindows", () => {
+            const source: MockWindow = new MockWindow();
+            source.id = 1;
+            const target: MockWindow = new MockWindow();
+            target.id = 2;
+
+            spyOn(mgr, "groupWindows").and.stub();
+            spyOn(mgr.browserWindow, "fromId").and.callFake(id => (id === source.id) ? source : target);
+            mgr.ipc.emit("desktopJS.window-joinGroup", {}, { source: 1, target: 2 });
+
+            expect(mgr.groupWindows).toHaveBeenCalledWith(target, source);
+        });
+
+        it ("leaveGroup invokes ungroupWindows", () => {
+            const win: MockWindow = new MockWindow();
+
+            spyOn(mgr, "ungroupWindows").and.stub();
+            spyOn(mgr.browserWindow, "fromId").and.callFake(id => win);
+            mgr.ipc.emit("desktopJS.window-leaveGroup", {}, { source: 1 });
+
+            expect(mgr.ungroupWindows).toHaveBeenCalledWith(win);
+        });
+
+        it ("getGroup returns matching windows by group", () => {
+            const win1: MockWindow = new MockWindow();
+            win1.id = 1;
+            const win2: MockWindow = new MockWindow();
+            win2.id = 2;
+            const win3: MockWindow = new MockWindow();
+            win3.id = 3;
+
+            win1.group = win2.group = "group";
+
+            spyOn(mgr.browserWindow, "fromId").and.returnValue(win1);
+            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([ win1, win2, win3 ]);
+            const event: any = {};
+            mgr.ipc.emit("desktopJS.window-getGroup", event, { id: 1 });
+            expect(event.returnValue).toEqual([ 1, 2 ]);
+        });
+
+        it ("getGroup returns returns empty array when no matching groups", () => {
+            const win1: MockWindow = new MockWindow();
+            win1.id = 1;
+            const win2: MockWindow = new MockWindow();
+            win2.id = 2;
+
+            spyOn(mgr.browserWindow, "fromId").and.returnValue(win1);
+            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([ win1, win2 ]);
+            const event: any = {};
+            mgr.ipc.emit("desktopJS.window-getGroup", event, { id: 1 });
+            expect(event.returnValue).toEqual([]);
+        });
+    });
+
+    describe("groupWindows", () => {
+        let target: MockWindow;
+        let win1: MockWindow;
+        let win2: MockWindow;
+
+        beforeEach(() => {
+            target = new MockWindow();
+            win1 = new MockWindow();
+            win2 = new MockWindow();
+
+            target.id = 1;
+            win1.id = 2;
+            win2.id = 3;
+
+            spyOn(target, "on").and.callThrough();
+            spyOn(win1, "on").and.callThrough();
+            spyOn(win2, "on").and.callThrough();
+        });
+
+        it ("assigns group property", () => {
+            expect(target.group).toBeUndefined();
+            expect(win1.group).toBeUndefined();
+            expect(win2.group).toBeUndefined();
+
+            mgr.groupWindows(target, win1, win2);
+
+            expect(target.group).toBeDefined();
+            expect(win1.group).toEqual(target.group);
+            expect(win2.group).toEqual(target.group);
+        });
+
+        it ("copies from existing target group", () => {
+            target.group = "groupid";
+
+            mgr.groupWindows(target, win1, win2);
+            
+            expect(win1.group).toEqual(target.group);
+            expect(win2.group).toEqual(target.group);
+        });
+
+        it ("attaches move handler", () => {
+            mgr.groupWindows(target, win1, win2);
+
+            expect(target.on).toHaveBeenCalledWith("move", jasmine.any(Function));
+            expect(win1.on).toHaveBeenCalledWith("move", jasmine.any(Function));
+            expect(win2.on).toHaveBeenCalledWith("move", jasmine.any(Function));
+        });
+
+        it ("resize is ignored", () => {
+            mgr.groupWindows(target, win1, win2);
+            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([]);
+            win1.setBounds({ x: 0, y: 1, width: 10, height: 10});
+
+            expect(mgr.browserWindow.getAllWindows).toHaveBeenCalledTimes(0);
+        });
+
+        it("move updates other grouped window bounds", () => {
+            mgr.groupWindows(target, win1, win2);
+            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
+            win1.setBounds({ x: 10, y: 1, width: 2, height: 3});
+
+            expect(target.getBounds().x).toEqual(10);
+            expect(win2.getBounds().x).toEqual(10);
+        });
+    });
+
+    describe("ungroupWindows", () => {
+        let target: MockWindow;
+        let win1: MockWindow;
+        let win2: MockWindow;
+
+        beforeEach(() => {
+            target = new MockWindow();
+            win1 = new MockWindow();
+            win2 = new MockWindow();
+        });
+
+        it("clears group properties", () => {
+            mgr.groupWindows(target, win1, win2);
+            expect(win1.group).toBeDefined();
+            expect(win2.group).toBeDefined();
+
+            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
+            mgr.ungroupWindows(win1, win2);
+
+            expect(win1.group).toBeNull();
+            expect(win2.group).toBeNull();
+        });
+
+        it ("unhooks orphanded grouped window", () => {
+            mgr.groupWindows(target, win1, win2);
+            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
+            spyOn(target, "removeListener").and.callThrough();
+
+            mgr.ungroupWindows(win1, win2);
+
+            expect(target.group).toBeNull();
+            expect(target.removeListener).toHaveBeenCalledWith("move", jasmine.any(Function));
+        });
     });
 });
