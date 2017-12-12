@@ -93,9 +93,7 @@ visibilityButton.onclick = function () {
 };
 
 $("#button-joingroup").click(function() {
-	container.getWindowByName("desktopJS").then(win => {
-		container.getCurrentWindow().joinGroup(win);
-	});	
+	container.getCurrentWindow().joinGroup(container.getMainWindow());
 });
 
 $("#button-leavegroup").click(function() {
