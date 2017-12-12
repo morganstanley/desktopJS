@@ -214,8 +214,8 @@ gulp.task('build', [], function() {
     return runSequence(['tslint', 'clean'], ['build:main', 'test'], ['dts', 'compress']);
 });
 
-gulp.task('watch', ['server'], function () {
-    gulp.watch(['src/**/*.*', 'tests/**/*.*'], function() {
+gulp.task('watch', ['build', 'server'], function () {
+    gulp.watch(['src/**/*.*', 'tests/**/*.*', '*.json', '*.js'], function() {
         return runSequence('tslint', ['build:main', 'test'], ['dts', 'compress']);
     });
 });
