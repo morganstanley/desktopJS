@@ -20,7 +20,7 @@ ContainerRegistry.registerContainer("Electron", {
 });
 
 class InternalMessageType {
-    public static readonly setName: string = "desktopJS.window-setname";
+    public static readonly initialize: string = "desktopJS.window-initialize";
     public static readonly getGroup: string = "desktopJS.window-getGroup";
     public static readonly joinGroup: string = "desktopJS.window-joinGroup";
     public static readonly leaveGroup: string = "desktopJS.window-leaveGroup";
@@ -190,7 +190,6 @@ export class ElectronMessageBus implements MessageBus {
  */
 export class ElectronContainer extends WebContainerBase {
     protected isRemote: Boolean = true;
-    protected mainWindow: ElectronContainerWindow;
     protected electron: any;
     protected app: any;
     public browserWindow: any;
@@ -237,7 +236,7 @@ export class ElectronContainer extends WebContainerBase {
             this.ipc = new ElectronMessageBus(this.internalIpc, this.browserWindow);
 
             if (!this.isRemote) {
-                this.windowManager = new ElectronWindowManager(this.internalIpc, this.browserWindow);
+                this.windowManager = new ElectronWindowManager(this.app, this.internalIpc, this.browserWindow);
             }
         } catch (e) {
             console.error(e);
@@ -262,12 +261,14 @@ export class ElectronContainer extends WebContainerBase {
     }
 
     public getMainWindow(): ContainerWindow {
-        if (!this.mainWindow) {
-            const win = this.browserWindow.fromId(1);
-            this.mainWindow = win ? this.wrapWindow(win) : undefined;
+        for (const window of this.browserWindow.getAllWindows()) {
+            if (window.options && window.options.main) {
+                return this.wrapWindow(window);
+            }
         }
 
-        return this.mainWindow;
+        const win = this.browserWindow.fromId(1);
+        return win ? this.wrapWindow(win) : undefined;
     }
 
     public getCurrentWindow(): ContainerWindow {
@@ -297,9 +298,11 @@ export class ElectronContainer extends WebContainerBase {
             If it is not listening, this ipc call will hang indefinitely. If we are in the
             main process we can just directly set the name.
         */
-        electronWindow["name"] = (this.isRemote)
-            ? (<any>this.internalIpc).sendSync(InternalMessageType.setName, { id: electronWindow.id, name: windowName })
-            : windowName;
+        if (this.isRemote) {
+            electronWindow["name"] = (<any>this.internalIpc).sendSync(InternalMessageType.initialize, { id: electronWindow.id, name: windowName, options: newOptions });
+        } else {
+            this.windowManager.initializeWindow(electronWindow, windowName, newOptions);
+        }
 
         electronWindow.loadURL(url);
 
@@ -376,19 +379,22 @@ export class ElectronContainer extends WebContainerBase {
 }
 
 export class ElectronWindowManager {
+    private app: any;
     private ipc: NodeJS.EventEmitter;
     private browserWindow: any;
 
     private lastBounds: Map<number, Rectangle> = new Map(); // BrowserWindow.id -> Rectangle
     private ignoredWindows: number[] = []; // Array of BrowserWindow.id
 
-    public constructor(ipc?: NodeJS.EventEmitter, browserWindow?: any) {
+    public constructor(app?: any, ipc?: NodeJS.EventEmitter, browserWindow?: any) {
+        this.app = app || require("electron").app;
         this.ipc = ipc || require("electron").ipcMain;
         this.browserWindow = browserWindow || require("electron").BrowserWindow;
 
-        this.ipc.on(InternalMessageType.setName, (event: any, message: any) => {
-            const { id, name } = message;
-            this.browserWindow.fromId(id).name = name;
+        this.ipc.on(InternalMessageType.initialize, (event: any, message: any) => {
+            const { id, name, options } = message;
+            const win = this.browserWindow.fromId(id);
+            this.initializeWindow(win, name, options);
             event.returnValue = name;
         });
 
@@ -410,9 +416,20 @@ export class ElectronWindowManager {
             const group: string = this.browserWindow.fromId(sourceId).group;
 
             event.returnValue = (group)
-                                    ? this.browserWindow.getAllWindows().filter(win => { return (win.group === group); }).map(win => win.id )
-                                    : [];
+                ? this.browserWindow.getAllWindows().filter(win => { return (win.group === group); }).map(win => win.id)
+                : [];
         });
+    }
+
+    public initializeWindow(win: any, name: string, options: any) {
+        win.name = name;
+        win.options = options;
+
+        if (options && options.main && (!("quitOnClose" in options) || options.quitOnClose)) {
+            win.on("closed", () => {
+                this.app.quit();
+            });
+        }
     }
 
     private registerWindowEvents(win: any) {
@@ -482,14 +499,14 @@ export class ElectronWindowManager {
                 groupedWindows.forEach(groupedWindow => {
                     const targetBounds = groupedWindow.getBounds();
                     this.ignoredWindows.push(groupedWindow.id);
-                    groupedWindow.setBounds( { x: targetBounds.x - diff.x, y: targetBounds.y - diff.y, width: targetBounds.width, height: targetBounds.height }, true);
+                    groupedWindow.setBounds({ x: targetBounds.x - diff.x, y: targetBounds.y - diff.y, width: targetBounds.width, height: targetBounds.height }, true);
                     this.ignoredWindows.splice(this.ignoredWindows.indexOf(groupedWindow.id), 1);
                 });
             }
         }
     }
 
-    private groupBy<T>(array: T[], groupBy: any): { key: any, values: T[]}[] {
+    private groupBy<T>(array: T[], groupBy: any): { key: any, values: T[] }[] {
         return array.reduce((accumulator, current) => {
             const key = groupBy instanceof Function ? groupBy(current) : current[groupBy];
             const group = accumulator.find((r) => r && r.key === key);
@@ -502,5 +519,5 @@ export class ElectronWindowManager {
 
             return accumulator;
         }, []);
-     }
+    }
 }

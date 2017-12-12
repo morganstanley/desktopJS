@@ -249,9 +249,11 @@ describe("ElectronContainer", () => {
     let electron: any;
     let container: ElectronContainer;
     let globalWindow: any = {};
-    let windows: MockWindow[] = [new MockWindow(), new MockWindow("Name")];
+    let windows: MockWindow[];
 
     beforeEach(() => {
+        windows = [new MockWindow(), new MockWindow("Name")];
+
         electron = {
             app: {},
             BrowserWindow: (options: any) => {
@@ -292,20 +294,40 @@ describe("ElectronContainer", () => {
         expect((<any>container).menu).toEqual(electron.Menu);
     });
 
-    it("getMainWindow returns wrapped window", () => {
+    it("getMainWindow returns wrapped window marked as main", () => {
         const innerWin: any = new MockWindow();
 
-        electron.BrowserWindow = {
-            fromId(): any { }
+        container.browserWindow = {
+            getAllWindows(): MockWindow[] { return windows; },
+            fromId(): any {  };
         };
 
-        spyOn(electron.BrowserWindow, "fromId").and.returnValue(innerWin);
-        const localContainer = new ElectronContainer(electron);
-        const win: ElectronContainerWindow = localContainer.getMainWindow();
+        windows[1]["options"] = { main: true };
+
+        spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
+
+        const win: ElectronContainerWindow = container.getMainWindow();
 
         expect(win).toBeDefined();
-        expect(electron.BrowserWindow.fromId).toHaveBeenCalledWith(1);
+        expect(win.innerWindow).toEqual(windows[1]);
+        expect(container.browserWindow.fromId).toHaveBeenCalledTimes(0);
+    });
+
+    it("getMainWindow with no defined main returns first wrapped window", () => {
+        const innerWin: any = new MockWindow();
+
+        container.browserWindow = {
+            getAllWindows(): MockWindow[] { return windows; },
+            fromId(): any {  };
+        };
+
+        spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
+
+        const win: ElectronContainerWindow = container.getMainWindow();
+
+        expect(win).toBeDefined();
         expect(win.innerWindow).toEqual(innerWin);
+        expect(container.browserWindow.fromId).toHaveBeenCalledWith(1);
     });
 
     it("getCurrentWindow returns wrapped inner getCurrentWindow", () => {
@@ -329,6 +351,15 @@ describe("ElectronContainer", () => {
         container.createWindow("url");
     });
 
+    it("createWindow on main process invokes ElectronWindowManager.initializeWindow", () => {
+        (<any>container).isRemote = false;
+        container.windowManager = new ElectronWindowManager({}, new MockMainIpc(), { fromId(): any {}, getAllWindows(): any {} })
+        spyOn(container.windowManager, "initializeWindow").and.callThrough();
+        const options = { name: "name" };
+        container.createWindow("url", options);
+        expect(container.windowManager.initializeWindow).toHaveBeenCalledWith(jasmine.any(Object), "name", options);
+    });
+
     it("addTrayIcon", () => {
         spyOn<any>(container, "tray").and.callThrough();
         container.addTrayIcon({ text: "text", icon: "icon" }, () => { }, [{ id: "id", label: "label", click: () => { } }]);
@@ -349,7 +380,7 @@ describe("ElectronContainer", () => {
         it("notification api delegates to showNotification", () => {
             spyOn(container, "showNotification").and.stub();
             new globalWindow["Notification"]("title", { body: "Test message" });
-            expect(container.showNotification).toHaveBeenCalled();;
+            expect(container.showNotification).toHaveBeenCalled();
         });
     });
 
@@ -504,18 +535,35 @@ describe("ElectronWindowManager", () => {
     let mgr: ElectronWindowManager;
 
     beforeEach(() => {
-        mgr = new ElectronWindowManager(new MockMainIpc(), { fromId(): any {}, getAllWindows(): any {} });
+        mgr = new ElectronWindowManager({ quit(): any {} }, new MockMainIpc(), { fromId(): any {}, getAllWindows(): any {} });
     });
 
     it ("subscribed to ipc", () => {
         const ipc = new MockMainIpc();
         spyOn(ipc, "on").and.callThrough();
-        new ElectronWindowManager(ipc, { });
+        new ElectronWindowManager({}, ipc, { });
         expect(ipc.on).toHaveBeenCalledTimes(4);
-        expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-setname", jasmine.any(Function));
+        expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-initialize", jasmine.any(Function));
         expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-joinGroup", jasmine.any(Function));
         expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-leaveGroup", jasmine.any(Function));
         expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-getGroup", jasmine.any(Function));
+    });
+
+    it ("initializeWindow on non-main does not attach to close", () => {
+        const win: MockWindow = new MockWindow();
+        spyOn(win, "on").and.callThrough();
+        mgr.initializeWindow(win, "name", { });
+        expect(win.on).toHaveBeenCalledTimes(0);
+    });
+
+    it ("initializeWindow attaches to close on main window and invokes quit", (done) => {
+        const win: MockWindow = new MockWindow();
+        spyOn(win, "on").and.callThrough();
+        spyOn(mgr.app, "quit").and.callFake(done);
+        mgr.initializeWindow(win, "name", { main: true });
+        expect(win.on).toHaveBeenCalledWith("closed", jasmine.any(Function));
+        win.emit("closed");
+        expect(mgr.app.quit).toHaveBeenCalled();
     });
 
     describe("main ipc handlers", () => {
@@ -523,7 +571,7 @@ describe("ElectronWindowManager", () => {
             const win: MockWindow = new MockWindow();
             spyOn(mgr.browserWindow, "fromId").and.returnValue(win);
             const event: any = {};
-            mgr.ipc.emit("desktopJS.window-setname", event, { id: 1, name: "NewName" });
+            mgr.ipc.emit("desktopJS.window-initialize", event, { id: 1, name: "NewName" });
             expect(win.name).toEqual("NewName");
             expect(event.returnValue).toEqual("NewName");
         });
@@ -617,7 +665,7 @@ describe("ElectronWindowManager", () => {
             target.group = "groupid";
 
             mgr.groupWindows(target, win1, win2);
-            
+
             expect(win1.group).toEqual(target.group);
             expect(win2.group).toEqual(target.group);
         });
