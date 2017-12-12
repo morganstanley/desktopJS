@@ -267,6 +267,7 @@ export class ElectronContainer extends WebContainerBase {
             }
         }
 
+        // No windows were marked as main so fallback to the first window created as being main
         const win = this.browserWindow.fromId(1);
         return win ? this.wrapWindow(win) : undefined;
     }
