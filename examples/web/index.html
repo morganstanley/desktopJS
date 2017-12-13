@@ -100,6 +100,8 @@
 
                     <div id="text-messagebus"></div>
                 </div>
+
+                <br />
             </div>
 
             <nav class="col-sm-3">
@@ -121,11 +123,14 @@
     </div>
 
     <footer class="footer navbar-fixed-bottom">
-        <div class="container-fluid">
+        <span>
             <a href="#" data-toggle="popover" data-content="Container type and unique identifier" data-trigger="hover" data-placement="top">
                 <span class="text-muted" id="hostName"></span>
             </a>
-        </div>
+        </span>
+        <span class="navbar-right">
+            <span class="text-muted" id="fps" />
+        </span>
     </footer>
 
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>

@@ -19,6 +19,21 @@ var savelayoutButton = document.getElementById('button-savelayout');
 var subscription;
 var childWindow;
 
+var fpsCount, fpsOut;
+
+function updatefps() {
+	fpsCount++;
+	if (fpsOut) {
+		$("#fps").html(fpsOut + " fps");
+	}
+	requestAnimationFrame(updatefps);
+}
+
+setInterval(() => {
+	fpsOut = fpsCount;
+	fpsCount = 0
+}, 1000);
+
 /*
 // Provide polyfill of browser getSnapshot.  Here is an example using html2canvas
 desktopJS.Default.DefaultContainerWindow.prototype.getSnapshot = function () {
@@ -41,6 +56,8 @@ desktopJS.Electron.ElectronContainer.prototype.showNotification = function (titl
 };
 
 document.addEventListener("DOMContentLoaded", function (event) {
+	updatefps();
+
 	hostName.innerHTML = container.hostType + " &#8226; " + container.uuid + " &#8226; "+ desktopJS.version;
 
 	$("#button-joingroup").prop("disabled", !container.getCurrentWindow().allowGrouping);

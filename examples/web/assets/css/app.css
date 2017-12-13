@@ -15,6 +15,9 @@ body {
     /* Set the fixed height of the footer here */
     height: 26px;
     background-color: #f5f5f5;
+    border-top: 1px solid silver;    
+    font-size: 85%;
+    padding: 4px 20px 0px 6px;
 }
   
 .navbar {
@@ -40,13 +43,6 @@ a:focus,a:active {
 .btn:focus,.btn:active {
     outline: none !important;
     box-shadow: none;
-}
-
-.footer > .container-fluid {
-    border-top: 1px solid silver;
-    padding-left: 7px;
-    padding-top: 5px;
-    font-size: 85%;
 }
 
 nav > .panel > .panel-heading {
