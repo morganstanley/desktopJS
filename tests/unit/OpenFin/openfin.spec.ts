@@ -321,13 +321,13 @@ describe("OpenFinContainer", () => {
 
     describe("createWindow", () => {
         beforeEach(() => {
-            spyOn(desktop, "Window").and.stub();
+            spyOn(desktop, "Window").and.callFake((options?: any, callback?: Function) => { if (callback) { callback(); } });
         });
 
         it("defaults", () => {
             let win: OpenFinContainerWindow = container.createWindow("url");
             expect(win).toBeDefined();
-            expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: jasmine.stringMatching(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/) });
+            expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: jasmine.stringMatching(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/) }, jasmine.any(Function));
         });
 
         it("createWindow defaults", () => {
@@ -359,7 +359,8 @@ describe("OpenFinContainer", () => {
                     saveWindowState: false,
                     url: "url",
                     name: "name"
-                }
+                },
+                jasmine.any(Function)
             );
         });
 
