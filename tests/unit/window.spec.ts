@@ -1,7 +1,8 @@
 import { Container } from "../../src/container";
-import { ContainerWindow, WindowEventType, WindowEventArgs } from "../../src/window";
+import { ContainerWindow, WindowEventType, WindowEventArgs, SnapAssistWindowManager, Rectangle } from "../../src/window";
 import { EventArgs, EventEmitter } from "../../src/events";
 import { TestContainer, MockMessageBus } from "./container.spec";
+import { Recoverable } from "repl";
 
 class MockWindow extends ContainerWindow {
 }
@@ -58,6 +59,186 @@ describe("window grouping", () => {
     it ("leaveGroup resolves", (done) => {
         new MockWindow(null).leaveGroup().then(() => {
             done();
+        });
+    });
+});
+
+describe("Rectangle", () => {
+    let r;
+    beforeEach(() => {
+        r = new Rectangle(1, 2, 3, 4);
+    });
+
+    it ("ctor sets properties", () => {
+        expect(r.x).toEqual(1);
+        expect(r.y).toEqual(2);
+        expect(r.width).toEqual(3);
+        expect(r.height).toEqual(4);
+    });
+
+    it ("right is calculated as x + width", () => {
+        expect(r.right).toEqual(4);
+
+        // check duck typing static method helper
+        expect(Rectangle.getRight(<Rectangle> {x: 1, y: 2, width: 3, height: 4})).toEqual(4);
+    });
+
+    it ("bottom is calculated as top + height", () => {
+        expect(r.bottom).toEqual(6);
+
+         // check duck typing static method helper
+        expect(Rectangle.getBottom(<Rectangle> {x: 1, y: 2, width: 3, height: 4})).toEqual(6);
+    });
+});
+
+describe("SnapAssistWindowManager", () => {
+    it ("default threshold and offset", () => {
+        const mgr = new SnapAssistWindowManager(null);
+        expect(mgr.snapThreshold).toEqual(20);
+        expect(mgr.snapOffset).toEqual(15);
+    });
+
+    it ("threshold and offset read from options", () => {
+        const mgr = new SnapAssistWindowManager(null, { snapThreshold: 2, snapOffset: 3 });
+        expect(mgr.snapThreshold).toEqual(2);
+        expect(mgr.snapOffset).toEqual(3);
+    });
+
+    it ("attach invoked on create", () => {
+        const count = ContainerWindow.listeners("window-created").length;
+        const mgr = new SnapAssistWindowManager(null);
+        expect(ContainerWindow.listeners("window-created").length).toEqual(count + 1);
+    });
+
+    it ("attach enumerates all open windows and hooks handlers", () => {
+        const container = jasmine.createSpyObj("container", [ "getAllWindows" ]);
+        const win = jasmine.createSpyObj("window", [ "addListener"] );
+        container.getAllWindows.and.returnValue(Promise.resolve([win]));
+        const mgr = new SnapAssistWindowManager(container);
+        //expect(win.addListener).toHaveBeenCalled();
+    });
+
+    it ("hook handlers on window attach", () => {
+        const mgr = new SnapAssistWindowManager(null);
+        const win = new MockWindow(null);
+        spyOn(win, "addListener").and.stub();
+        mgr.attach(win);
+        expect(win.addListener).toHaveBeenCalled();
+    });
+
+    it ("isHorizontallyAligned", () => {
+        const mgr = new SnapAssistWindowManager(null);
+
+        const r1 = new Rectangle(1, 100, 50, 50);
+
+        const aligned: Rectangle[] = [
+            new Rectangle(100, 100, 50, 50),
+            new Rectangle(100, 101, 50, 50),
+            new Rectangle(100, 125, 50, 50),
+            new Rectangle(100, 150, 50, 50)
+        ];
+
+        for (const r of aligned) {
+            expect((<any>mgr).isHorizontallyAligned(r1, r)).toEqual(true, r);
+        }
+
+        const notAligned: Rectangle[] = [
+            new Rectangle(100, 1, 50, 50),
+            new Rectangle(100, 200, 50, 50)
+        ];
+
+        for (const r of notAligned) {
+            expect((<any>mgr).isHorizontallyAligned(r1, r)).toEqual(false, r);
+        }
+    });
+
+    it ("isVerticallyAligned", () => {
+        const mgr = new SnapAssistWindowManager(null);
+
+        const r1 = new Rectangle(100, 100, 50, 50);
+
+        const aligned: Rectangle[] = [
+            new Rectangle(100, 0, 50, 50),
+            new Rectangle(101, 0, 50, 50),
+            new Rectangle(125, 0, 50, 50),
+            new Rectangle(150, 0, 50, 50)
+        ];
+
+        for (const r of aligned) {
+            expect((<any>mgr).isVerticallyAligned(r1, r)).toEqual(true, r);
+        }
+
+        const notAligned: Rectangle[] = [
+            new Rectangle(0, 1, 50, 50),
+            new Rectangle(200, 1, 50, 50)
+        ];
+
+        for (const r of notAligned) {
+            expect((<any>mgr).isVerticallyAligned(r1, r)).toEqual(false, r);
+        }
+    });
+
+    describe("getSnapBounds", () => {
+        let mgr;
+
+        beforeAll(() => {
+            mgr = new SnapAssistWindowManager(null);
+        });
+
+        describe("left edge to right edge", () => {
+            it ("within threshold", () => {
+                const r1 = new Rectangle(52, 0, 50, 50);
+                const r2 = new Rectangle(0, 0, 50, 50);
+                expect((<any>mgr).getSnapBounds(r1, r2)).toEqual(new Rectangle(r2.right - mgr.snapOffset, 0, 50, 50));
+            });
+
+            it ("outside threshold", () => {
+                const r1 = new Rectangle(55, 0, 50, 50);
+                const r2 = new Rectangle(0, 0, 50, 50);
+                expect((<any>mgr).getSnapBounds(r1, r2)).toEqual(undefined);
+            });
+        });
+
+        describe("right edge to left edge", () => {
+            it ("within threshold", () => {
+                const r1 = new Rectangle(50, 0, 50, 50);
+                const r2 = new Rectangle(100, 0, 50, 50);
+                expect((<any>mgr).getSnapBounds(r1, r2)).toEqual(new Rectangle(r2.x - r1.width + mgr.snapOffset, 0, 50, 50));
+            });
+
+            it ("outside threshold", () => {
+                const r1 = new Rectangle(40, 0, 50, 50);
+                const r2 = new Rectangle(100, 0, 50, 50);
+                expect((<any>mgr).getSnapBounds(r1, r2)).toEqual(undefined);
+            });
+        });
+
+        describe("bottom edge to top edge", () => {
+            it ("within threshold", () => {
+                const r1 = new Rectangle(0, 50, 50, 50);
+                const r2 = new Rectangle(0, 100, 50, 50);
+                expect((<any>mgr).getSnapBounds(r1, r2)).toEqual(new Rectangle(0, r2.y - (r1.height - Math.floor(mgr.snapOffset / 2)), 50, 50));
+            });
+
+            it ("outside threshold", () => {
+                const r1 = new Rectangle(0, 45, 50, 50);
+                const r2 = new Rectangle(0, 100, 50, 50);
+                expect((<any>mgr).getSnapBounds(r1, r2)).toEqual(undefined);
+            });
+        });
+
+        describe("top edge to bottom edge", () => {
+            it ("within threshold", () => {
+                const r1 = new Rectangle(0, 100, 50, 50);
+                const r2 = new Rectangle(0, 50, 50, 50);
+                expect((<any>mgr).getSnapBounds(r1, r2)).toEqual(new Rectangle(0, r2.bottom - Math.floor(mgr.snapOffset / 2), 50, 50));
+            });
+
+            it ("outside threshold", () => {
+                const r1 = new Rectangle(0, 110, 50, 50);
+                const r2 = new Rectangle(0, 50, 50, 50);
+                expect((<any>mgr).getSnapBounds(r1, r2)).toEqual(undefined);
+            });
         });
     });
 });

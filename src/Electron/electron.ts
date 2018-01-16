@@ -83,7 +83,8 @@ export class ElectronContainerWindow extends ContainerWindow {
 
     public getBounds(): Promise<Rectangle> {
         return new Promise<Rectangle>(resolve => {
-            resolve(this.innerWindow.getBounds());
+            const { x, y, width, height } = this.innerWindow.getBounds();
+            resolve(new Rectangle(x, y, width, height));
         });
     }
 

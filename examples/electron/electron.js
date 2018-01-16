@@ -3,11 +3,14 @@ const electron = require('electron');
 const app = electron.app;
 
 let mainWindow;
+let snapAssist;
 
 function createWindow() {
     let container = desktopJS.resolveContainer();
 
     desktopJS.ContainerWindow.addListener("window-created", (e) => console.log("Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
+    
+    snapAssist = new desktopJS.SnapAssistWindowManager(container);
 
     mainWindow = container.createWindow('http://localhost:8000', { name: "desktopJS", main: true });
  

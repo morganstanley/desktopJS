@@ -1,4 +1,5 @@
 ﻿var container = desktopJS.resolveContainer();
+var snapAssist;
 
 var hostName = document.getElementById('hostName');
 var openWindowButton = document.getElementById('button-open-window');
@@ -80,6 +81,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 	// Enable popovers
 	$('[data-toggle="popover"]').popover();
+
+	if (container.getCurrentWindow().id === "desktopJS") {
+		snapAssist = new desktopJS.SnapAssistWindowManager(container);
+	}
 });
 
 openWindowButton.onclick = function () {

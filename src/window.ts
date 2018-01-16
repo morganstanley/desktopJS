@@ -26,6 +26,22 @@ export class Rectangle { // tslint:disable-line
      */
     public readonly height: number;
 
+    public get right(): number {
+        return Rectangle.getRight(this);
+    }
+
+    public get bottom(): number {
+        return Rectangle.getBottom(this);
+    }
+
+    public static getRight(r: Rectangle) { // tslint:disable-line
+        return r.x + r.width;
+    }
+
+    public static getBottom(r: Rectangle): number { // tslint:disable-line
+        return r.y + r.height;
+    }
+
     constructor(x: number, y: number, width: number, height: number) {
         this.x = x;
         this.y = y;
@@ -233,5 +249,140 @@ export class PersistedWindowLayout {
 
     constructor(name?: string) {
         this.name = name;
+    }
+}
+
+export class SnapAssistWindowManager {
+    private readonly container: Container;
+    private readonly floater: ContainerWindow;
+    public snapThreshold: number = 20;
+    public snapOffset: number = 15;
+    private snappingWindow: string;
+
+    public constructor(container: Container, options?: any) {
+        this.container = container;
+
+        if (options) {
+            if (options.snapThreshold || options.snapThreshold === 0) {
+                this.snapThreshold = options.snapThreshold;
+            }
+
+            if (options.snapOffset || options.snapOffset === 0) {
+                this.snapOffset = options.snapOffset;
+            }
+        }
+
+        this.attach();
+    }
+
+    public attach(win?: ContainerWindow) {
+        if (win) {
+            win.addListener("move", (e) => {
+                const id = e.sender.id;
+
+                if (this.snappingWindow === id) {
+                    return;
+                }
+
+                e.sender.getBounds().then(bounds => {
+                    this.container.getAllWindows().then(windows => {
+                        windows.filter(window => id !== window.id).forEach(window => {
+                            window.getBounds().then(targetBounds => {
+                                const snapHint = this.getSnapBounds(bounds, targetBounds);
+                                if (snapHint) {
+                                    e.sender.setBounds(snapHint).then(() => this.snappingWindow = undefined);
+                                }
+                            });
+                        });
+                    });
+                });
+            });
+        } else {
+            // Attach handlers to any new windows that open
+            ContainerWindow.addListener("window-created", (args) => {
+                this.container.getWindowById(args.windowId).then(window => {
+                    this.attach(window);
+                });
+            });
+
+            // Attach handlers to any windows already open
+            if (this.container) {
+                this.container.getAllWindows().then(windows => {
+                      windows.forEach(window => this.attach(window));
+                  });
+            }
+        }
+    }
+
+    private isHorizontallyAligned(r1: Rectangle, r2: Rectangle): boolean {
+        return (r1.y >= r2.y && r1.y <= r2.bottom)
+            || (r1.bottom >= r2.y && r1.bottom <= r2.bottom)
+            || (r1.y <= r2.y && r1.bottom >= r2.bottom);
+    }
+
+    private isVerticallyAligned(r1: Rectangle, r2: Rectangle): boolean {
+        return (r1.x >= r2.x && r1.x <= r2.right)
+            || (r1.right >= r2.x && r1.right <= r2.right)
+            || (r1.x <= r2.x && r1.right >= r2.right);
+    }
+
+    private getSnapBounds(r1: Rectangle, r2: Rectangle): Rectangle {
+        let isLeftToRight, isLeftToLeft, isRightToLeft, isRightToRight, isTopToBottom, isTopToTop, isBottomToTop, isBottomToBottom: boolean;
+
+        if (this.isHorizontallyAligned(r1, r2)) {
+            // Left edge of r1 is within threshold of right edge of r2
+            isLeftToRight = Math.abs(r1.x - (r2.right - this.snapOffset)) < this.snapThreshold;
+            isLeftToLeft = Math.abs(r1.x - r2.x) < this.snapThreshold;
+
+            // Right edge of r1 is within threshold of left edge of r2
+            isRightToLeft = Math.abs((r1.right - this.snapOffset) - r2.x) < this.snapThreshold;
+            isRightToRight = Math.abs(r1.right - r2.right) < this.snapThreshold;
+        }
+
+        if (this.isVerticallyAligned(r1, r2)) {
+            // Top edge of r1 is within threshold of bottom edge of r2
+            isTopToBottom = Math.abs(r1.y - (r2.bottom - this.snapOffset)) < this.snapThreshold;
+            isTopToTop = Math.abs(r1.y - r2.y) < this.snapThreshold;
+
+            // Bottom edge of r1 is within threshold of top edge of r2
+            isBottomToTop = Math.abs((r1.bottom - this.snapOffset) - r2.y) < this.snapThreshold;
+            isBottomToBottom = Math.abs(r1.bottom - r2.bottom) < this.snapThreshold;
+        }
+
+        // Exit out and return undefined if no bounds are within threshold
+        if (!isLeftToRight && !isRightToLeft && !isTopToBottom && !isBottomToTop) {
+            return undefined;
+        }
+
+        let x: number = r1.x;
+        let y: number = r1.y;
+
+        if (isLeftToRight) {
+            x = r2.x + r2.width - this.snapOffset;
+        } else if (isLeftToLeft) {
+            x = r2.x;
+        }
+
+        if (isRightToLeft) {
+            x = r2.x - r1.width + this.snapOffset;
+        } else if (isRightToRight) {
+            x = (r2.x + r2.width) - r1.width;
+        }
+
+        if (isTopToBottom) {
+            y = r2.y + r2.height - Math.floor(this.snapOffset / 2);
+        } else if (isTopToTop) {
+            y = r2.y;
+        }
+
+        if (isBottomToTop) {
+            y = r2.y - r1.height + Math.floor(this.snapOffset / 2);
+        } else if (isBottomToBottom) {
+            y = (r2.y + r2.height) - r1.height;
+        }
+
+        return (r1.x !== x || r1.y !== y)
+            ? new Rectangle(x, y, r1.width, r1.height)
+            : undefined;
     }
 }
