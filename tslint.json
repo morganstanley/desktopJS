@@ -45,7 +45,7 @@
         "no-any": false,
         "no-arg": true,
         "no-backbone-get-set-outside-model": true,
-        "no-bitwise": true,
+        "no-bitwise": false,
         "no-conditional-assignment": true,
         "no-console": [
             true,
@@ -180,7 +180,7 @@
         "no-void-expression": true,
         "object-literal-sort-keys": false, // turn object-literal-sort-keys off and sort keys in a meaningful manner
         "one-variable-per-declaration": [
-            true
+            false
         ],
         "only-arrow-functions": [  // there are many valid reasons to declare a function
             false
@@ -298,7 +298,7 @@
          */
         "ban": false, // only enable this if you have some code pattern that you want to ban
         "cyclomatic-complexity": [
-            true
+            false
         ],
         "file-header": [
             false
