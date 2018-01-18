@@ -73,10 +73,10 @@ class MockCapture {
 }
 
 class MockMainIpc extends MockEventEmitter {
-    public sendSync(channel: string, ...args: any[]) { return {} };
 }
 
 class MockIpc extends MockMainIpc {
+    public sendSync(channel: string, ...args: any[]) { return {} };
     public send(channel: string, ...args: any[]) { }
 }
 
@@ -213,6 +213,14 @@ describe("ElectronContainerWindow", () => {
             }).then(done);
         });
 
+        it ("getGroup invokes method directly in main process", () => {
+            container = new ElectronContainer({ BrowserWindow: { fromId(): any {  } } }, new MockMainIpc(), {});
+            win = new ElectronContainerWindow(innerWin, container);
+            container.windowManager = jasmine.createSpyObj("WindowManager", ["getGroup"]);
+            win.getGroup();
+            expect(container.windowManager.getGroup).toHaveBeenCalled();
+        });
+
         it ("joinGroup sends ipc message", (done) => {
             spyOn(container.internalIpc, "send").and.callThrough();
             spyOnProperty(win, "id", "get").and.returnValue(1);
@@ -235,12 +243,30 @@ describe("ElectronContainerWindow", () => {
             }).then(done);
         });
 
+        it ("joinGroup invokes method directly in main process", () => {
+            container = new ElectronContainer({ BrowserWindow: { fromId(): any {  } } }, new MockMainIpc(), {});
+            win = new ElectronContainerWindow(innerWin, container);
+            container.windowManager = jasmine.createSpyObj("WindowManager", ["groupWindows"]);
+            const targetWin = new ElectronContainerWindow(innerWin, container);
+            spyOnProperty(targetWin, "id", "get").and.returnValue(2);
+            win.joinGroup(targetWin);
+            expect(container.windowManager.groupWindows).toHaveBeenCalled();
+        });
+
         it ("leaveGroup sends ipc message", (done) => {
             spyOn(container.internalIpc, "send").and.callThrough();
             spyOnProperty(win, "id", "get").and.returnValue(5);
             win.leaveGroup().then(() => {
                 expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-leaveGroup", { source: 5});
             }).then(done);
+        });
+
+        it ("leaveGroup invokes method directly in main process", () => {
+            container = new ElectronContainer({ BrowserWindow: { fromId(): any {  } } }, new MockMainIpc(), {});
+            win = new ElectronContainerWindow(innerWin, container);
+            container.windowManager = jasmine.createSpyObj("WindowManager", ["ungroupWindows"]);
+            win.leaveGroup();
+            expect(container.windowManager.ungroupWindows).toHaveBeenCalled();
         });
     });
 });
