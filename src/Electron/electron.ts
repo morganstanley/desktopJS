@@ -39,6 +39,10 @@ export class ElectronContainerWindow extends ContainerWindow {
         this.container = container;
     }
 
+    private get isRemote(): boolean {
+        return ((<any> this.container.internalIpc).send);
+    }
+
     public get id(): string {
         return this.innerWindow.id;
     }
@@ -101,9 +105,11 @@ export class ElectronContainerWindow extends ContainerWindow {
 
     public getGroup(): Promise<any[]> {
         return new Promise<ContainerWindow[]>(resolve => {
-            resolve((<any>this.container.internalIpc).sendSync(InternalMessageType.getGroup, { source: this.id }).map(id => {
-                return (id === this.id) ? this : this.container.wrapWindow(this.container.browserWindow.fromId(id));
-            }));
+            const ids = (this.isRemote)
+                ? (<any>this.container.internalIpc).sendSync(InternalMessageType.getGroup, { source: this.id })
+                : (<any>this.container).windowManager.getGroup(this.innerWindow);
+
+            resolve(ids.map(id => {return (id === this.id) ? this : this.container.wrapWindow(this.container.browserWindow.fromId(id)); }));
         });
     }
 
@@ -112,12 +118,22 @@ export class ElectronContainerWindow extends ContainerWindow {
             return Promise.resolve();
         }
 
-        (<any>this.container.internalIpc).send(InternalMessageType.joinGroup, { source: this.id, target: target.id });
+        if (this.isRemote) {
+            (<any>this.container.internalIpc).send(InternalMessageType.joinGroup, { source: this.id, target: target.id });
+        } else {
+            (<any>this.container).windowManager.groupWindows(target.innerWindow, this.innerWindow);
+        }
+
         return Promise.resolve();
     }
 
     public leaveGroup(): Promise<void> {
-        (<any>this.container.internalIpc).send(InternalMessageType.leaveGroup, { source: this.id });
+        if (this.isRemote) {
+            (<any>this.container.internalIpc).send(InternalMessageType.leaveGroup, { source: this.id });
+        } else {
+            (<any>this.container).windowManager.ungroupWindows(this.innerWindow);
+        }
+
         return Promise.resolve();
     }
 
@@ -415,11 +431,7 @@ export class ElectronWindowManager {
 
         this.ipc.on(InternalMessageType.getGroup, (event: any, message: any) => {
             const { "source": sourceId } = message;
-            const group: string = this.browserWindow.fromId(sourceId).group;
-
-            event.returnValue = (group)
-                ? this.browserWindow.getAllWindows().filter(win => { return (win.group === group); }).map(win => win.id)
-                : [];
+            event.returnValue = this.getGroup(this.browserWindow.fromId(sourceId));
         });
     }
 
@@ -448,6 +460,12 @@ export class ElectronWindowManager {
             win.removeListener("move", win.moveHandler);
             delete win.moveHandler;
         }
+    }
+
+    public getGroup(window: any): any[] {
+        return (window.group)
+            ? this.browserWindow.getAllWindows().filter(win => { return (win.group === window.group); }).map(win => win.id)
+            : [];
     }
 
     public groupWindows(target: any, ...windows: any[]) {

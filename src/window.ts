@@ -275,22 +275,62 @@ export class SnapAssistWindowManager {
         this.attach();
     }
 
+    protected getEventName(): WindowEventType {
+        return (typeof fin !== "undefined")
+            ? <WindowEventType> "disabled-frame-bounds-changing"
+            : "move";
+    }
+
+    protected onAttached(win: ContainerWindow) {
+        if (typeof fin !== "undefined") {
+            win.innerWindow.disableFrame();
+        }
+    }
+
     public attach(win?: ContainerWindow) {
         if (win) {
-            win.addListener("move", (e) => {
+            this.onAttached(win);
+
+            win.addListener(this.getEventName(), (e) => {
                 const id = e.sender.id;
 
                 if (this.snappingWindow === id) {
                     return;
                 }
 
-                e.sender.getBounds().then(bounds => {
-                    this.container.getAllWindows().then(windows => {
-                        windows.filter(window => id !== window.id).forEach(window => {
-                            window.getBounds().then(targetBounds => {
-                                const snapHint = this.getSnapBounds(bounds, targetBounds);
-                                if (snapHint) {
-                                    e.sender.setBounds(snapHint).then(() => this.snappingWindow = undefined);
+                e.sender.getGroup().then(groupedWindows => {
+                    const getBounds: Promise<Rectangle> = (typeof fin !== "undefined")
+                        ? Promise.resolve(new Rectangle(e.innerEvent.left, e.innerEvent.top, e.innerEvent.width, e.innerEvent.height))
+                        : e.sender.getBounds();
+
+                    getBounds.then(bounds => {
+                        const promises: Promise<Rectangle>[] = [];
+                        this.container.getAllWindows().then(windows => {
+
+                            // Get bounds of all other windows except those already grouped with current moving window
+                            windows.filter(window => id !== window.id && !groupedWindows.find(groupedWin => groupedWin.id === window.id)).forEach(window => {
+                                promises.push(new Promise((innerResolve, innerReject) => {
+                                    window.getBounds().then(targetBounds => innerResolve(targetBounds));
+                                }));
+                            });
+
+                            Promise.all(promises).then(responses => {
+                                let isSnapped = false;
+                                let snapHint;
+
+                                for (const targetBounds of responses) {
+                                    snapHint = this.getSnapBounds(snapHint || bounds, targetBounds);
+                                    if (snapHint) {
+                                        isSnapped = true;
+                                        this.snappingWindow = id;
+                                        e.sender.setBounds(snapHint).then(() => { this.snappingWindow = undefined; });
+                                    }
+                                }
+
+                                // If the window wasn't moved as part of snapping, we need to manually move for OpenFin since dragging was disabled
+                                if (!isSnapped && typeof fin !== "undefined") {
+                                    this.snappingWindow = id;
+                                    e.sender.setBounds(bounds).then(() => this.snappingWindow = undefined);
                                 }
                             });
                         });
