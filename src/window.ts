@@ -287,6 +287,11 @@ export class SnapAssistWindowManager {
         }
     }
 
+    private moveWindow(win: ContainerWindow, bounds: Rectangle) {
+        this.snappingWindow = win.id;
+        win.setBounds(bounds).then(() => this.snappingWindow = undefined);
+    }
+
     public attach(win?: ContainerWindow) {
         if (win) {
             this.onAttached(win);
@@ -309,7 +314,7 @@ export class SnapAssistWindowManager {
 
                             // Get bounds of all other windows except those already grouped with current moving window
                             windows.filter(window => id !== window.id && !groupedWindows.find(groupedWin => groupedWin.id === window.id)).forEach(window => {
-                                promises.push(new Promise((innerResolve, innerReject) => {
+                                promises.push(new Promise(innerResolve => {
                                     window.getBounds().then(targetBounds => innerResolve(targetBounds));
                                 }));
                             });
@@ -322,15 +327,13 @@ export class SnapAssistWindowManager {
                                     snapHint = this.getSnapBounds(snapHint || bounds, targetBounds);
                                     if (snapHint) {
                                         isSnapped = true;
-                                        this.snappingWindow = id;
-                                        e.sender.setBounds(snapHint).then(() => { this.snappingWindow = undefined; });
+                                        this.moveWindow(e.sender, snapHint);
                                     }
                                 }
 
                                 // If the window wasn't moved as part of snapping, we need to manually move for OpenFin since dragging was disabled
                                 if (!isSnapped && typeof fin !== "undefined") {
-                                    this.snappingWindow = id;
-                                    e.sender.setBounds(bounds).then(() => this.snappingWindow = undefined);
+                                    this.moveWindow(e.sender, bounds);
                                 }
                             });
                         });

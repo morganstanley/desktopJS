@@ -126,6 +126,22 @@ describe("SnapAssistWindowManager", () => {
         expect(win.addListener).toHaveBeenCalled();
     });
 
+    it ("onAttached sets OpenFin frameless api", () => {
+        const win = new MockWindow();
+        const mgr = new SnapAssistWindowManager(null);
+        mgr.onAttached(win);
+    });
+
+    it ("moveWindow sets stateful id and invokes setBounds", () => {
+        const win = jasmine.createSpyObj("window", [ "setBounds" ]);
+        win.setBounds.and.returnValue(Promise.resolve());
+        Object.defineProperty(win, "id", { value: "5" });
+        const mgr = new SnapAssistWindowManager(null);
+        mgr.moveWindow(win, new Rectangle(0, 0, 0, 0));
+        expect(mgr.snappingWindow).toEqual("5");
+        expect(win.setBounds).toHaveBeenCalled();
+    });
+
     it ("isHorizontallyAligned", () => {
         const mgr = new SnapAssistWindowManager(null);
 
