@@ -217,6 +217,7 @@ describe("ElectronContainerWindow", () => {
             container = new ElectronContainer({ BrowserWindow: { fromId(): any {  } } }, new MockMainIpc(), {});
             win = new ElectronContainerWindow(innerWin, container);
             container.windowManager = jasmine.createSpyObj("WindowManager", ["getGroup"]);
+            container.windowManager.getGroup.and.returnValue([]);
             win.getGroup();
             expect(container.windowManager.getGroup).toHaveBeenCalled();
         });
