@@ -126,6 +126,22 @@ describe("SnapAssistWindowManager", () => {
         expect(win.addListener).toHaveBeenCalled();
     });
 
+    it ("onAttached sets OpenFin frameless api", () => {
+        const win = new MockWindow();
+        const mgr = new SnapAssistWindowManager(null);
+        mgr.onAttached(win);
+    });
+
+    it ("moveWindow sets stateful id and invokes setBounds", () => {
+        const win = jasmine.createSpyObj("window", [ "setBounds" ]);
+        win.setBounds.and.returnValue(Promise.resolve());
+        Object.defineProperty(win, "id", { value: "5" });
+        const mgr = new SnapAssistWindowManager(null);
+        mgr.moveWindow(win, new Rectangle(0, 0, 0, 0));
+        expect(mgr.snappingWindow).toEqual("5");
+        expect(win.setBounds).toHaveBeenCalled();
+    });
+
     it ("isHorizontallyAligned", () => {
         const mgr = new SnapAssistWindowManager(null);
 
@@ -176,6 +192,27 @@ describe("SnapAssistWindowManager", () => {
         for (const r of notAligned) {
             expect((<any>mgr).isVerticallyAligned(r1, r)).toEqual(false, r);
         }
+    });
+
+    it ("move handler", (done) => {
+        const win = jasmine.createSpyObj("window", ["addListener", "getGroup", "getBounds", "setBounds"]);
+        Object.defineProperty(win, "id", { value: "1" });
+        let callback;
+        win.addListener.and.callFake((event, fn) => callback = fn);
+        win.getGroup.and.returnValue(Promise.resolve([]));
+        win.getBounds.and.returnValue(Promise.resolve(new Rectangle(0, 0, 50, 50)));
+        win.setBounds.and.callFake(done);
+
+        const win2 = jasmine.createSpyObj("targetWindow", ["addListener", "getBounds"]);
+        Object.defineProperty(win2, "id", { value: "2" });
+        win2.getBounds.and.returnValue(Promise.resolve(new Rectangle(52, 0, 50, 50)));
+
+        const container = jasmine.createSpyObj("container", ["getAllWindows"]);
+        container.getAllWindows.and.returnValue(Promise.resolve([ win, win2 ]));
+
+        const mgr = new SnapAssistWindowManager(container);
+        mgr.attach(win);
+        callback(new WindowEventArgs(win, "move", undefined));
     });
 
     describe("getSnapBounds", () => {
