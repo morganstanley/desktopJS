@@ -136,6 +136,15 @@ describe("SnapAssistWindowManager", () => {
         expect(innerWin.disableFrame).toHaveBeenCalled();
     });
 
+    it ("onAttached hooks on Electron wndproc when available", () => {
+        const win = jasmine.createSpyObj("window", ["addListener"]);
+        const innerWin = jasmine.createSpyObj("innerwindow", ["hookWindowMessage"]);
+        Object.defineProperty(win, "innerWindow", { value: innerWin });
+        const mgr = new SnapAssistWindowManager(null);
+        mgr.onAttached(win);
+        expect(innerWin.hookWindowMessage).toHaveBeenCalledWith(0x0232, jasmine.any(Function));
+    });
+
     it ("showGroupHint invokes underlying updateOptions when available", () => {
         const win = jasmine.createSpyObj("window", ["addListener"]);
         const innerWin = jasmine.createSpyObj("innerwindow", ["updateOptions"]);
