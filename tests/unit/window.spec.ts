@@ -2,7 +2,6 @@ import { Container } from "../../src/container";
 import { ContainerWindow, WindowEventType, WindowEventArgs, SnapAssistWindowManager, Rectangle } from "../../src/window";
 import { EventArgs, EventEmitter } from "../../src/events";
 import { TestContainer, MockMessageBus } from "./container.spec";
-import { Recoverable } from "repl";
 
 class MockWindow extends ContainerWindow {
 }
@@ -92,16 +91,18 @@ describe("Rectangle", () => {
 });
 
 describe("SnapAssistWindowManager", () => {
-    it ("default threshold and offset", () => {
+    it ("default options", () => {
         const mgr = new SnapAssistWindowManager(null);
         expect(mgr.snapThreshold).toEqual(20);
         expect(mgr.snapOffset).toEqual(15);
+        expect(mgr.autoGrouping).toEqual(true);
     });
 
-    it ("threshold and offset read from options", () => {
-        const mgr = new SnapAssistWindowManager(null, { snapThreshold: 2, snapOffset: 3 });
+    it ("overrides read from options", () => {
+        const mgr = new SnapAssistWindowManager(null, { snapThreshold: 2, snapOffset: 3, autoGrouping: false });
         expect(mgr.snapThreshold).toEqual(2);
         expect(mgr.snapOffset).toEqual(3);
+        expect(mgr.autoGrouping).toEqual(false);
     });
 
     it ("attach invoked on create", () => {
@@ -127,9 +128,39 @@ describe("SnapAssistWindowManager", () => {
     });
 
     it ("onAttached sets OpenFin frameless api", () => {
-        const win = new MockWindow();
+        const win = jasmine.createSpyObj("window", ["addListener"]);
+        const innerWin = jasmine.createSpyObj("innerwindow", ["disableFrame"]);
+        Object.defineProperty(win, "innerWindow", { value: innerWin });
         const mgr = new SnapAssistWindowManager(null);
         mgr.onAttached(win);
+        expect(innerWin.disableFrame).toHaveBeenCalled();
+    });
+
+    it ("onAttached hooks on Electron wndproc when available", () => {
+        const win = jasmine.createSpyObj("window", ["addListener"]);
+        const innerWin = jasmine.createSpyObj("innerwindow", ["hookWindowMessage"]);
+        Object.defineProperty(win, "innerWindow", { value: innerWin });
+        const mgr = new SnapAssistWindowManager(null);
+        mgr.onAttached(win);
+        expect(innerWin.hookWindowMessage).toHaveBeenCalledWith(0x0232, jasmine.any(Function));
+    });
+
+    it ("showGroupHint invokes underlying updateOptions when available", () => {
+        const win = jasmine.createSpyObj("window", ["addListener"]);
+        const innerWin = jasmine.createSpyObj("innerwindow", ["updateOptions"]);
+        Object.defineProperty(win, "innerWindow", { value: innerWin });
+        const mgr = new SnapAssistWindowManager(null);
+        mgr.showGroupingHint(win);
+        expect(innerWin.updateOptions).toHaveBeenCalledWith({opacity: 0.75});
+    });
+
+    it ("hideGroupHint invokes underlying updateOptions when available", () => {
+        const win = jasmine.createSpyObj("window", ["addListener"]);
+        const innerWin = jasmine.createSpyObj("innerwindow", ["updateOptions"]);
+        Object.defineProperty(win, "innerWindow", { value: innerWin });
+        const mgr = new SnapAssistWindowManager(null);
+        mgr.hideGroupingHint(win);
+        expect(innerWin.updateOptions).toHaveBeenCalledWith({opacity: 1.0});
     });
 
     it ("moveWindow sets stateful id and invokes setBounds", () => {

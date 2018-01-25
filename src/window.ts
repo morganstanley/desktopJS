@@ -252,51 +252,63 @@ export class PersistedWindowLayout {
     }
 }
 
+type WindowGroupStatus = {window: ContainerWindow, isGrouped: boolean};
+
 export class SnapAssistWindowManager {
     private readonly container: Container;
     private readonly floater: ContainerWindow;
+    public autoGrouping: boolean = true;
     public snapThreshold: number = 20;
     public snapOffset: number = 15;
     private snappingWindow: string;
+    protected readonly targetGroup: Map<string, ContainerWindow> = new Map();
 
     public constructor(container: Container, options?: any) {
         this.container = container;
 
         if (options) {
-            if (options.snapThreshold || options.snapThreshold === 0) {
+            if ("snapThreshold" in options) {
                 this.snapThreshold = options.snapThreshold;
             }
 
-            if (options.snapOffset || options.snapOffset === 0) {
+            if ("snapOffset" in options) {
                 this.snapOffset = options.snapOffset;
+            }
+
+            if ("autoGrouping" in options) {
+                this.autoGrouping = options.autoGrouping;
             }
         }
 
         this.attach();
     }
 
-    protected getEventName(): WindowEventType {
-        return (typeof fin !== "undefined")
-            ? <WindowEventType> "disabled-frame-bounds-changing"
-            : "move";
-    }
-
+    /**
+     * Invoked on attach of each window to prepare windows for snap/dock feature
+     */
     protected onAttached(win: ContainerWindow) {
-        if (typeof fin !== "undefined") {
+        // For OpenFin, enable frameless api as it results in smoother handling then traditional change events
+        if (win.innerWindow && win.innerWindow.disableFrame) {
             win.innerWindow.disableFrame();
         }
-    }
 
-    private moveWindow(win: ContainerWindow, bounds: Rectangle) {
-        this.snappingWindow = win.id;
-        win.setBounds(bounds).then(() => this.snappingWindow = undefined);
+        // Attach listeners for handling when the move/resize of a window is done
+        if (typeof fin !== "undefined") {
+            // OpenFin moved handler
+            win.addListener(<WindowEventType> "disabled-frame-bounds-changed", () => this.onMoved(win));
+        } else {
+            // Electron windows specific moved handler
+            if (win.innerWindow && win.innerWindow.hookWindowMessage) {
+                win.innerWindow.hookWindowMessage(0x0232, () => this.onMoved(win));  // WM_EXITSIZEMOVE
+            }
+        }
     }
 
     public attach(win?: ContainerWindow) {
         if (win) {
             this.onAttached(win);
 
-            win.addListener(this.getEventName(), (e) => {
+            win.addListener((typeof fin !== "undefined") ? <WindowEventType> "disabled-frame-bounds-changing" : "move", (e) => {
                 const id = e.sender.id;
 
                 if (this.snappingWindow === id) {
@@ -309,13 +321,20 @@ export class SnapAssistWindowManager {
                         : e.sender.getBounds();
 
                     getBounds.then(bounds => {
-                        const promises: Promise<Rectangle>[] = [];
-                        this.container.getAllWindows().then(windows => {
+                        // If we are already in a group, don't snap or group with other windows, ungrouped windows need to group to us
+                        if (groupedWindows.length > 0) {
+                            if (typeof fin !== "undefined") {
+                                this.moveWindow(e.sender, bounds);
+                            }
 
-                            // Get bounds of all other windows except those already grouped with current moving window
-                            windows.filter(window => id !== window.id && !groupedWindows.find(groupedWin => groupedWin.id === window.id)).forEach(window => {
-                                promises.push(new Promise(innerResolve => {
-                                    window.getBounds().then(targetBounds => innerResolve(targetBounds));
+                            return;
+                        }
+
+                        const promises: Promise<{window: ContainerWindow, bounds: Rectangle}>[] = [];
+                        this.container.getAllWindows().then(windows => {
+                            windows.filter(window => id !== window.id).forEach(window => {
+                                promises.push(new Promise(resolve => {
+                                    window.getBounds().then(targetBounds => resolve({ window: window, bounds: targetBounds}));
                                 }));
                             });
 
@@ -323,11 +342,14 @@ export class SnapAssistWindowManager {
                                 let isSnapped = false;
                                 let snapHint;
 
-                                for (const targetBounds of responses) {
-                                    snapHint = this.getSnapBounds(snapHint || bounds, targetBounds);
+                                for (const target of responses) {
+                                    snapHint = this.getSnapBounds(snapHint || bounds, target.bounds);
                                     if (snapHint) {
                                         isSnapped = true;
+                                        this.showGroupingHint(target.window);
                                         this.moveWindow(e.sender, snapHint);
+                                    } else {
+                                        this.hideGroupingHint(target.window);
                                     }
                                 }
 
@@ -355,6 +377,55 @@ export class SnapAssistWindowManager {
                   });
             }
         }
+    }
+
+    protected moveWindow(win: ContainerWindow, bounds: Rectangle) {
+        this.snappingWindow = win.id;
+        win.setBounds(bounds).then(() => this.snappingWindow = undefined, () => this.snappingWindow = undefined);
+    }
+
+    protected onMoved(win: ContainerWindow) {
+        if (this.autoGrouping) {
+            // Get group status of all target windows
+            const groupCallbacks: Promise<WindowGroupStatus>[] = [];
+            this.targetGroup.forEach(target => groupCallbacks.push(new Promise<WindowGroupStatus>(resolve => {
+                target.getGroup().then(windows => resolve({ window: target, isGrouped: windows.length > 0 }));
+            })));
+
+            Promise.all(groupCallbacks).then(responses => {
+                // Group the dragging window to the first snapped group target
+                if (responses.length > 0) {
+                    win.joinGroup(responses[0].window);
+                }
+
+                // If any other snap targets are not already in a group add them to the same group otherwise skip
+                for (let i = 1; i < responses.length; i++) {
+                    if (!responses[i].isGrouped) {
+                        responses[i].window.joinGroup(win);
+                    }
+                }
+            });
+        }
+
+        // Reset group hint indicators on all target windows and clear out the list
+        this.targetGroup.forEach(window => this.hideGroupingHint(window));
+        this.targetGroup.clear();
+    }
+
+    protected showGroupingHint(win: ContainerWindow) {
+        if (win.innerWindow && win.innerWindow.updateOptions) {
+            win.innerWindow.updateOptions({opacity: 0.75});
+        }
+
+        this.targetGroup.set(win.id, win);
+    }
+
+    protected hideGroupingHint(win: ContainerWindow) {
+        if (win.innerWindow && win.innerWindow.updateOptions) {
+            win.innerWindow.updateOptions({opacity: 1.0});
+        }
+
+        this.targetGroup.delete(win.id);
     }
 
     private isHorizontallyAligned(r1: Rectangle, r2: Rectangle): boolean {
@@ -424,8 +495,6 @@ export class SnapAssistWindowManager {
             y = (r2.y + r2.height) - r1.height;
         }
 
-        return (r1.x !== x || r1.y !== y)
-            ? new Rectangle(x, y, r1.width, r1.height)
-            : undefined;
+        return new Rectangle(x, y, r1.width, r1.height);
     }
 }

@@ -64,7 +64,7 @@
         "no-empty": true,
         "no-floating-promises": true,
         "no-for-in-array": false,
-        "no-increment-decrement": true,
+        "no-increment-decrement": false,
         "no-invalid-regexp": true,
         "no-invalid-this": true,
         "no-jquery-raw-elements": true,
