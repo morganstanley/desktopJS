@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 });
 
 openWindowButton.onclick = function () {
-	childWindow = container.createWindow("http://localhost:8000",
+	container.createWindow("http://localhost:8000",
 		{
 			resizable: true,
 			x: 10, y: 10,
@@ -97,7 +97,7 @@ openWindowButton.onclick = function () {
 			taskbar: true,
 			minimizable: true, maximizable: true,
 			alwaysOnTop: false, center: false
-		});
+		}).then(win => childWindow = win);
 };
 
 visibilityButton.onclick = function () {

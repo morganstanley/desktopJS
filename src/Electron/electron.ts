@@ -301,7 +301,7 @@ export class ElectronContainer extends WebContainerBase {
         return new ElectronContainerWindow(containerWindow, this);
     }
 
-    public createWindow(url: string, options?: any): ContainerWindow {
+    public createWindow(url: string, options?: any): Promise<ContainerWindow> {
         const newOptions = this.getWindowOptions(options);
         const electronWindow: any = new this.browserWindow(newOptions);
         const windowName = newOptions.name || Guid.newGuid();
@@ -328,7 +328,7 @@ export class ElectronContainer extends WebContainerBase {
         this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: electronWindow.id, windowName: windowName });
         Container.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
         ContainerWindow.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
-        return newWindow;
+        return Promise.resolve(newWindow);
     }
 
     public showNotification(title: string, options?: NotificationOptions) {

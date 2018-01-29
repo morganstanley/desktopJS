@@ -44,7 +44,7 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
 
     public abstract getCurrentWindow(): ContainerWindow;
 
-    public abstract createWindow(url: string, options?: any): ContainerWindow;
+    public abstract createWindow(url: string, options?: any): Promise<ContainerWindow>;
 
     public abstract saveLayout(name: string): Promise<PersistedWindowLayout>;
 

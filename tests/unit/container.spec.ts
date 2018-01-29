@@ -31,8 +31,8 @@ export class TestContainer extends ContainerBase {
         return undefined;
     }
 
-    createWindow(url: string, options?: any): ContainerWindow {
-        return undefined;
+    createWindow(url: string, options?: any): Promise<ContainerWindow> {
+        return Promise.resolve(undefined);
     }
 
     constructor() {
@@ -136,7 +136,7 @@ describe("container", () => {
                 container.addListener("layout-loaded", (e) => {
                     done();
                 });
-                
+
                 container.loadLayout("Test");
             });
 

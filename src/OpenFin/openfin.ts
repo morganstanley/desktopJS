@@ -352,7 +352,7 @@ export class OpenFinContainer extends WebContainerBase {
         return new OpenFinContainerWindow(containerWindow);
     }
 
-    public createWindow(url: string, options?: any): ContainerWindow {
+    public createWindow(url: string, options?: any): Promise<ContainerWindow> {
         const newOptions = this.getWindowOptions(options);
         newOptions.url = url; // createWindow param will always take precedence over any passed on options
 
@@ -361,11 +361,15 @@ export class OpenFinContainer extends WebContainerBase {
             newOptions.name = Guid.newGuid();
         }
 
-        return this.wrapWindow(new this.desktop.Window(newOptions, win => {
-            this.emit("window-created", { sender: this, name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
-            Container.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
-            ContainerWindow.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
-        }));
+        return new Promise<ContainerWindow>((resolve, reject) => {
+            const ofWin = new this.desktop.Window(newOptions, win => {
+                const newWin = this.wrapWindow(ofWin);
+                this.emit("window-created", { sender: this, name: "window-created", window: newWin, windowId: newOptions.name, windowName: newOptions.name });
+                Container.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
+                ContainerWindow.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
+                resolve(newWin);
+            }, reject);
+        });
     }
 
     public showNotification(title: string, options?: NotificationOptions) {

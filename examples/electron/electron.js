@@ -12,7 +12,7 @@ function createWindow() {
     
     snapAssist = new desktopJS.SnapAssistWindowManager(container);
 
-    mainWindow = container.createWindow('http://localhost:8000', { name: "desktopJS", main: true });
+    container.createWindow('http://localhost:8000', { name: "desktopJS", main: true }).then(win => mainWindow = win);
  
     let trayIcon = electron.nativeImage.createFromPath(__dirname + '\\..\\web\\favicon.ico');
     container.addTrayIcon({ icon: trayIcon, text: 'ContainerPOC' }, () => {

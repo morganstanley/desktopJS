@@ -214,7 +214,7 @@ export interface ContainerWindowManager {
      * @param {any} options (Optional)
      * @returns {ContainerWindow} A new native container window wrapped within a generic ContainerWindow.
      */
-    createWindow(url: string, options?: any): ContainerWindow;
+    createWindow(url: string, options?: any): Promise<ContainerWindow>;
 
     /**
      * Loads a window layout from persistence

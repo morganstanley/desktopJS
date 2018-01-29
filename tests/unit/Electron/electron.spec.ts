@@ -367,9 +367,9 @@ describe("ElectronContainer", () => {
         expect(win.innerWindow).toEqual(innerWin);
     });
 
-    it("createWindow", () => {
+    it("createWindow", (done) => {
         spyOn<any>(container, "browserWindow").and.callThrough();
-        container.createWindow("url", { x: "x", taskbar: false });
+        container.createWindow("url", { x: "x", taskbar: false }).then(done);
         expect((<any>container).browserWindow).toHaveBeenCalledWith({ x: "x", skipTaskbar: true });
     });
 
@@ -378,12 +378,12 @@ describe("ElectronContainer", () => {
         container.createWindow("url");
     });
 
-    it("createWindow on main process invokes ElectronWindowManager.initializeWindow", () => {
+    it("createWindow on main process invokes ElectronWindowManager.initializeWindow", (done) => {
         (<any>container).isRemote = false;
         container.windowManager = new ElectronWindowManager({}, new MockMainIpc(), { fromId(): any {}, getAllWindows(): any {} })
         spyOn(container.windowManager, "initializeWindow").and.callThrough();
         const options = { name: "name" };
-        container.createWindow("url", options);
+        container.createWindow("url", options).then(done);
         expect(container.windowManager.initializeWindow).toHaveBeenCalledWith(jasmine.any(Object), "name", options);
     });
 
