@@ -237,9 +237,12 @@ export interface ContainerWindowManager {
 
 /** Represents a persisted window in a layout */
 export class PersistedWindow {
-    public name: any;
+    public name: string;
+    public id: string;
     public bounds: any;
-    public url: string;
+    public url?: string;
+    public main?: boolean;
+    public group?: string[];
 }
 
 /** Represents a persisted window layout */

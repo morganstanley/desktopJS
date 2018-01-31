@@ -509,23 +509,32 @@ export class OpenFinContainer extends WebContainerBase {
 
         return new Promise<PersistedWindowLayout>((resolve, reject) => {
             this.desktop.Application.getCurrent().getChildWindows(windows => {
-                const windowClosing: Promise<void>[] = [];
+                const promises: Promise<void>[] = [];
+                const mainWindow = this.desktop.Application.getCurrent().getWindow();
 
-                windows.forEach(window => {
-                    windowClosing.push(new Promise<void>((innerResolve, innerReject) => {
+                windows.concat(mainWindow).forEach(window => {
+                    promises.push(new Promise<void>((innerResolve, innerReject) => {
                         window.getBounds(bounds => {
-                            window.getOptions(options => {
-                                layout.windows.push({ name: window.name, url: options.url, bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height } });
+                            window.getGroup(group => {
+                                layout.windows.push(
+                                    {
+                                        name: window.name,
+                                        id: window.name,
+                                        url: window.getNativeWindow().location.toString(),
+                                        main: (mainWindow.name === window.name),
+                                        bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
+                                        group: group.map(win => win.name)
+                                    });
                                 innerResolve();
-                            });
-                        });
+                            }, innerReject);
+                        }, innerReject);
                     }));
                 });
 
-                Promise.all(windowClosing).then(() => {
+                Promise.all(promises).then(() => {
                     this.saveLayoutToStorage(name, layout);
                     resolve(layout);
-                });
+                }).catch(reason => reject(reason));
             });
         });
     }

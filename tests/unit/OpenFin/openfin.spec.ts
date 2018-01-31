@@ -56,6 +56,8 @@ class MockWindow {
 
     getParentWindow(): any { return MockWindow.singleton; }
 
+    getNativeWindow(): any { return jasmine.createSpyObj("window", ["location"]); }
+
     focus(callback: () => void, error: (reason) => void): any {
         callback();
         return {};
@@ -101,7 +103,10 @@ class MockWindow {
         return {};
     }
 
-    getGroup(callback: any, errorCallback: any) { }
+    getGroup(callback: any, errorCallback: any) {
+        callback([ MockWindow.singleton]);
+    }
+
     joinGroup(target: any, callback: any, errorCallback: any) { }
     leaveGroup(callback: any, errorCallback: any) { }
 

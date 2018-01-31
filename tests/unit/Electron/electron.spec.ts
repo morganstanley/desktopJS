@@ -29,6 +29,7 @@ class MockWindow extends MockEventEmitter {
     public id: number;
     public group: string;
     private bounds: any = { x: 0, y: 1, width: 2, height: 3 }
+    public innerWindow: any = {};
 
     constructor(name?: string) {
         super();
@@ -485,7 +486,14 @@ describe("ElectronContainer", () => {
         });
 
         it("saveLayout invokes underlying saveLayoutToStorage", (done) => {
+            container.browserWindow = {
+                getAllWindows(): MockWindow[] { return windows; },
+                fromId(): any { return {}; }
+            };
+
+            spyOn<any>(container.internalIpc, "sendSync").and.returnValue([ 1, 5, 2 ]);
             spyOn<any>(container, "saveLayoutToStorage").and.stub();
+            spyOn<any>(container, "getMainWindow").and.returnValue(new MockWindow());
             container.saveLayout("Test")
                 .then(layout => {
                     expect(layout).toBeDefined();
@@ -494,7 +502,7 @@ describe("ElectronContainer", () => {
                 }).catch(error => {
                     fail(error);
                     done();
-                });;
+                });
         });
     });
 });
