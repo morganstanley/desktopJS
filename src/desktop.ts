@@ -5,16 +5,14 @@ import * as Default from "./Default/default";
 import * as Electron from "./Electron/electron";
 import * as OpenFin from "./OpenFin/openfin";
 
-const exportDesktopJS = {
-    get version(): string { return "PACKAGE_VERSION"; },
-    Container,
-    ContainerWindow,
-    registerContainer,
-    resolveContainer,
-    Default,
-    Electron,
-    OpenFin,
-    SnapAssistWindowManager
-};
-
-export default exportDesktopJS; // tslint:disable-line
+export default class Desktop { //tslint:disable-line
+    static get version(): string { return "PACKAGE_VERSION"; }
+    static get Container(): typeof Container { return Container; }
+    static get ContainerWindow(): typeof ContainerWindow { return ContainerWindow; }
+    static get registerContainer(): typeof registerContainer { return registerContainer; }
+    static get resolveContainer(): typeof resolveContainer { return resolveContainer; }
+    static get Default(): typeof Default { return Default; }
+    static get Electron(): typeof Electron { return Electron; }
+    static get OpenFin(): typeof OpenFin { return OpenFin; }
+    static get SnapAssistWindowManager(): typeof SnapAssistWindowManager { return SnapAssistWindowManager; }
+}
