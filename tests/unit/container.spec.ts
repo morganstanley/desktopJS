@@ -28,11 +28,21 @@ export class MockMessageBus implements MessageBus { // tslint:disable-line
 
 export class TestContainer extends ContainerBase {
     getMainWindow(): ContainerWindow {
-        return undefined;
+        const win = jasmine.createSpyObj("ContainerWindow", ["setBounds"]);
+        Object.defineProperty(win, "name", { value: "1" });
+        return win;
     }
 
-    createWindow(url: string, options?: any): ContainerWindow {
-        return undefined;
+    getWindowByName(): Promise<ContainerWindow> {
+        const win = jasmine.createSpyObj("ContainerWindow", ["setBounds"]);
+        Object.defineProperty(win, "id", { value: "1" });
+        return Promise.resolve(win);
+    }
+
+    createWindow(url: string, options?: any): Promise<ContainerWindow> {
+        const win = jasmine.createSpyObj("ContainerWindow", ["id"]);
+        Object.defineProperty(win, "name", { value: "1" });
+        return Promise.resolve(win);
     }
 
     constructor() {
@@ -43,23 +53,15 @@ export class TestContainer extends ContainerBase {
         this.storage = <any> {
             getItem(key: string): string {
                 const layout: PersistedWindowLayout = new PersistedWindowLayout();
-                const win: PersistedWindow = new PersistedWindow();
-                win.name = "name";
-                win.url = "url";
-                layout.windows.push(win);
+                layout.windows.push({ name: "1", id: "1", url: "url", bounds: {}, group: ["1", "2"]});
+                layout.windows.push({ name: "2", id: "2", main: true, url: "url", bounds: {}, group: ["1", "2"]});
                 layout.name = "Test";
-                const layouts: any = { "Test": layout };
-                let test: string = JSON.stringify(layouts);
-                return test;
+                return JSON.stringify({ "Test": layout });
             },
             setItem(key: string, value: any) {
                 // no op
             }
         };
-    }
-
-    public saveLayoutToStorage(name: string, layout: PersistedWindowLayout) {
-        super.saveLayoutToStorage(name, layout);
     }
 
     public closeAllWindows(excludeSelf?: Boolean): Promise<void> {
@@ -127,16 +129,16 @@ describe("container", () => {
                 spyOn(container, "createWindow").and.callThrough();
                 container.loadLayout("Test").then(layout => {
                     expect(layout).toBeDefined();
-                    expect(container.createWindow).toHaveBeenCalledWith("url", { name: "name" });
+                    expect(container.createWindow).toHaveBeenCalledWith("url", { name: "1" });
                     done();
                 });
             });
 
-            it("loadLayout firews layout-loaded", (done) => {
+            it("loadLayout fires layout-loaded", (done) => {
                 container.addListener("layout-loaded", (e) => {
                     done();
                 });
-                
+
                 container.loadLayout("Test");
             });
 

@@ -195,19 +195,25 @@ describe("DefaultContainer", () => {
             expect(window.open).toHaveBeenCalledWith("url", "_blank", "left=x0,top=y0,");
         });
 
-        it("Window is addded to windows", () => {
-            let newWin: any = container.createWindow("url").innerWindow;
-            expect(newWin[DefaultContainer.windowUuidPropertyKey]).toBeDefined();
-            expect(newWin[DefaultContainer.windowsPropertyKey]).toBeDefined();
-            expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
+        it("Window is added to windows", (done) => {
+            container.createWindow("url").then(win => {
+                const newWin = win.innerWindow;
+                expect(newWin[DefaultContainer.windowUuidPropertyKey]).toBeDefined();
+                expect(newWin[DefaultContainer.windowsPropertyKey]).toBeDefined();
+                expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
+                done();
+            });
         });
 
-        it("Window is removed from windows on close", () => {
-            let newWin: any = container.createWindow("url").innerWindow;
-            expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
-            newWin.listener("beforeunload", {});
-            newWin.listener("unload", {});
-            expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeUndefined();
+        it("Window is removed from windows on close", (done) => {
+            container.createWindow("url").then(win => {
+                const newWin = win.innerWindow;
+                expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
+                newWin.listener("beforeunload", {});
+                newWin.listener("unload", {});
+                expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeUndefined();
+                done();
+            });
         });
 
         it("createWindow fires window-created", (done) => {

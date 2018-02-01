@@ -214,7 +214,7 @@ export interface ContainerWindowManager {
      * @param {any} options (Optional)
      * @returns {ContainerWindow} A new native container window wrapped within a generic ContainerWindow.
      */
-    createWindow(url: string, options?: any): ContainerWindow;
+    createWindow(url: string, options?: any): Promise<ContainerWindow>;
 
     /**
      * Loads a window layout from persistence
@@ -237,9 +237,12 @@ export interface ContainerWindowManager {
 
 /** Represents a persisted window in a layout */
 export class PersistedWindow {
-    public name: any;
+    public name: string;
+    public id: string;
     public bounds: any;
-    public url: string;
+    public url?: string;
+    public main?: boolean;
+    public group?: string[];
 }
 
 /** Represents a persisted window layout */

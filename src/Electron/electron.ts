@@ -301,7 +301,7 @@ export class ElectronContainer extends WebContainerBase {
         return new ElectronContainerWindow(containerWindow, this);
     }
 
-    public createWindow(url: string, options?: any): ContainerWindow {
+    public createWindow(url: string, options?: any): Promise<ContainerWindow> {
         const newOptions = this.getWindowOptions(options);
         const electronWindow: any = new this.browserWindow(newOptions);
         const windowName = newOptions.name || Guid.newGuid();
@@ -328,7 +328,7 @@ export class ElectronContainer extends WebContainerBase {
         this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: electronWindow.id, windowName: windowName });
         Container.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
         ContainerWindow.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
-        return newWindow;
+        return Promise.resolve(newWindow);
     }
 
     public showNotification(title: string, options?: NotificationOptions) {
@@ -382,16 +382,33 @@ export class ElectronContainer extends WebContainerBase {
 
     public saveLayout(name: string): Promise<PersistedWindowLayout> {
         const layout = new PersistedWindowLayout();
+        const mainWindow = this.getMainWindow().innerWindow;
+        const promises: Promise<void>[] = [];
 
         return new Promise<PersistedWindowLayout>((resolve, reject) => {
-            for (const window of this.browserWindow.getAllWindows()) {
-                if (window !== this.electron.getCurrentWindow()) {
-                    layout.windows.push({ name: window.name, url: window.webContents.getURL(), bounds: window.getBounds() });
-                }
-            }
+            this.getAllWindows().then(windows => {
+                windows.forEach(window => {
+                    promises.push(new Promise<void>((innerResolve, innerReject) => {
+                        window.getGroup().then(group => {
+                            layout.windows.push(
+                                {
+                                    id: window.id,
+                                    name: window.name,
+                                    url: window.innerWindow.webContents.getURL(),
+                                    main: (mainWindow === window.innerWindow),
+                                    bounds: window.innerWindow.getBounds(),
+                                    group: group.map(win => win.id)
+                                });
+                            innerResolve();
+                        });
+                    }));
+                });
 
-            this.saveLayoutToStorage(name, layout);
-            resolve(layout);
+                Promise.all(promises).then(() => {
+                    this.saveLayoutToStorage(name, layout);
+                    resolve(layout);
+                });
+            });
         });
     }
 }

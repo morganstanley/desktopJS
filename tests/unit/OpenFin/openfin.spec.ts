@@ -56,6 +56,8 @@ class MockWindow {
 
     getParentWindow(): any { return MockWindow.singleton; }
 
+    getNativeWindow(): any { return jasmine.createSpyObj("window", ["location"]); }
+
     focus(callback: () => void, error: (reason) => void): any {
         callback();
         return {};
@@ -101,7 +103,10 @@ class MockWindow {
         return {};
     }
 
-    getGroup(callback: any, errorCallback: any) { }
+    getGroup(callback: any, errorCallback: any) {
+        callback([ MockWindow.singleton]);
+    }
+
     joinGroup(target: any, callback: any, errorCallback: any) { }
     leaveGroup(callback: any, errorCallback: any) { }
 
@@ -324,16 +329,18 @@ describe("OpenFinContainer", () => {
             spyOn(desktop, "Window").and.callFake((options?: any, callback?: Function) => { if (callback) { callback(); } });
         });
 
-        it("defaults", () => {
-            let win: OpenFinContainerWindow = container.createWindow("url");
-            expect(win).toBeDefined();
-            expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: jasmine.stringMatching(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/) }, jasmine.any(Function));
+        it("defaults", (done) => {
+            container.createWindow("url").then(win => {
+                expect(win).toBeDefined();
+                expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: jasmine.stringMatching(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/) }, jasmine.any(Function), jasmine.any(Function));
+                done();
+            });
         });
 
-        it("createWindow defaults", () => {
+        it("createWindow defaults", (done) => {
             spyOn<any>(container, "ensureAbsoluteUrl").and.returnValue("absoluteIcon");
 
-            let win: OpenFinContainerWindow = container.createWindow("url",
+            container.createWindow("url",
                 {
                     x: "x",
                     y: "y",
@@ -343,25 +350,27 @@ describe("OpenFinContainer", () => {
                     center: "center",
                     icon: "icon",
                     name: "name"
+                }).then(win => {
+                    expect(win).toBeDefined();
+                    expect(desktop.Window).toHaveBeenCalledWith(
+                        {
+                            defaultLeft: "x",
+                            defaultTop: "y",
+                            defaultHeight: "height",
+                            defaultWidth: "width",
+                            showTaskbarIcon: "taskbar",
+                            defaultCentered: "center",
+                            icon: "absoluteIcon",
+                            autoShow: true,
+                            saveWindowState: false,
+                            url: "url",
+                            name: "name"
+                        },
+                        jasmine.any(Function),
+                        jasmine.any(Function)
+                    );
+                    done();
                 });
-
-            expect(win).toBeDefined();
-            expect(desktop.Window).toHaveBeenCalledWith(
-                {
-                    defaultLeft: "x",
-                    defaultTop: "y",
-                    defaultHeight: "height",
-                    defaultWidth: "width",
-                    showTaskbarIcon: "taskbar",
-                    defaultCentered: "center",
-                    icon: "absoluteIcon",
-                    autoShow: true,
-                    saveWindowState: false,
-                    url: "url",
-                    name: "name"
-                },
-                jasmine.any(Function)
-            );
         });
 
         it("createWindow fires window-created", (done) => {

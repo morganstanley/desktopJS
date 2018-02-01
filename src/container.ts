@@ -44,7 +44,7 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
 
     public abstract getCurrentWindow(): ContainerWindow;
 
-    public abstract createWindow(url: string, options?: any): ContainerWindow;
+    public abstract createWindow(url: string, options?: any): Promise<ContainerWindow>;
 
     public abstract saveLayout(name: string): Promise<PersistedWindowLayout>;
 
@@ -168,16 +168,37 @@ export abstract class ContainerBase extends Container {
             this.closeAllWindows(true).then(() => {
                 const layout = <PersistedWindowLayout>this.getLayoutFromStorage(name);
                 if (layout && layout.windows) {
+                    const promises: Promise<ContainerWindow>[] = [];
                     for (const window of layout.windows) {
                         const options: any = Object.assign({}, window.bounds);
                         options.name = window.name;
-                        this.createWindow(window.url, options);
+                        if (window.main) {
+                            this.getMainWindow().setBounds(window.bounds);
+                            promises.push(Promise.resolve(this.getMainWindow()));
+                        } else {
+                            promises.push(this.createWindow(window.url, options));
+                        }
                     }
-                }
 
-                this.emit("layout-loaded", { sender: this, name: "layout-loaded", layout: layout, layoutName: layout.name });
-                Container.emit("layout-loaded", { name: "layout-loaded", layout: layout, layoutName: layout.name });
-                resolve(layout);
+                    Promise.all(promises).then(windows => {
+                        windows.forEach(window => {
+                            const group = layout.windows.find(win => win.name === window.name).group;
+                            if (group && group.length > 0) {
+                                group.filter(id => id !== window.id).forEach(target => {
+                                    this.getWindowByName(layout.windows.find(win => win.id === target).name).then(targetWin => {
+                                        window.joinGroup(targetWin);
+                                    });
+                                });
+                            }
+                        });
+                    });
+
+                    this.emit("layout-loaded", { sender: this, name: "layout-loaded", layout: layout, layoutName: layout.name });
+                    Container.emit("layout-loaded", { name: "layout-loaded", layout: layout, layoutName: layout.name });
+                    resolve(layout);
+                } else {
+                    reject("Layout does not exist");
+                }
             });
         });
     }

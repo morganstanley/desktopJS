@@ -29,6 +29,7 @@ class MockWindow extends MockEventEmitter {
     public id: number;
     public group: string;
     private bounds: any = { x: 0, y: 1, width: 2, height: 3 }
+    public innerWindow: any = {};
 
     constructor(name?: string) {
         super();
@@ -367,9 +368,9 @@ describe("ElectronContainer", () => {
         expect(win.innerWindow).toEqual(innerWin);
     });
 
-    it("createWindow", () => {
+    it("createWindow", (done) => {
         spyOn<any>(container, "browserWindow").and.callThrough();
-        container.createWindow("url", { x: "x", taskbar: false });
+        container.createWindow("url", { x: "x", taskbar: false }).then(done);
         expect((<any>container).browserWindow).toHaveBeenCalledWith({ x: "x", skipTaskbar: true });
     });
 
@@ -378,12 +379,12 @@ describe("ElectronContainer", () => {
         container.createWindow("url");
     });
 
-    it("createWindow on main process invokes ElectronWindowManager.initializeWindow", () => {
+    it("createWindow on main process invokes ElectronWindowManager.initializeWindow", (done) => {
         (<any>container).isRemote = false;
         container.windowManager = new ElectronWindowManager({}, new MockMainIpc(), { fromId(): any {}, getAllWindows(): any {} })
         spyOn(container.windowManager, "initializeWindow").and.callThrough();
         const options = { name: "name" };
-        container.createWindow("url", options);
+        container.createWindow("url", options).then(done);
         expect(container.windowManager.initializeWindow).toHaveBeenCalledWith(jasmine.any(Object), "name", options);
     });
 
@@ -485,7 +486,14 @@ describe("ElectronContainer", () => {
         });
 
         it("saveLayout invokes underlying saveLayoutToStorage", (done) => {
+            container.browserWindow = {
+                getAllWindows(): MockWindow[] { return windows; },
+                fromId(): any { return {}; }
+            };
+
+            spyOn<any>(container.internalIpc, "sendSync").and.returnValue([ 1, 5, 2 ]);
             spyOn<any>(container, "saveLayoutToStorage").and.stub();
+            spyOn<any>(container, "getMainWindow").and.returnValue(new MockWindow());
             container.saveLayout("Test")
                 .then(layout => {
                     expect(layout).toBeDefined();
@@ -494,7 +502,7 @@ describe("ElectronContainer", () => {
                 }).catch(error => {
                     fail(error);
                     done();
-                });;
+                });
         });
     });
 });
