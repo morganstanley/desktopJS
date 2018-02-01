@@ -29,8 +29,8 @@
     "dist"
   ],
   "dependencies": {
-    "@types/node": "^9.3.0",
-    "@types/openfin": "^17.0.2"
+    "@types/node": "*",
+    "@types/openfin": "*"
   },
   "devDependencies": {
     "@types/jasmine": "^2.5.47",
