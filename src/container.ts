@@ -181,15 +181,32 @@ export abstract class ContainerBase extends Container {
                     }
 
                     Promise.all(promises).then(windows => {
+                        const groupMap: Map<ContainerWindow, string[]> = new Map();
+
+                        // de-dupe window grouping
                         windows.forEach(window => {
-                            const group = layout.windows.find(win => win.name === window.name).group;
-                            if (group && group.length > 0) {
-                                group.filter(id => id !== window.id).forEach(target => {
-                                    this.getWindowByName(layout.windows.find(win => win.id === target).name).then(targetWin => {
-                                        window.joinGroup(targetWin);
-                                    });
-                                });
+                            let found = false;
+
+                            groupMap.forEach((targets, win) => {
+                                if (!found && targets.indexOf(window.id) >= 0) {
+                                    found = true;
+                                }
+                            });
+
+                            if (!found) {
+                                const group = layout.windows.find(win => win.name === window.name).group;
+                                if (group && group.length > 0) {
+                                    groupMap.set(window, group.filter(id => id !== window.id));
+                                }
                             }
+                        });
+
+                        groupMap.forEach((targets, window) => {
+                            targets.forEach(target => {
+                                this.getWindowByName(layout.windows.find(win => win.id === target).name).then(targetWin => {
+                                    targetWin.joinGroup(window);
+                                });
+                            });
                         });
                     });
 
