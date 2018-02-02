@@ -41,7 +41,8 @@ export class TestContainer extends ContainerBase {
 
     createWindow(url: string, options?: any): Promise<ContainerWindow> {
         const win = jasmine.createSpyObj("ContainerWindow", ["id"]);
-        Object.defineProperty(win, "name", { value: "1" });
+        Object.defineProperty(win, "name", { value: options.name || "1" });
+        Object.defineProperty(win, "id", { value: options.name || "1" });
         return Promise.resolve(win);
     }
 
@@ -53,8 +54,9 @@ export class TestContainer extends ContainerBase {
         this.storage = <any> {
             getItem(key: string): string {
                 const layout: PersistedWindowLayout = new PersistedWindowLayout();
-                layout.windows.push({ name: "1", id: "1", url: "url", bounds: {}, group: ["1", "2"]});
-                layout.windows.push({ name: "2", id: "2", main: true, url: "url", bounds: {}, group: ["1", "2"]});
+                layout.windows.push({ name: "1", id: "1", url: "url", bounds: {}, group: ["1", "2", "3"]});
+                layout.windows.push({ name: "2", id: "2", main: true, url: "url", bounds: {}, group: ["1", "2", "3"]});
+                layout.windows.push({ name: "3", id: "3", url: "url", bounds: {}, group: ["1", "2", "3"]});
                 layout.name = "Test";
                 return JSON.stringify({ "Test": layout });
             },

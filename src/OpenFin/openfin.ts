@@ -515,17 +515,19 @@ export class OpenFinContainer extends WebContainerBase {
                 windows.concat(mainWindow).forEach(window => {
                     promises.push(new Promise<void>((innerResolve, innerReject) => {
                         window.getBounds(bounds => {
-                            window.getGroup(group => {
-                                layout.windows.push(
-                                    {
-                                        name: window.name,
-                                        id: window.name,
-                                        url: window.getNativeWindow().location.toString(),
-                                        main: (mainWindow.name === window.name),
-                                        bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
-                                        group: group.map(win => win.name)
-                                    });
-                                innerResolve();
+                            window.getOptions(options => {
+                                window.getGroup(group => {
+                                    layout.windows.push(
+                                        {
+                                            name: window.name,
+                                            id: window.name,
+                                            url: window.getNativeWindow() ? window.getNativeWindow().location.toString() : options.url,
+                                            main: (mainWindow.name === window.name),
+                                            bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
+                                            group: group.map(win => win.name)
+                                        });
+                                    innerResolve();
+                                }, innerReject);
                             }, innerReject);
                         }, innerReject);
                     }));
