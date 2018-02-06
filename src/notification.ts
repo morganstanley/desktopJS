@@ -16,7 +16,7 @@ export abstract class ContainerNotification {
     /**
      * A string representing the current permission to display notifications.
      */
-    static permission: string = "granted";
+    static permission: NotificationPermission = "granted";
 
     /**
      * A handler for the click event.  It is triggered each time the user clicks the notification.
