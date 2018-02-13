@@ -61,6 +61,8 @@ class MockWindow extends MockEventEmitter {
         this.bounds = bounds;
         this.emit("move", null);
      }
+
+     public flashFrame(enable: boolean): void { }
 }
 
 class MockCapture {
@@ -181,6 +183,22 @@ describe("ElectronContainerWindow", () => {
             win.setBounds(bounds).then(() => {
                 expect(win.innerWindow.setBounds).toHaveBeenCalledWith(bounds);
             }).then(done);
+        });
+
+        it("flash enable invokes underlying flash", (done) => {
+            spyOn(win.innerWindow, "flashFrame").and.callThrough();
+            win.flash(true).then(() => {
+                expect(win.innerWindow.flashFrame).toHaveBeenCalledWith(true);
+                done();
+            });
+        });
+
+        it("flash disable invokes underlying stopFlashing", (done) => {
+            spyOn(win.innerWindow, "flashFrame").and.callThrough();
+            win.flash(false).then(() => {
+                expect(win.innerWindow.flashFrame).toHaveBeenCalledWith(false);
+                done();
+            });
         });
 
         it("addListener calls underlying Electron window addListener", () => {

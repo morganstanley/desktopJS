@@ -87,6 +87,16 @@ export class OpenFinContainerWindow extends ContainerWindow {
         });
     }
 
+    public flash(enable: boolean, options?: any): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            if (enable) {
+                this.innerWindow.flash(options, resolve, reject);
+            } else {
+                this.innerWindow.stopFlashing(resolve, reject);
+            }
+        });
+    }
+
     public setBounds(bounds: Rectangle): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.innerWindow.setBounds(bounds.x, bounds.y, bounds.width, bounds.height, resolve, reject);
