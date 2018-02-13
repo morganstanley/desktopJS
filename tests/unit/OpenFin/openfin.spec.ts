@@ -98,6 +98,14 @@ class MockWindow {
         return {};
     }
 
+    flash(options: any, callback: () => void): void {
+        callback();
+    }
+
+    stopFlashing(callback: () => void): void {
+        callback();
+    }
+
     getOptions(callback: (options: fin.WindowOptions) => void, error: (reason) => void): any {
         callback({ url: "url" });
         return {};
@@ -224,6 +232,22 @@ describe("OpenFinContainerWindow", () => {
             win.setBounds({ x: 0, y: 1, width: 2, height: 3 }).then(() => {
                 expect(win.innerWindow.setBounds).toHaveBeenCalledWith(0, 1, 2, 3, jasmine.any(Function), jasmine.any(Function));
             }).then(done);
+        });
+
+        it("flash enable invokes underlying flash", (done) => {
+            spyOn(win.innerWindow, "flash").and.callThrough();
+            win.flash(true).then(() => {
+                expect(win.innerWindow.flash).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it("flash disable invokes underlying stopFlashing", (done) => {
+            spyOn(win.innerWindow, "stopFlashing").and.callThrough();
+            win.flash(false).then(() => {
+                expect(win.innerWindow.stopFlashing).toHaveBeenCalled();
+                done();
+            });
         });
 
         describe("addListener", () => {

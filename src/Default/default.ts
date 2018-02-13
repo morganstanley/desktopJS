@@ -54,6 +54,10 @@ export class DefaultContainerWindow extends ContainerWindow {
         return Promise.reject("getSnapshot requires an implementation.");
     }
 
+    public flash(enable: boolean, options?: any): Promise<void> {
+        return Promise.reject("Not supported");
+    }
+
     public getBounds(): Promise<Rectangle> {
         return new Promise<Rectangle>(resolve => {
             resolve(new Rectangle(this.innerWindow.screenX, this.innerWindow.screenY, this.innerWindow.outerWidth, this.innerWindow.outerHeight));

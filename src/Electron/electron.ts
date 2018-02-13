@@ -85,6 +85,11 @@ export class ElectronContainerWindow extends ContainerWindow {
         });
     }
 
+    public flash(enable: boolean, options?: any): Promise<void> {
+        this.innerWindow.flashFrame(enable);
+        return Promise.resolve();
+    }
+
     public getBounds(): Promise<Rectangle> {
         return new Promise<Rectangle>(resolve => {
             const { x, y, width, height } = this.innerWindow.getBounds();

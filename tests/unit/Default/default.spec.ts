@@ -97,6 +97,16 @@ describe("DefaultContainerWindow", () => {
         }).then(done);
     });
 
+    it("flash resolves with not supported", (done) => {
+        win.flash().then(() => {
+            fail("Reject is not thrown");
+            done();
+        }).catch(reason => {
+            expect(reason).toEqual("Not supported");
+            done();
+        });
+    });
+
     describe("addListener", () => {
         it("addListener calls underlying window addEventListener with mapped event name", () => {
             spyOn(win.innerWindow, "addEventListener").and.callThrough()

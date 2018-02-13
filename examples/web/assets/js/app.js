@@ -114,6 +114,10 @@ visibilityButton.onclick = function () {
 	});
 };
 
+$("#button-flash").click(function() {
+	container.getCurrentWindow().flash(true, {});
+});
+
 $("#button-joingroup").click(function() {
 	container.getCurrentWindow().joinGroup(container.getMainWindow());
 });
