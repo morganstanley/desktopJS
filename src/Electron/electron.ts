@@ -44,7 +44,7 @@ export class ElectronContainerWindow extends ContainerWindow {
     }
 
     public get id(): string {
-        return this.innerWindow.id;
+        return this.innerWindow.id || this.innerWindow.guestId;
     }
 
     public get name(): string {

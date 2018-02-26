@@ -251,7 +251,26 @@ export abstract class WebContainerBase extends ContainerBase {
         try {
             this.linkHelper = this.globalWindow.top.document.createElement("a");
         } catch (e) { /* Swallow */ }
+
+        if (this.globalWindow) {
+            const open = this.globalWindow.open;
+            this.globalWindow.open = (url?: string, target?: string, features?: string, replace?: boolean) => {
+                return this.onOpen(open, url, target, features, replace);
+            };
+        }
     }
+
+    protected onOpen(open: (url?: string, target?: string, features?: string, replace?: boolean) => Window,
+                     url?: string, target?: string, features?: string, replace?: boolean): Window {
+        const wrap = this.wrapWindow(open(url, target, features, replace));
+
+        Container.emit("window-created", { name: "window-created", windowId: wrap.id });
+        ContainerWindow.emit("window-created", { name: "window-created", windowId: wrap.id });
+
+        return wrap.innerWindow;
+    }
+
+    public abstract wrapWindow(window: any): ContainerWindow;
 
     /**
      * Returns an absolute url
