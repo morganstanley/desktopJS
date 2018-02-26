@@ -240,7 +240,7 @@ export class DefaultContainer extends WebContainerBase {
             }
         }
 
-        const window = this.globalWindow.open(url, target, features);  // Via window.open polyfill, registerWindow will still be invoked
+        const window = this.globalWindow.open(url, target, features);
 
         // Set name as a unique desktopJS name property instead of overloading window.name
         window[DefaultContainer.windowNamePropertyKey] = newOptions.name;
