@@ -199,6 +199,31 @@ export class DefaultContainer extends WebContainerBase {
         return new DefaultContainerWindow(containerWindow);
     }
 
+    protected onOpen(open: (url?: string, target?: string, features?: string, replace?: boolean) => Window,
+                     url?: string, target?: string, features?: string, replace?: boolean): Window {
+        const window = open(url, target, features, replace);
+
+        const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+        const uuid = window[DefaultContainer.windowUuidPropertyKey] = Guid.newGuid();
+        windows[uuid] = window;
+
+        // Attach event handlers on window to cleanup reference on global windows object.  beforeunload -> unload to prevent
+        // unload being called on open within Chrome.
+        window.addEventListener("beforeunload", () => {
+            window.addEventListener("unload", () => {
+                delete windows[uuid];
+            });
+        });
+
+        // Propagate the global windows object to the new window
+        window[DefaultContainer.windowsPropertyKey] = windows;
+
+        Container.emit("window-created", { name: "window-created", windowId: uuid });
+        ContainerWindow.emit("window-created", { name: "window-created", windowId: uuid });
+
+        return window;
+    }
+
     public createWindow(url: string, options?: any): Promise<ContainerWindow> {
         let features: string;
         let target = "_blank";
@@ -220,26 +245,9 @@ export class DefaultContainer extends WebContainerBase {
         // Set name as a unique desktopJS name property instead of overloading window.name
         window[DefaultContainer.windowNamePropertyKey] = newOptions.name;
 
-        // Add the new window to the global windows object
-        const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
-        const uuid = window[DefaultContainer.windowUuidPropertyKey] = Guid.newGuid();
-        windows[uuid] = window;
-
-        // Attach event handlers on window to cleanup reference on global windows object.  beforeunload -> unload to prevent
-        // unload being called on open within Chrome.
-        window.addEventListener("beforeunload", () => {
-            window.addEventListener("unload", () => {
-                delete windows[uuid];
-            });
-        });
-
-        // Propagate the global windows object to the new window
-        window[DefaultContainer.windowsPropertyKey] = windows;
-
         const newWindow = this.wrapWindow(window);
-        this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: uuid, windowName: newOptions.name });
-        Container.emit("window-created", { name: "window-created", windowId: uuid, windowName: newOptions.name });
-        ContainerWindow.emit("window-created", { name: "window-created", windowId: uuid, windowName: newOptions.name });
+        this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: newWindow.id, windowName: newOptions.name });
+
         return Promise.resolve(newWindow);
     }
 

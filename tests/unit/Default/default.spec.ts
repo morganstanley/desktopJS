@@ -226,6 +226,14 @@ describe("DefaultContainer", () => {
             });
         });
 
+        it("Window from window.open is removed from windows on close", () => {
+            const newWin = window.open("url");
+            expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
+            newWin.listener("beforeunload", {});
+            newWin.listener("unload", {});
+            expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeUndefined();
+        });
+
         it("createWindow fires window-created", (done) => {
             container.addListener("window-created", () => done());
             container.createWindow("url");
