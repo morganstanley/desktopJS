@@ -97,6 +97,16 @@ describe("DefaultContainerWindow", () => {
         }).then(done);
     });
 
+    it("flash resolves with not supported", (done) => {
+        win.flash().then(() => {
+            fail("Reject is not thrown");
+            done();
+        }).catch(reason => {
+            expect(reason).toEqual("Not supported");
+            done();
+        });
+    });
+
     describe("addListener", () => {
         it("addListener calls underlying window addEventListener with mapped event name", () => {
             spyOn(win.innerWindow, "addEventListener").and.callThrough()
@@ -214,6 +224,14 @@ describe("DefaultContainer", () => {
                 expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeUndefined();
                 done();
             });
+        });
+
+        it("Window from window.open is removed from windows on close", () => {
+            const newWin = window.open("url");
+            expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
+            newWin.listener("beforeunload", {});
+            newWin.listener("unload", {});
+            expect(newWin[DefaultContainer.windowsPropertyKey][newWin[DefaultContainer.windowUuidPropertyKey]]).toBeUndefined();
         });
 
         it("createWindow fires window-created", (done) => {

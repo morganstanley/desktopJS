@@ -44,7 +44,7 @@ export class ElectronContainerWindow extends ContainerWindow {
     }
 
     public get id(): string {
-        return this.innerWindow.id;
+        return this.innerWindow.id || this.innerWindow.guestId;
     }
 
     public get name(): string {
@@ -83,6 +83,11 @@ export class ElectronContainerWindow extends ContainerWindow {
                 resolve("data:image/png;base64," + snapshot.toPNG().toString("base64"));
             });
         });
+    }
+
+    public flash(enable: boolean, options?: any): Promise<void> {
+        this.innerWindow.flashFrame(enable);
+        return Promise.resolve();
     }
 
     public getBounds(): Promise<Rectangle> {
