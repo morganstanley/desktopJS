@@ -46,7 +46,7 @@
     "gulp-sourcemaps": "^2.5.0",
     "gulp-tslint": "^8.1.0",
     "gulp-typedoc": "^2.0.2",
-    "gulp-typescript": "^3.1.6",
+    "gulp-typescript": "^4.0.1",
     "gulp-uglify": "^3.0.0",
     "gulp-webserver": "^0.9.1",
     "merge2": "^1.0.3",
