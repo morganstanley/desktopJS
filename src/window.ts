@@ -106,6 +106,8 @@ export abstract class ContainerWindow extends EventEmitter {
     /** Gets the current bounds of the window. */
     public abstract getBounds(): Promise<Rectangle>;
 
+    public abstract flash(enable: boolean, options?: any): Promise<void>;
+
     /** Set the current bounds of the window.
      * @param {Rectangle} bounds
      */
