@@ -181,15 +181,32 @@ export abstract class ContainerBase extends Container {
                     }
 
                     Promise.all(promises).then(windows => {
+                        const groupMap: Map<ContainerWindow, string[]> = new Map();
+
+                        // de-dupe window grouping
                         windows.forEach(window => {
-                            const group = layout.windows.find(win => win.name === window.name).group;
-                            if (group && group.length > 0) {
-                                group.filter(id => id !== window.id).forEach(target => {
-                                    this.getWindowByName(layout.windows.find(win => win.id === target).name).then(targetWin => {
-                                        window.joinGroup(targetWin);
-                                    });
-                                });
+                            let found = false;
+
+                            groupMap.forEach((targets, win) => {
+                                if (!found && targets.indexOf(window.id) >= 0) {
+                                    found = true;
+                                }
+                            });
+
+                            if (!found) {
+                                const group = layout.windows.find(win => win.name === window.name).group;
+                                if (group && group.length > 0) {
+                                    groupMap.set(window, group.filter(id => id !== window.id));
+                                }
                             }
+                        });
+
+                        groupMap.forEach((targets, window) => {
+                            targets.forEach(target => {
+                                this.getWindowByName(layout.windows.find(win => win.id === target).name).then(targetWin => {
+                                    targetWin.joinGroup(window);
+                                });
+                            });
                         });
                     });
 
@@ -234,7 +251,26 @@ export abstract class WebContainerBase extends ContainerBase {
         try {
             this.linkHelper = this.globalWindow.top.document.createElement("a");
         } catch (e) { /* Swallow */ }
+
+        if (this.globalWindow) {
+            const open = this.globalWindow.open;
+            this.globalWindow.open = (url?: string, target?: string, features?: string, replace?: boolean) => {
+                return this.onOpen(open, url, target, features, replace);
+            };
+        }
     }
+
+    protected onOpen(open: (url?: string, target?: string, features?: string, replace?: boolean) => Window,
+                     url?: string, target?: string, features?: string, replace?: boolean): Window {
+        const wrap = this.wrapWindow(open(url, target, features, replace));
+
+        Container.emit("window-created", { name: "window-created", windowId: wrap.id });
+        ContainerWindow.emit("window-created", { name: "window-created", windowId: wrap.id });
+
+        return wrap.innerWindow;
+    }
+
+    public abstract wrapWindow(window: any): ContainerWindow;
 
     /**
      * Returns an absolute url

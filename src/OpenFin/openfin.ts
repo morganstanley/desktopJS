@@ -87,6 +87,16 @@ export class OpenFinContainerWindow extends ContainerWindow {
         });
     }
 
+    public flash(enable: boolean, options?: any): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            if (enable) {
+                this.innerWindow.flash(options, resolve, reject);
+            } else {
+                this.innerWindow.stopFlashing(resolve, reject);
+            }
+        });
+    }
+
     public setBounds(bounds: Rectangle): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.innerWindow.setBounds(bounds.x, bounds.y, bounds.width, bounds.height, resolve, reject);
@@ -202,6 +212,8 @@ export class OpenFinContainer extends WebContainerBase {
     // Offsets for tray icon mouse click to not show over icon
     private static readonly trayIconMenuLeftOffset: number = 4;
     private static readonly trayIconMenuTopOffset: number = 23;
+
+    private static readonly notificationGuid: string = "A21B62E0-16B1-4B10-8BE3-BBB6B489D862";
 
     /**
      * Gets or sets whether to replace the native web Notification API with OpenFin notifications.
@@ -512,24 +524,28 @@ export class OpenFinContainer extends WebContainerBase {
                 const promises: Promise<void>[] = [];
                 const mainWindow = this.desktop.Application.getCurrent().getWindow();
 
-                windows.concat(mainWindow).forEach(window => {
-                    promises.push(new Promise<void>((innerResolve, innerReject) => {
-                        window.getBounds(bounds => {
-                            window.getGroup(group => {
-                                layout.windows.push(
-                                    {
-                                        name: window.name,
-                                        id: window.name,
-                                        url: window.getNativeWindow().location.toString(),
-                                        main: (mainWindow.name === window.name),
-                                        bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
-                                        group: group.map(win => win.name)
-                                    });
-                                innerResolve();
+                windows.concat(mainWindow)
+                    .filter(window => window.name !== "queueCounter" && !window.name.startsWith(OpenFinContainer.notificationGuid))
+                    .forEach(window => {
+                        promises.push(new Promise<void>((innerResolve, innerReject) => {
+                            window.getBounds(bounds => {
+                                window.getOptions(options => {
+                                    window.getGroup(group => {
+                                        layout.windows.push(
+                                            {
+                                                name: window.name,
+                                                id: window.name,
+                                                url: window.getNativeWindow() ? window.getNativeWindow().location.toString() : options.url,
+                                                main: (mainWindow.name === window.name),
+                                                bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
+                                                group: group.map(win => win.name)
+                                            });
+                                        innerResolve();
+                                    }, innerReject);
+                                }, innerReject);
                             }, innerReject);
-                        }, innerReject);
-                    }));
-                });
+                        }));
+                    });
 
                 Promise.all(promises).then(() => {
                     this.saveLayoutToStorage(name, layout);

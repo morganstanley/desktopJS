@@ -2,7 +2,7 @@
   "name": "@morgan-stanley/desktopjs",
   "title": "desktopJS",
   "description": "Library for abstracting common container hosting",
-  "version": "1.0.0",
+  "version": "2.1.0",
   "publishConfig": {
     "access": "public"
   },
@@ -28,11 +28,12 @@
   "files": [
     "dist"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "@types/node": "*",
+    "@types/openfin": "*"
+  },
   "devDependencies": {
     "@types/jasmine": "^2.5.47",
-    "@types/node": "^9.3.0",
-    "@types/openfin": "^17.0.2",
     "codecov": "^3.0.0",
     "dts-bundle": "^0.7.2",
     "gulp": "^3.9.1",
