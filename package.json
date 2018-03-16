@@ -50,7 +50,7 @@
     "gulp-uglify": "^3.0.0",
     "gulp-webserver": "^0.9.1",
     "merge2": "^1.0.3",
-    "remap-istanbul": "^0.10.0",
+    "remap-istanbul": "^0.11.0",
     "rollup": "^0.41.6",
     "rollup-plugin-commonjs": "^8.0.2",
     "rollup-plugin-node-resolve": "^3.0.0",
