@@ -2,7 +2,7 @@
   "name": "@morgan-stanley/desktopjs",
   "title": "desktopJS",
   "description": "Library for abstracting common container hosting",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "publishConfig": {
     "access": "public"
   },
