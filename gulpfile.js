@@ -15,8 +15,6 @@ var gulp = require('gulp'),
     typedoc = require('gulp-typedoc'),
     remap = require('remap-istanbul/lib/gulpRemapIstanbul'),
     rollup = require('rollup'),
-    nodeResolve = require('rollup-plugin-node-resolve'),
-    commonjs = require('rollup-plugin-commonjs'),
     tsrollup = require('rollup-plugin-typescript'),
     rollupReplace = require('rollup-plugin-replace'),
     typescript = require('typescript'),
@@ -58,8 +56,6 @@ function createBundle(format, destination) {
         entry: 'src/desktop.ts',
         plugins: [
             tsrollup({ typescript: typescript }),
-            nodeResolve(),
-            commonjs(),
             rollupReplace({
                 PACKAGE_VERSION: pkg.version
             })
