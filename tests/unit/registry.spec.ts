@@ -46,5 +46,22 @@ describe("registry", () => {
             let container: Container = registry.resolveContainer(true);
             expect(console.error).toHaveBeenCalledWith("Error resolving container 'Test': Error: Forced Error");
         });
+
+        it ("resolveContainer passes options", () => {
+            const providedOptions = {};
+            let condition: boolean = false;
+            let create: boolean = false;
+
+            registry.registerContainer("Test",
+            {
+                condition: (options) => { return condition = (options === providedOptions) },
+                create: (options) => { create = (options === providedOptions); return new TestContainer() }
+            });
+
+            let container: Container = registry.resolveContainer(true, providedOptions);
+
+            expect(condition).toBeTruthy();
+            expect(create).toBeTruthy();
+        });
     });
 });
