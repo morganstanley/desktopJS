@@ -259,8 +259,82 @@ export class PersistedWindowLayout {
 
 type WindowGroupStatus = {window: ContainerWindow, isGrouped: boolean};
 
-export class SnapAssistWindowManager {
-    private readonly container: Container;
+/** Specifies the tracking behavior for window state linking */
+export enum WindowStateTracking {
+    /** No window state tracking */
+    None = 0,
+
+    /** All windows will follow the window state of the main window */
+    Main = 1 << 0,
+
+    /** All grouped windows will follow the window state of each other */
+    Group = 1 << 1
+}
+
+export class GroupWindowManager {
+    protected readonly container: Container;
+    public windowStateTracking: WindowStateTracking = WindowStateTracking.None;
+
+    public constructor(container: Container, options? : any) {
+        this.container = container;
+
+        if (options) {
+            if ("windowStateTracking" in options) {
+                this.windowStateTracking = options.windowStateTracking;
+            }
+        }
+
+        this.attach();
+    }
+
+    public attach(win?: ContainerWindow) {
+        if (win) {
+            win.addListener((typeof fin !== "undefined") ? <WindowEventType> "minimized" : "minimize", (e) => {
+                if ((this.windowStateTracking & WindowStateTracking.Main) && this.container.getMainWindow().id === e.sender.id) {
+                    this.container.getAllWindows().then(windows => {
+                        windows.forEach(window => window.innerWindow.minimize());
+                    });
+                }
+
+                if (this.windowStateTracking & WindowStateTracking.Group) {
+                    e.sender.getGroup().then(windows => {
+                        windows.forEach(window => window.innerWindow.minimize());
+                    });
+                }
+            });
+
+            win.addListener((typeof fin !== "undefined") ? <WindowEventType> "restored" : "restore", (e) => {
+                if ((this.windowStateTracking & WindowStateTracking.Main) && this.container.getMainWindow().id === e.sender.id) {
+                    this.container.getAllWindows().then(windows => {
+                        windows.forEach(window => window.innerWindow.restore());
+                    });
+                }
+
+                if (this.windowStateTracking & WindowStateTracking.Group) {
+                    e.sender.getGroup().then(windows => {
+                        windows.forEach(window => window.innerWindow.restore());
+                    });
+                }
+            });
+        } else {
+            // Attach handlers to any new windows that open
+            ContainerWindow.addListener("window-created", (args) => {
+                this.container.getWindowById(args.windowId).then(window => {
+                    this.attach(window);
+                });
+            });
+
+            // Attach handlers to any windows already open
+            if (this.container) {
+                this.container.getAllWindows().then(windows => {
+                      windows.forEach(window => this.attach(window));
+                  });
+            }
+        }
+    }
+}
+
+export class SnapAssistWindowManager extends GroupWindowManager {
     private readonly floater: ContainerWindow;
     public autoGrouping: boolean = true;
     public snapThreshold: number = 20;
@@ -269,7 +343,7 @@ export class SnapAssistWindowManager {
     protected readonly targetGroup: Map<string, ContainerWindow> = new Map();
 
     public constructor(container: Container, options?: any) {
-        this.container = container;
+        super(container, options);
 
         if (options) {
             if ("snapThreshold" in options) {
@@ -284,8 +358,6 @@ export class SnapAssistWindowManager {
                 this.autoGrouping = options.autoGrouping;
             }
         }
-
-        this.attach();
     }
 
     /**
@@ -310,6 +382,8 @@ export class SnapAssistWindowManager {
     }
 
     public attach(win?: ContainerWindow) {
+        super.attach(win);
+
         if (win) {
             this.onAttached(win);
 
@@ -367,20 +441,6 @@ export class SnapAssistWindowManager {
                     });
                 });
             });
-        } else {
-            // Attach handlers to any new windows that open
-            ContainerWindow.addListener("window-created", (args) => {
-                this.container.getWindowById(args.windowId).then(window => {
-                    this.attach(window);
-                });
-            });
-
-            // Attach handlers to any windows already open
-            if (this.container) {
-                this.container.getAllWindows().then(windows => {
-                      windows.forEach(window => this.attach(window));
-                  });
-            }
         }
     }
 
