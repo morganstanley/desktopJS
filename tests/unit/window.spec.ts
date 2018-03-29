@@ -1,9 +1,12 @@
 import { Container } from "../../src/container";
-import { ContainerWindow, WindowEventType, WindowEventArgs, SnapAssistWindowManager, Rectangle } from "../../src/window";
+import { ContainerWindow, WindowEventType, WindowEventArgs, WindowStateTracking, GroupWindowManager, SnapAssistWindowManager, Rectangle } from "../../src/window";
 import { EventArgs, EventEmitter } from "../../src/events";
 import { TestContainer, MockMessageBus } from "./container.spec";
 
 class MockWindow extends ContainerWindow {
+    protected attachListener(eventName: WindowEventType, listener: (event: EventArgs) => void): void {
+        return;
+    }
 }
 
 describe ("static events", () => {
@@ -87,6 +90,73 @@ describe("Rectangle", () => {
 
          // check duck typing static method helper
         expect(Rectangle.getBottom(<Rectangle> {x: 1, y: 2, width: 3, height: 4})).toEqual(6);
+    });
+});
+
+
+describe("GroupWindowManager", () => {
+    it ("default options", () => {
+        const mgr = new GroupWindowManager(null);
+        expect(mgr.windowStateTracking).toEqual(0);
+    });
+
+    it ("overrides read from options", () => {
+        const mgr = new GroupWindowManager(null, { windowStateTracking: WindowStateTracking.Main });
+        expect(mgr.windowStateTracking).toEqual(WindowStateTracking.Main);
+    });
+
+    it ("Minimize with Main", () => {
+        const innerWin = jasmine.createSpyObj("innerwindow", ["minimize", "addListener"]);
+        const container = jasmine.createSpyObj("container", ["getAllWindows", "getMainWindow"]);
+        const win = new MockWindow(innerWin);
+        spyOn(win, "getGroup").and.returnValue(Promise.resolve([win]));
+        container.getAllWindows.and.returnValue(Promise.resolve([win]));
+        container.getMainWindow.and.returnValue(win);
+        const mgr = new GroupWindowManager(container, { windowStateTracking: WindowStateTracking.Main });
+        mgr.attach(win);
+        win.emit("minimize", {name: "minimize", sender: win });
+        expect(container.getAllWindows).toHaveBeenCalledTimes(2); // Once for initial GroupWindowManager ctor
+        expect(win.getGroup).toHaveBeenCalledTimes(0);
+    });
+
+    it ("Minimize with Group", () => {
+        const innerWin = jasmine.createSpyObj("innerwindow", ["minimize", "addListener"]);
+        const container = jasmine.createSpyObj("container", ["getAllWindows", "getMainWindow"]);
+        const win = new MockWindow(innerWin);
+        spyOn(win, "getGroup").and.returnValue(Promise.resolve([win]));
+        container.getAllWindows.and.returnValue(Promise.resolve([win]));
+        const mgr = new GroupWindowManager(container, { windowStateTracking: WindowStateTracking.Group });
+        mgr.attach(win);
+        win.emit("minimize", {name: "minimize", sender: win });
+        expect(container.getAllWindows).toHaveBeenCalledTimes(1); // Once for initial GroupWindowManager ctor
+        expect(win.getGroup).toHaveBeenCalled();
+    });
+
+    it ("Restore with Main", () => {
+        const innerWin = jasmine.createSpyObj("innerwindow", ["restore", "addListener"]);
+        const container = jasmine.createSpyObj("container", ["getAllWindows", "getMainWindow"]);
+        const win = new MockWindow(innerWin);
+        spyOn(win, "getGroup").and.returnValue(Promise.resolve([win]));
+        container.getAllWindows.and.returnValue(Promise.resolve([win]));
+        container.getMainWindow.and.returnValue(win);
+        const mgr = new GroupWindowManager(container, { windowStateTracking: WindowStateTracking.Main });
+        mgr.attach(win);
+        win.emit("restore", {name: "restore", sender: win });
+        expect(container.getAllWindows).toHaveBeenCalledTimes(2); // Once for initial GroupWindowManager ctor
+        expect(win.getGroup).toHaveBeenCalledTimes(0);
+    });
+
+    it ("Restore with Group", () => {
+        const innerWin = jasmine.createSpyObj("innerwindow", ["restore", "addListener"]);
+        const container = jasmine.createSpyObj("container", ["getAllWindows", "getMainWindow"]);
+        const win = new MockWindow(innerWin);
+        spyOn(win, "getGroup").and.returnValue(Promise.resolve([win]));
+        container.getAllWindows.and.returnValue(Promise.resolve([win]));
+        const mgr = new GroupWindowManager(container, { windowStateTracking: WindowStateTracking.Group });
+        mgr.attach(win);
+        win.emit("restore", {name: "restore", sender: win });
+        expect(container.getAllWindows).toHaveBeenCalledTimes(1); // Once for initial GroupWindowManager ctor
+        expect(win.getGroup).toHaveBeenCalled();
     });
 });
 

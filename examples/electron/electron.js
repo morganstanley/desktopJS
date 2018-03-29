@@ -10,7 +10,10 @@ function createWindow() {
 
     desktopJS.ContainerWindow.addListener("window-created", (e) => console.log("Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
     
-    snapAssist = new desktopJS.SnapAssistWindowManager(container);
+    snapAssist = new desktopJS.SnapAssistWindowManager(container,
+        {
+            windowStateTracking: desktopJS.WindowStateTracking.Main | desktopJS.WindowStateTracking.Group
+        });
 
     container.createWindow('http://localhost:8000', { name: "desktopJS", main: true }).then(win => mainWindow = win);
  

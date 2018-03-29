@@ -2,7 +2,7 @@ import { resolveContainer, registerContainer, ContainerRegistration } from "./re
 import { Container } from "./container";
 import { ContainerNotification } from "./notification";
 import { ObjectTransform } from "./propertymapping";
-import { ContainerWindow, SnapAssistWindowManager } from "./window";
+import { ContainerWindow, WindowStateTracking, GroupWindowManager, SnapAssistWindowManager } from "./window";
 import * as Default from "./Default/default";
 import * as Electron from "./Electron/electron";
 import * as OpenFin from "./OpenFin/openfin";
@@ -18,5 +18,7 @@ export default class Desktop { //tslint:disable-line
     static get Default(): typeof Default { return Default; }
     static get Electron(): typeof Electron { return Electron; }
     static get OpenFin(): typeof OpenFin { return OpenFin; }
+    static get WindowStateTracking(): typeof WindowStateTracking { return WindowStateTracking; }
+    static get GroupWindowManager(): typeof GroupWindowManager { return GroupWindowManager; }
     static get SnapAssistWindowManager(): typeof SnapAssistWindowManager { return SnapAssistWindowManager; }
 }

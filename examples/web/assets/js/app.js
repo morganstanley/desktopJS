@@ -83,7 +83,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
 	$('[data-toggle="popover"]').popover();
 
 	if (container.getCurrentWindow().id === "desktopJS") {
-		snapAssist = new desktopJS.SnapAssistWindowManager(container);
+		snapAssist = new desktopJS.SnapAssistWindowManager(container,
+			{
+				windowStateTracking: desktopJS.WindowStateTracking.Main | desktopJS.WindowStateTracking.Group
+			});
 	}
 });
 
