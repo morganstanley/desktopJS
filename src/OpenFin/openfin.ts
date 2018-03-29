@@ -10,7 +10,7 @@ import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../ipc";
 
 ContainerRegistry.registerContainer("OpenFin", {
     condition: () => typeof window !== "undefined" && "fin" in window && "desktop" in fin,
-    create: () => new OpenFinContainer()
+    create: (options) => new OpenFinContainer(null, null, options)
 });
 
 const windowEventMap = {
@@ -298,10 +298,14 @@ export class OpenFinContainer extends WebContainerBase {
     </html>`;
     /* tslint:enable */
 
-    public constructor(desktop?: fin.OpenFinDesktop, win?: Window) {
+    public constructor(desktop?: fin.OpenFinDesktop, win?: Window, options?: any) {
         super(win);
         this.desktop = desktop || fin.desktop;
         this.hostType = "OpenFin";
+
+        if (options && options.userName && options.appName) {
+            this.desktop.Application.getCurrent().registerUser(options.userName, options.appName);
+        }
 
         this.ipc = new OpenFinMessageBus(this.desktop.InterApplicationBus, (<any>this.desktop.Application.getCurrent()).uuid);
         this.registerNotificationsApi();
