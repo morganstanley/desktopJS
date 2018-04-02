@@ -327,7 +327,7 @@ export class ElectronContainer extends WebContainerBase {
             this.windowManager.initializeWindow(electronWindow, windowName, newOptions);
         }
 
-        electronWindow.loadURL(url);
+        electronWindow.loadURL(this.ensureAbsoluteUrl(url));
 
         const newWindow = this.wrapWindow(electronWindow);
         this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: electronWindow.id, windowName: windowName });
