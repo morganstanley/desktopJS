@@ -336,6 +336,40 @@ describe("OpenFinContainer", () => {
         expect(container.hostType).toEqual("OpenFin");
     });
 
+    describe("ctor options", () => {
+        describe("registerUser", () => {
+            let desktop;
+            let app;
+
+            beforeEach(() => {
+                desktop = jasmine.createSpyObj("desktop", ["Application"]);
+                app = jasmine.createSpyObj("application", ["getCurrent", "registerUser"]);
+                Object.defineProperty(desktop, "Application", { value: app });
+                app.getCurrent.and.returnValue(app);
+            });
+
+            it("options userName and appName to registerUser", () => {
+                const container = new OpenFinContainer(desktop, null, { userName: "user", appName: "app" });
+                expect(app.registerUser).toHaveBeenCalledWith("user", "app");
+            });
+
+            it("options missing userName does not invoke registerUser", () => {
+                const container = new OpenFinContainer(desktop, null, { appName: "app" });
+                expect(app.registerUser).toHaveBeenCalledTimes(0);
+            });
+
+            it("options missing userName does not invoke registerUser", () => {
+                const container = new OpenFinContainer(desktop, null, { userName: "user" });
+                expect(app.registerUser).toHaveBeenCalledTimes(0);
+            });
+
+            it("options missing userName and appName does not invoke registerUser", () => {
+                const container = new OpenFinContainer(desktop, null, {});
+                expect(app.registerUser).toHaveBeenCalledTimes(0);
+            });
+        });
+    });
+
     it("getMainWindow returns wrapped inner window", () => {
         const win: OpenFinContainerWindow = container.getMainWindow();
         expect(win).toBeDefined();
