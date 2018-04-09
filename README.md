@@ -12,7 +12,7 @@ desktopJS is a common API across multiple HTML5 containers. By programming to a
 common API, applications can target multiple HTML5 containers without change. Detecting
 what container in which you are hosted, desktopJS provides shims and polyfills to
 bridge the common API to the underlying container.  The goal is to help applications be
-container agnostic and provide portability when muliple container depoyments are desired.
+container agnostic and provide portability when multiple container deployments are desired.
 
 Usage
 ---------------
