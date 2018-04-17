@@ -14,7 +14,13 @@ export class ContainerRegistration {
     create: (options?: any) => Container;
 }
 
-const registeredContainers: { [id: string]: ContainerRegistration } = {};
+const registeredContainers: Map<string, ContainerRegistration> = new Map();
+
+/** Clears all container registrations. */
+export function clearRegistry() {
+    registeredContainers.clear();
+    container = undefined;
+}
 
 /** Register a container type in the registry.
  * @param {string} id Unique identifier of the container type (eg. Electron).
