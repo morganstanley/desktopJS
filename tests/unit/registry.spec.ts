@@ -19,14 +19,18 @@ class TestContainer extends DefaultContainer {
 
 describe("registry", () => {
     describe("resolveContainer", () => {
-        let container: Container = registry.resolveContainer();
+        afterEach(() => {
+            registry.clearRegistry();
+        });
 
         it("No matching condition resolves default", () => {
+            let container: Container = registry.resolveContainer();
             expect(container).toBeDefined();
             expect(container.hostType).toEqual("Default");
         });
 
         it("Subsequent call returns from cache", () => {
+            let container: Container = registry.resolveContainer();
             let container2: Container = registry.resolveContainer();
             expect(container2).toBeDefined();
             expect(container2).toEqual(container);
