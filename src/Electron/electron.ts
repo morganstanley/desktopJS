@@ -1,5 +1,6 @@
 import * as ContainerRegistry from "../registry";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
+import { ScreenManager, Display } from "../screen";
 import { Container, WebContainerBase } from "../container";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions, ContainerNotification } from "../notification";
@@ -265,6 +266,7 @@ export class ElectronContainer extends WebContainerBase {
         }
 
         this.registerNotificationsApi();
+        this.screen = new ElectronDisplayManager(this.electron);
     }
 
     protected registerNotificationsApi() {
@@ -561,5 +563,44 @@ export class ElectronWindowManager {
 
             return accumulator;
         }, []);
+    }
+}
+
+/** @private */
+class ElectronDisplayManager implements ScreenManager {
+    private readonly electron: any;
+
+    public constructor(electron: any) {
+        this.electron = electron;
+    }
+
+    createDisplay(monitorDetails: any) {
+        const display = new Display();
+        display.id = monitorDetails.id;
+        display.scaleFactor = monitorDetails.scaleFactor;
+
+        display.bounds = new Rectangle(monitorDetails.bounds.x,
+            monitorDetails.bounds.y,
+            monitorDetails.bounds.width,
+            monitorDetails.bounds.height);
+
+        display.workArea = new Rectangle(monitorDetails.workArea.x,
+            monitorDetails.workArea.y,
+            monitorDetails.workArea.width,
+            monitorDetails.workArea.height);
+
+        return display;
+    }
+
+    public getPrimaryDisplay(): Promise<Display> {
+        return new Promise<Display>((resolve, reject) => {
+            resolve(this.createDisplay(this.electron.screen.getPrimaryDisplay()));
+        });
+    }
+
+    public getAllDisplays(): Promise<Display[]> {
+        return new Promise<Display[]>((resolve, reject) => {
+            resolve(this.electron.screen.getAllDisplays().map(this.createDisplay));
+        });
     }
 }

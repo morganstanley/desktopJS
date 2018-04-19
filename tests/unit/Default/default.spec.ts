@@ -444,3 +444,45 @@ describe("DefaultMessageBus", () => {
         expect(mockWindow3.postMessage).toHaveBeenCalled();
     });
 });
+
+describe("DefaultDisplayManager", () => {
+    let window;
+    let container;
+    
+    beforeEach(() => {
+        window = {};
+        Object.defineProperty(window, "devicePixelRatio", { value: 1 });
+        Object.defineProperty(window, "screen", { value: {availLeft: 2, availTop: 3, availWidth: 4, availHeight: 5, width: 6, height: 7} });
+        container = new DefaultContainer(window);
+    });
+
+    it("screen to be defined", () => {
+        expect(container.screen).toBeDefined();
+    });
+
+    it("getPrimaryMonitor", (done) => {
+        container.screen.getPrimaryDisplay().then(display => {
+            expect(display).toBeDefined();
+            expect(display.id).toBe("Current");
+            expect(display.scaleFactor).toBe(1);
+            
+            expect(display.bounds.x).toBe(2);
+            expect(display.bounds.y).toBe(3);
+            expect(display.bounds.width).toBe(6);
+            expect(display.bounds.height).toBe(7);
+
+            expect(display.workArea.x).toBe(2);
+            expect(display.workArea.y).toBe(3);
+            expect(display.workArea.width).toBe(4);
+            expect(display.workArea.height).toBe(5);
+        }).then(done);
+    });
+
+    it ("getAllDisplays", (done) => {
+        container.screen.getAllDisplays().then(displays => {
+            expect(displays).toBeDefined();
+            expect(displays.length).toBe(1);
+            expect(displays[0].id).toBe("Current");
+        }).then(done);
+    });
+});
