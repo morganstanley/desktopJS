@@ -607,3 +607,73 @@ describe("OpenFinMessageBus", () => {
         expect(mockBus.send).toHaveBeenCalledWith("uuid", "name", "topic", message, jasmine.any(Function), jasmine.any(Function));
     });
 });
+
+describe("OpenFinDisplayManager", () => {
+    let desktop;
+    let app;
+    let container;
+    let system;
+   
+    beforeEach(() => {
+        desktop = jasmine.createSpyObj("desktop", ["Application", "System"]);
+        app = jasmine.createSpyObj("application", ["getCurrent"]);
+        system = jasmine.createSpyObj("system", ["getMonitorInfo"]);
+        Object.defineProperty(desktop, "Application", { value: app });
+        Object.defineProperty(desktop, "System", { value: system });
+        system.getMonitorInfo.and.callFake(callback => callback(
+            {
+                primaryMonitor: {
+                    deviceId: "deviceId1",
+                    name: "name1",
+                    deviceScaleFactor: 1,
+                    monitorRect: { left: 2, top: 3, right: 4, bottom: 5 },
+                    availableRect: { left: 6, top: 7, right: 8, bottom: 9 }
+                },
+                nonPrimaryMonitors:
+                    [
+                        {
+                            deviceId: "deviceId2",
+                            name: "name2",
+                            deviceScaleFactor: 1,
+                            monitorRect: { left: 2, top: 3, right: 4, bottom: 5 },
+                            availableRect: { left: 6, top: 7, right: 8, bottom: 9 }
+                        }
+                    ]
+            }
+        ));
+        app.getCurrent.and.returnValue(app);
+
+        container = new OpenFinContainer(desktop);
+    });
+
+    it("screen to be defined", () => {
+        expect(container.screen).toBeDefined();
+    });
+
+    it("getPrimaryMonitor", (done) => {
+        container.screen.getPrimaryDisplay().then(display => {
+            expect(display).toBeDefined();
+            expect(display.id).toBe("name1");
+            expect(display.scaleFactor).toBe(1);
+            
+            expect(display.bounds.x).toBe(2);
+            expect(display.bounds.y).toBe(3);
+            expect(display.bounds.width).toBe(2);  // right - left
+            expect(display.bounds.height).toBe(2); // bottom - top
+
+            expect(display.workArea.x).toBe(6);
+            expect(display.workArea.y).toBe(7);
+            expect(display.workArea.width).toBe(2); // right - left
+            expect(display.workArea.height).toBe(2); // bottom - top
+        }).then(done);
+    });
+
+    it ("getAllDisplays", (done) => {
+        container.screen.getAllDisplays().then(displays => {
+            expect(displays).toBeDefined();
+            expect(displays.length).toBe(2);
+            expect(displays[0].id).toBe("name1");
+            expect(displays[1].id).toBe("name2");
+        }).then(done);
+    });
+});

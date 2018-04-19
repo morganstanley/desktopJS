@@ -1,5 +1,6 @@
 import { Container, WebContainerBase } from "../container";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
+import { ScreenManager, Display } from "../screen";
 import { NotificationOptions } from "../notification";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { Guid } from "../guid";
@@ -177,6 +178,8 @@ export class DefaultContainer extends WebContainerBase {
         if (this.globalWindow && !(DefaultContainer.windowsPropertyKey in this.globalWindow)) {
             this.globalWindow[DefaultContainer.windowsPropertyKey] = { root: this.globalWindow };
         }
+
+        this.screen = new DefaultDisplayManager(this.globalWindow);
     }
 
     public getMainWindow(): ContainerWindow {
@@ -325,6 +328,41 @@ export class DefaultContainer extends WebContainerBase {
 
             this.saveLayoutToStorage(name, layout);
             resolve(layout);
+        });
+    }
+}
+
+/** @private */
+class DefaultDisplayManager implements ScreenManager {
+    public readonly window: Window;
+
+    public constructor(window: Window) {
+        this.window = window;
+    }
+
+    public getPrimaryDisplay(): Promise<Display> {
+        return new Promise<Display>(resolve => {
+            const display = new Display();
+            display.scaleFactor = this.window.devicePixelRatio;
+            display.id = "Current";
+
+            display.bounds = new Rectangle(this.window.screen.availLeft,
+                this.window.screen.availTop,
+                this.window.screen.width,
+                this.window.screen.height);
+
+            display.workArea = new Rectangle(this.window.screen.availLeft,
+                    this.window.screen.availTop,
+                    this.window.screen.availWidth,
+                    this.window.screen.availHeight);
+
+            resolve(display);
+        });
+    }
+
+    public getAllDisplays(): Promise<Display[]> {
+        return new Promise<Display[]>(resolve => {
+            this.getPrimaryDisplay().then(display => resolve([ display ]));
         });
     }
 }

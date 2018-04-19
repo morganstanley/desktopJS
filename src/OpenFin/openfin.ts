@@ -1,6 +1,7 @@
 import * as ContainerRegistry from "../registry";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
 import { Container, WebContainerBase } from "../container";
+import { ScreenManager, Display } from "../screen";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions, ContainerNotification } from "../notification";
 import { TrayIconDetails } from "../tray";
@@ -309,6 +310,8 @@ export class OpenFinContainer extends WebContainerBase {
 
         this.ipc = new OpenFinMessageBus(this.desktop.InterApplicationBus, (<any>this.desktop.Application.getCurrent()).uuid);
         this.registerNotificationsApi();
+
+        this.screen = new OpenFinDisplayManager(this.desktop);
     }
 
     protected registerNotificationsApi() {
@@ -556,6 +559,49 @@ export class OpenFinContainer extends WebContainerBase {
                     resolve(layout);
                 }).catch(reason => reject(reason));
             });
+        });
+    }
+}
+
+/** @private */
+class OpenFinDisplayManager implements ScreenManager {
+    private readonly desktop: fin.OpenFinDesktop;
+
+    public constructor(desktop: fin.OpenFinDesktop) {
+        this.desktop = desktop;
+    }
+
+    createDisplay(monitorDetails: fin.MonitorInfoDetail) {
+        const display = new Display();
+        display.id = monitorDetails.name;
+        display.scaleFactor = monitorDetails.deviceScaleFactor;
+
+        display.bounds = new Rectangle(monitorDetails.monitorRect.left,
+            monitorDetails.monitorRect.top,
+            monitorDetails.monitorRect.right - monitorDetails.monitorRect.left,
+            monitorDetails.monitorRect.bottom - monitorDetails.monitorRect.top);
+
+        display.workArea = new Rectangle(monitorDetails.availableRect.left,
+            monitorDetails.availableRect.top,
+            monitorDetails.availableRect.right - monitorDetails.availableRect.left,
+            monitorDetails.availableRect.bottom - monitorDetails.availableRect.top);
+
+        return display;
+    }
+
+    public getPrimaryDisplay(): Promise<Display> {
+        return new Promise<Display>((resolve, reject) => {
+            this.desktop.System.getMonitorInfo(monitorInfo => {
+                resolve(this.createDisplay(monitorInfo.primaryMonitor));
+            }, reject);
+        });
+    }
+
+    public getAllDisplays(): Promise<Display[]> {
+        return new Promise<Display[]>((resolve, reject) => {
+            this.desktop.System.getMonitorInfo(monitorInfo => {
+                resolve([monitorInfo.primaryMonitor].concat(monitorInfo.nonPrimaryMonitors).map(this.createDisplay));
+            }, reject);
         });
     }
 }

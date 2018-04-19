@@ -1,4 +1,5 @@
 import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, PersistedWindow, WindowEventArgs } from "./window";
+import { ScreenManager } from "./screen";
 import { ContainerNotificationManager } from "./notification";
 import { EventEmitter, EventArgs } from "./events";
 import { MessageBus } from "./ipc";
@@ -91,6 +92,11 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
      * Persistent storage
      */
     public storage: Storage;
+
+    /**
+     *  Retrieve information about screen size and displays.
+     */
+    public screen: ScreenManager;
 
     public addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { // tslint:disable-line
         return super.addListener(eventName, listener);

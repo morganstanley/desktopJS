@@ -784,3 +784,72 @@ describe("ElectronWindowManager", () => {
         });
     });
 });
+
+describe("ElectronDisplayManager", () => {
+    let electron;
+    let screen;
+    let container;
+   
+    beforeEach(() => {
+        electron = jasmine.createSpyObj("electron", ["ipc"]);
+        screen = jasmine.createSpyObj("screen", ["getPrimaryDisplay", "getAllDisplays"]);
+        Object.defineProperty(electron, "screen", { value: screen });
+        screen.getPrimaryDisplay.and.returnValue(
+            {
+                id: "primary",
+                scaleFactor: 1,
+                bounds: { x: 2, y: 3, width: 4, height: 5 },
+                workArea: { x: 6, y: 7, width: 8, height: 9 }
+            }
+        );
+        screen.getAllDisplays.and.returnValue(
+            [
+                {
+                    id: "primary",
+                    scaleFactor: 1,
+                    bounds: { x: 2, y: 3, width: 4, height: 5 },
+                    workArea: { x: 6, y: 7, width: 8, height: 9 }
+                },
+                {
+                    id: "secondary",
+                    scaleFactor: 1,
+                    bounds: { x: 2, y: 3, width: 4, height: 5 },
+                    workArea: { x: 6, y: 7, width: 8, height: 9 }
+                }
+            ]
+        );
+
+        container = new ElectronContainer(electron, new MockIpc());
+    });
+
+    it("screen to be defined", () => {
+        expect(container.screen).toBeDefined();
+    });
+
+    it("getPrimaryMonitor", (done) => {
+        container.screen.getPrimaryDisplay().then(display => {
+            expect(display).toBeDefined();
+            expect(display.id).toBe("primary");
+            expect(display.scaleFactor).toBe(1);
+            
+            expect(display.bounds.x).toBe(2);
+            expect(display.bounds.y).toBe(3);
+            expect(display.bounds.width).toBe(4);
+            expect(display.bounds.height).toBe(5);
+
+            expect(display.workArea.x).toBe(6);
+            expect(display.workArea.y).toBe(7);
+            expect(display.workArea.width).toBe(8);
+            expect(display.workArea.height).toBe(9);
+        }).then(done);
+    });
+
+    it ("getAllDisplays", (done) => {
+        container.screen.getAllDisplays().then(displays => {
+            expect(displays).toBeDefined();
+            expect(displays.length).toBe(2);
+            expect(displays[0].id).toBe("primary");
+            expect(displays[1].id).toBe("secondary");
+        }).then(done);
+    });
+});
