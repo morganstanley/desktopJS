@@ -139,6 +139,27 @@ describe("ElectronContainerWindow", () => {
             }).then(done);
         });
 
+        it("minimize", (done) => {
+            const browserWindow = jasmine.createSpyObj("BrowserWindow", ["minimize"]);
+            new ElectronContainerWindow(browserWindow, null).minimize().then(() => {
+                expect(browserWindow.minimize).toHaveBeenCalledTimes(1);
+            }).then(done);
+        });
+
+        it("maximize", (done) => {
+            const browserWindow = jasmine.createSpyObj("BrowserWindow", ["maximize"]);
+            new ElectronContainerWindow(browserWindow, null).maximize().then(() => {
+                expect(browserWindow.maximize).toHaveBeenCalledTimes(1);
+            }).then(done);
+        });
+        
+        it("restore", (done) => {
+            const browserWindow = jasmine.createSpyObj("BrowserWindow", ["restore"]);
+            new ElectronContainerWindow(browserWindow, null).restore().then(() => {
+                expect(browserWindow.restore).toHaveBeenCalledTimes(1);
+            }).then(done);
+        });
+
         it("isShowing", (done) => {
             spyOn(innerWin, "isVisible").and.callThrough();
             let success: boolean = false;
