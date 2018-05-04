@@ -65,6 +65,24 @@ export class OpenFinContainerWindow extends ContainerWindow {
         });
     }
 
+    public minimize(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.innerWindow.minimize(resolve, reject);
+        });
+    }
+
+    public maximize(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.innerWindow.maximize(resolve, reject);
+        });
+    }
+
+    public restore(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.innerWindow.restore(resolve, reject);
+        });
+    }
+
     public isShowing(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             this.innerWindow.isShowing(resolve, reject);

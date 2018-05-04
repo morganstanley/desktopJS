@@ -46,6 +46,27 @@ export class DefaultContainerWindow extends ContainerWindow {
         return Promise.resolve();
     }
 
+    public minimize(): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.minimize();
+            resolve();
+        });
+    }
+
+    public maximize(): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.maximize();
+            resolve();
+        });
+    }
+
+    public restore(): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.restore();
+            resolve();
+        });
+    }
+
     public isShowing(): Promise<boolean> {
         // https://github.com/ai/visibilityjs ?
         return Promise.resolve(true);

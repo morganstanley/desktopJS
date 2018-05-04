@@ -78,6 +78,21 @@ class MockWindow {
         return {};
     }
 
+    minimize(callback: () => void, error: (reason) => void): any {
+        callback();
+        return {};
+    }
+
+    maximize(callback: () => void, error: (reason) => void): any {
+        callback();
+        return {};
+    }
+    
+    restore(callback: () => void, error: (reason) => void): any {
+        callback();
+        return {};
+    }
+
     isShowing(callback: (showing: boolean) => void, error: (reason) => void): any {
         callback(true);
         return {};
@@ -176,6 +191,27 @@ describe("OpenFinContainerWindow", () => {
         }).then(done);
     });
 
+    it("minimize", (done) => {
+        spyOn(innerWin, "minimize").and.callThrough();
+        win.minimize().then(() => {
+            expect(innerWin.minimize).toHaveBeenCalled();
+        }).then(done);
+    });
+
+    it("maximize", (done) => {
+        spyOn(innerWin, "maximize").and.callThrough();
+        win.maximize().then(() => {
+            expect(innerWin.maximize).toHaveBeenCalled();
+        }).then(done);
+    });
+
+    it("restore", (done) => {
+        spyOn(innerWin, "restore").and.callThrough();
+        win.restore().then(() => {
+            expect(innerWin.restore).toHaveBeenCalled();
+        }).then(done);
+    });
+   
     it("isShowing", (done) => {
         spyOn(innerWin, "isShowing").and.callThrough();
         let success: boolean = false;

@@ -72,6 +72,27 @@ export class ElectronContainerWindow extends ContainerWindow {
         return Promise.resolve();
     }
 
+    public maximize(): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.maximize();
+            resolve();
+        });
+    }
+
+    public minimize(): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.minimize();
+            resolve();
+        });
+    }
+
+    public restore(): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.restore();
+            resolve();
+        });
+    }
+
     public isShowing(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             resolve(this.innerWindow.isVisible());

@@ -78,6 +78,27 @@ describe("DefaultContainerWindow", () => {
         }).then(done);
     });
 
+    it("minimize", (done) => {
+        const innerWindow = jasmine.createSpyObj("BrowserWindow", ["minimize"]);
+        new DefaultContainerWindow(innerWindow).minimize().then(() => {
+            expect(innerWindow.minimize).toHaveBeenCalledTimes(1);
+        }).then(done);
+    });
+
+    it("maximize", (done) => {
+        const innerWindow = jasmine.createSpyObj("BrowserWindow", ["maximize"]);
+        new DefaultContainerWindow(innerWindow).maximize().then(() => {
+            expect(innerWindow.maximize).toHaveBeenCalledTimes(1);
+        }).then(done);
+    });
+    
+    it("restore", (done) => {
+        const innerWindow = jasmine.createSpyObj("BrowserWindow", ["restore"]);
+        new DefaultContainerWindow(innerWindow).restore().then(() => {
+            expect(innerWindow.restore).toHaveBeenCalledTimes(1);
+        }).then(done);
+    });    
+
     it("getBounds retrieves underlying window position", (done) => {
         win.getBounds().then(bounds => {
             expect(bounds).toBeDefined();
