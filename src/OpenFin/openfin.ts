@@ -327,13 +327,21 @@ export class OpenFinContainer extends WebContainerBase {
         }
 
         this.ipc = new OpenFinMessageBus(this.desktop.InterApplicationBus, (<any>this.desktop.Application.getCurrent()).uuid);
-        this.registerNotificationsApi();
+
+        let replaceNotificationApi = OpenFinContainer.replaceNotificationApi;
+        if (options && typeof options.replaceNotificationApi !== "undefined") {
+            replaceNotificationApi = options.replaceNotificationApi;
+        }
+
+        if (replaceNotificationApi) {
+            this.registerNotificationsApi();
+        }
 
         this.screen = new OpenFinDisplayManager(this.desktop);
     }
 
     protected registerNotificationsApi() {
-        if (OpenFinContainer.replaceNotificationApi && typeof this.globalWindow !== "undefined" && this.globalWindow) {
+        if (typeof this.globalWindow !== "undefined" && this.globalWindow) {
             // Define owningContainer for closure to inner class
             const owningContainer: OpenFinContainer = this; // tslint:disable-line
 
