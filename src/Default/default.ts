@@ -223,9 +223,8 @@ export class DefaultContainer extends WebContainerBase {
         return new DefaultContainerWindow(containerWindow);
     }
 
-    protected onOpen(open: (url?: string, target?: string, features?: string, replace?: boolean) => Window,
-                     url?: string, target?: string, features?: string, replace?: boolean): Window {
-        const window = open(url, target, features, replace);
+    protected onOpen(open: (...args: any[]) => Window, ...args: any[]): Window {
+        const window = open.apply(this.globalWindow, args);
 
         const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
         const uuid = window[DefaultContainer.windowUuidPropertyKey] = Guid.newGuid();
