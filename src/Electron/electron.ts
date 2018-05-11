@@ -17,7 +17,7 @@ ContainerRegistry.registerContainer("Electron", {
             return false;
         }
     },
-    create: () => new ElectronContainer()
+    create: (options) => new ElectronContainer(null, null, null, options)
 });
 
 class InternalMessageType {
@@ -255,7 +255,7 @@ export class ElectronContainer extends WebContainerBase {
 
     public windowOptionsMap: PropertyMap = ElectronContainer.windowOptionsMap;
 
-    public constructor(electron?: any, ipc?: NodeJS.EventEmitter | any, win?: any) {
+    public constructor(electron?: any, ipc?: NodeJS.EventEmitter | any, win?: any, options?: any) {
         super(win);
         this.hostType = "Electron";
 
@@ -286,12 +286,20 @@ export class ElectronContainer extends WebContainerBase {
             console.error(e);
         }
 
-        this.registerNotificationsApi();
+        let replaceNotificationApi = ElectronContainer.replaceNotificationApi;
+        if (options && typeof options.replaceNotificationApi !== "undefined") {
+            replaceNotificationApi = options.replaceNotificationApi;
+        }
+
+        if (replaceNotificationApi) {
+            this.registerNotificationsApi();
+        }
+
         this.screen = new ElectronDisplayManager(this.electron);
     }
 
     protected registerNotificationsApi() {
-        if (ElectronContainer.replaceNotificationApi && typeof this.globalWindow !== "undefined" && this.globalWindow) {
+        if (typeof this.globalWindow !== "undefined" && this.globalWindow) {
             // Define owningContainer for closure to inner class
             const owningContainer: ElectronContainer = this; // tslint:disable-line
 
