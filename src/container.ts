@@ -266,9 +266,8 @@ export abstract class WebContainerBase extends ContainerBase {
         }
     }
 
-    protected onOpen(open: (url?: string, target?: string, features?: string, replace?: boolean) => Window,
-                     url?: string, target?: string, features?: string, replace?: boolean): Window {
-        const wrap = this.wrapWindow(open(url, target, features, replace));
+    protected onOpen(open: (...args: any[]) => Window, ...args: any[]): Window {
+        const wrap = this.wrapWindow(open.apply(this.globalWindow, args));
 
         Container.emit("window-created", { name: "window-created", windowId: wrap.id });
         ContainerWindow.emit("window-created", { name: "window-created", windowId: wrap.id });
