@@ -279,8 +279,13 @@ export class ElectronContainer extends WebContainerBase {
             this.internalIpc = ipc || ((this.isRemote) ? require("electron").ipcRenderer : this.electron.ipcMain);
             this.ipc = new ElectronMessageBus(this.internalIpc, this.browserWindow);
 
-            if (!this.isRemote) {
+            if (!this.isRemote || (options && typeof options.isRemote !== "undefined" && !options.isRemote)) {
                 this.windowManager = new ElectronWindowManager(this.app, this.internalIpc, this.browserWindow);
+
+                this.app.on("browser-window-created", (event, window) => {
+                    Container.emit("window-created", { name: "window-created", windowId: window.webContents.id });
+                    ContainerWindow.emit("window-created", { name: "window-created", windowId: window.webContents.id });
+                });
             }
         } catch (e) {
             console.error(e);
@@ -362,8 +367,6 @@ export class ElectronContainer extends WebContainerBase {
 
         const newWindow = this.wrapWindow(electronWindow);
         this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: electronWindow.id, windowName: windowName });
-        Container.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
-        ContainerWindow.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
         return Promise.resolve(newWindow);
     }
 

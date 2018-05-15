@@ -337,6 +337,12 @@ export class OpenFinContainer extends WebContainerBase {
             this.registerNotificationsApi();
         }
 
+        this.desktop.Application.getCurrent().addEventListener("window-created", (event: any) => {
+            this.emit("window-created", { sender: this, name: "window-created", windowId: event.name, windowName: event.name });
+            Container.emit("window-created", { name: "window-created", windowId: event.name, windowName: event.name });
+            ContainerWindow.emit("window-created", { name: "window-created", windowId: event.name, windowName: event.name });
+        });
+
         this.screen = new OpenFinDisplayManager(this.desktop);
     }
 
@@ -408,11 +414,7 @@ export class OpenFinContainer extends WebContainerBase {
 
         return new Promise<ContainerWindow>((resolve, reject) => {
             const ofWin = new this.desktop.Window(newOptions, win => {
-                const newWin = this.wrapWindow(ofWin);
-                this.emit("window-created", { sender: this, name: "window-created", window: newWin, windowId: newOptions.name, windowName: newOptions.name });
-                Container.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
-                ContainerWindow.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
-                resolve(newWin);
+                resolve(this.wrapWindow(ofWin));
             }, reject);
         });
     }
