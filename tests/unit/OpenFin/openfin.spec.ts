@@ -4,10 +4,22 @@ import { MenuItem } from "../../../src/menu";
 
 class MockDesktop {
     public static application: any = {
+        eventListeners: new Map(),
         uuid: "uuid",
         getChildWindows(callback) { callback([MockWindow.singleton]); },
         setTrayIcon() { },
-        getWindow() { return MockWindow.singleton; }
+        getWindow() { return MockWindow.singleton; },
+        addEventListener(eventName, listener) {
+            (this.eventListeners[eventName] = this.eventListeners[eventName] || []).push(listener);
+        },
+        listeners(eventName: string): ((event: any) => void)[] {
+            return (this.eventListeners[eventName] || []);
+        },
+        emit(eventName: string, ...eventArgs: any[]) {
+            for (const listener of this.listeners(eventName)) {
+                listener(...eventArgs);
+            }
+        }
     }
 
     Window: any = MockWindow;
@@ -379,7 +391,7 @@ describe("OpenFinContainer", () => {
 
             beforeEach(() => {
                 desktop = jasmine.createSpyObj("desktop", ["Application"]);
-                app = jasmine.createSpyObj("application", ["getCurrent", "registerUser"]);
+                app = jasmine.createSpyObj("application", ["getCurrent", "registerUser", "addEventListener"]);
                 Object.defineProperty(desktop, "Application", { value: app });
                 app.getCurrent.and.returnValue(app);
             });
@@ -467,9 +479,9 @@ describe("OpenFinContainer", () => {
                 });
         });
 
-        it("createWindow fires window-created", (done) => {
+        it("application window-created fires container window-created", (done) => {
             container.addListener("window-created", () => done());
-            container.createWindow("url");
+            MockDesktop.application.emit('window-created', { name: "name" });
         });
 
         describe("window management", () => {
@@ -652,7 +664,7 @@ describe("OpenFinDisplayManager", () => {
    
     beforeEach(() => {
         desktop = jasmine.createSpyObj("desktop", ["Application", "System"]);
-        app = jasmine.createSpyObj("application", ["getCurrent"]);
+        app = jasmine.createSpyObj("application", ["getCurrent", "addEventListener"]);
         system = jasmine.createSpyObj("system", ["getMonitorInfo"]);
         Object.defineProperty(desktop, "Application", { value: app });
         Object.defineProperty(desktop, "System", { value: system });

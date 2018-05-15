@@ -1,5 +1,6 @@
 import { ElectronContainer, ElectronContainerWindow, ElectronMessageBus, ElectronWindowManager } from "../../../src/Electron/electron";
 import { MessageBusSubscription } from "../../../src/ipc";
+import { ContainerWindow } from "../../../src/window";
 
 class MockEventEmitter {
     private eventListeners: Map<string, any> = new Map();
@@ -322,7 +323,7 @@ describe("ElectronContainer", () => {
         windows = [new MockWindow(), new MockWindow("Name")];
 
         electron = {
-            app: {},
+            app: new MockEventEmitter(),
             BrowserWindow: (options: any) => {
                 return {
                     loadURL: (url: string) => { },
@@ -416,6 +417,12 @@ describe("ElectronContainer", () => {
     it("createWindow fires window-created", (done) => {
         container.addListener("window-created", () => done());
         container.createWindow("url");
+    });
+
+    it ("app browser-window-created fires Container window-created", (done) => {
+        new ElectronContainer(electron, new MockMainIpc(), globalWindow, { isRemote: false });
+        ContainerWindow.addListener("window-created", () => done());
+        electron.app.emit("browser-window-created", {}, { webContents: {id: "id"}});
     });
 
     it("createWindow on main process invokes ElectronWindowManager.initializeWindow", (done) => {
