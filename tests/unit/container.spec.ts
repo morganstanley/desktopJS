@@ -34,7 +34,7 @@ export class TestContainer extends ContainerBase {
     }
 
     getWindowByName(): Promise<ContainerWindow> {
-        const win = jasmine.createSpyObj("ContainerWindow", ["setBounds"]);
+        const win = jasmine.createSpyObj("ContainerWindow", ["setBounds", "joinGroup"]);
         Object.defineProperty(win, "id", { value: "1" });
         return Promise.resolve(win);
     }
@@ -127,8 +127,11 @@ describe("container", () => {
         });
 
         describe("window management", () => {
+            beforeEach(() => {
+                spyOn(container, "createWindow").and.returnValue(jasmine.createSpyObj("window", ["joinGroup"]));
+            });
+
             it("loadLayout", (done) => {
-                spyOn(container, "createWindow").and.callThrough();
                 container.loadLayout("Test").then(layout => {
                     expect(layout).toBeDefined();
                     expect(container.createWindow).toHaveBeenCalledWith("url", { name: "1" });

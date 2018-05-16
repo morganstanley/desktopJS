@@ -390,9 +390,10 @@ describe("OpenFinContainer", () => {
             let app;
 
             beforeEach(() => {
-                desktop = jasmine.createSpyObj("desktop", ["Application"]);
+                desktop = jasmine.createSpyObj("desktop", ["Application", "InterApplicationBus"]);
                 app = jasmine.createSpyObj("application", ["getCurrent", "registerUser", "addEventListener"]);
                 Object.defineProperty(desktop, "Application", { value: app });
+                Object.defineProperty(desktop, "InterApplicationBus", { value: new MockInterApplicationBus() });
                 app.getCurrent.and.returnValue(app);
             });
 
@@ -663,11 +664,12 @@ describe("OpenFinDisplayManager", () => {
     let system;
    
     beforeEach(() => {
-        desktop = jasmine.createSpyObj("desktop", ["Application", "System"]);
+        desktop = jasmine.createSpyObj("desktop", ["Application", "System", "InterApplicationBus"]);
         app = jasmine.createSpyObj("application", ["getCurrent", "addEventListener"]);
         system = jasmine.createSpyObj("system", ["getMonitorInfo"]);
         Object.defineProperty(desktop, "Application", { value: app });
         Object.defineProperty(desktop, "System", { value: system });
+        Object.defineProperty(desktop, "InterApplicationBus", { value: new MockInterApplicationBus() });
         system.getMonitorInfo.and.callFake(callback => callback(
             {
                 primaryMonitor: {
