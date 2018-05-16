@@ -200,7 +200,8 @@ export abstract class ContainerBase extends Container {
                             });
 
                             if (!found) {
-                                const group = layout.windows.find(win => win.name === window.name).group;
+                                const matchingWindow = layout.windows.find(win => win.name === window.name);
+                                const group = matchingWindow ? matchingWindow.group : undefined;
                                 if (group && group.length > 0) {
                                     groupMap.set(window, group.filter(id => id !== window.id));
                                 }
