@@ -261,8 +261,8 @@ export abstract class WebContainerBase extends ContainerBase {
 
         if (this.globalWindow) {
             const open = this.globalWindow.open;
-            this.globalWindow.open = (url?: string, target?: string, features?: string, replace?: boolean) => {
-                return this.onOpen(open, url, target, features, replace);
+            this.globalWindow.open = (...args: any[]) => {
+                return this.onOpen(open, ...args);
             };
         }
     }
