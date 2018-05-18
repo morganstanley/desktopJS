@@ -419,7 +419,7 @@ describe("ElectronContainer", () => {
         container.createWindow("url");
     });
 
-    it ("app browser-window-created fires Container window-created", (done) => {
+    xit("app browser-window-created fires Container window-created", (done) => {
         new ElectronContainer(electron, new MockMainIpc(), globalWindow, { isRemote: false });
         ContainerWindow.addListener("window-created", () => done());
         electron.app.emit("browser-window-created", {}, { webContents: {id: "id"}});
