@@ -53,7 +53,7 @@ gulp.task('clean:staging', function () {
 
 function createBundle(format, destination) {
     return rollup.rollup({
-        entry: 'src/desktop.ts',
+        input: 'src/desktop.ts',
         plugins: [
             tsrollup({ typescript: typescript }),
             rollupReplace({
@@ -61,11 +61,12 @@ function createBundle(format, destination) {
             })
         ]
     }).then(function (bundle) {
-        bundle.write({
-            dest: destination,
+        return bundle.write({
+            file: destination,
             format: format,
+            name: pkg.title,
             moduleName: pkg.title,
-            sourceMap: true,
+            sourcemap: true
         });
     });
 }
