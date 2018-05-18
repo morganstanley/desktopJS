@@ -1,4 +1,5 @@
 import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, PersistedWindow, WindowEventArgs } from "./window";
+import { ScreenManager } from "./screen";
 import { ContainerNotificationManager } from "./notification";
 import { EventEmitter, EventArgs } from "./events";
 import { MessageBus } from "./ipc";
@@ -91,6 +92,11 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
      * Persistent storage
      */
     public storage: Storage;
+
+    /**
+     *  Retrieve information about screen size and displays.
+     */
+    public screen: ScreenManager;
 
     public addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { // tslint:disable-line
         return super.addListener(eventName, listener);
@@ -194,7 +200,8 @@ export abstract class ContainerBase extends Container {
                             });
 
                             if (!found) {
-                                const group = layout.windows.find(win => win.name === window.name).group;
+                                const matchingWindow = layout.windows.find(win => win.name === window.name);
+                                const group = matchingWindow ? matchingWindow.group : undefined;
                                 if (group && group.length > 0) {
                                     groupMap.set(window, group.filter(id => id !== window.id));
                                 }
@@ -254,20 +261,14 @@ export abstract class WebContainerBase extends ContainerBase {
 
         if (this.globalWindow) {
             const open = this.globalWindow.open;
-            this.globalWindow.open = (url?: string, target?: string, features?: string, replace?: boolean) => {
-                return this.onOpen(open, url, target, features, replace);
+            this.globalWindow.open = (...args: any[]) => {
+                return this.onOpen(open, ...args);
             };
         }
     }
 
-    protected onOpen(open: (url?: string, target?: string, features?: string, replace?: boolean) => Window,
-                     url?: string, target?: string, features?: string, replace?: boolean): Window {
-        const wrap = this.wrapWindow(open(url, target, features, replace));
-
-        Container.emit("window-created", { name: "window-created", windowId: wrap.id });
-        ContainerWindow.emit("window-created", { name: "window-created", windowId: wrap.id });
-
-        return wrap.innerWindow;
+    protected onOpen(open: (...args: any[]) => Window, ...args: any[]): Window {
+        return open.apply(this.globalWindow, args);
     }
 
     public abstract wrapWindow(window: any): ContainerWindow;

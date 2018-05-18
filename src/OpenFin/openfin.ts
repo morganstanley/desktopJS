@@ -1,6 +1,7 @@
 import * as ContainerRegistry from "../registry";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
 import { Container, WebContainerBase } from "../container";
+import { ScreenManager, Display } from "../screen";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions, ContainerNotification } from "../notification";
 import { TrayIconDetails } from "../tray";
@@ -61,6 +62,24 @@ export class OpenFinContainerWindow extends ContainerWindow {
     public close(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.innerWindow.close(false, resolve, reject);
+        });
+    }
+
+    public minimize(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.innerWindow.minimize(resolve, reject);
+        });
+    }
+
+    public maximize(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.innerWindow.maximize(resolve, reject);
+        });
+    }
+
+    public restore(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.innerWindow.restore(resolve, reject);
         });
     }
 
@@ -308,11 +327,27 @@ export class OpenFinContainer extends WebContainerBase {
         }
 
         this.ipc = new OpenFinMessageBus(this.desktop.InterApplicationBus, (<any>this.desktop.Application.getCurrent()).uuid);
-        this.registerNotificationsApi();
+
+        let replaceNotificationApi = OpenFinContainer.replaceNotificationApi;
+        if (options && typeof options.replaceNotificationApi !== "undefined") {
+            replaceNotificationApi = options.replaceNotificationApi;
+        }
+
+        if (replaceNotificationApi) {
+            this.registerNotificationsApi();
+        }
+
+        this.desktop.Application.getCurrent().addEventListener("window-created", (event: any) => {
+            this.emit("window-created", { sender: this, name: "window-created", windowId: event.name, windowName: event.name });
+            Container.emit("window-created", { name: "window-created", windowId: event.name, windowName: event.name });
+            ContainerWindow.emit("window-created", { name: "window-created", windowId: event.name, windowName: event.name });
+        });
+
+        this.screen = new OpenFinDisplayManager(this.desktop);
     }
 
     protected registerNotificationsApi() {
-        if (OpenFinContainer.replaceNotificationApi && typeof this.globalWindow !== "undefined" && this.globalWindow) {
+        if (typeof this.globalWindow !== "undefined" && this.globalWindow) {
             // Define owningContainer for closure to inner class
             const owningContainer: OpenFinContainer = this; // tslint:disable-line
 
@@ -379,11 +414,7 @@ export class OpenFinContainer extends WebContainerBase {
 
         return new Promise<ContainerWindow>((resolve, reject) => {
             const ofWin = new this.desktop.Window(newOptions, win => {
-                const newWin = this.wrapWindow(ofWin);
-                this.emit("window-created", { sender: this, name: "window-created", window: newWin, windowId: newOptions.name, windowName: newOptions.name });
-                Container.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
-                ContainerWindow.emit("window-created", { name: "window-created", windowId: newOptions.name, windowName: newOptions.name });
-                resolve(newWin);
+                resolve(this.wrapWindow(ofWin));
             }, reject);
         });
     }
@@ -556,6 +587,49 @@ export class OpenFinContainer extends WebContainerBase {
                     resolve(layout);
                 }).catch(reason => reject(reason));
             });
+        });
+    }
+}
+
+/** @private */
+class OpenFinDisplayManager implements ScreenManager {
+    private readonly desktop: fin.OpenFinDesktop;
+
+    public constructor(desktop: fin.OpenFinDesktop) {
+        this.desktop = desktop;
+    }
+
+    createDisplay(monitorDetails: fin.MonitorInfoDetail) {
+        const display = new Display();
+        display.id = monitorDetails.name;
+        display.scaleFactor = monitorDetails.deviceScaleFactor;
+
+        display.bounds = new Rectangle(monitorDetails.monitorRect.left,
+            monitorDetails.monitorRect.top,
+            monitorDetails.monitorRect.right - monitorDetails.monitorRect.left,
+            monitorDetails.monitorRect.bottom - monitorDetails.monitorRect.top);
+
+        display.workArea = new Rectangle(monitorDetails.availableRect.left,
+            monitorDetails.availableRect.top,
+            monitorDetails.availableRect.right - monitorDetails.availableRect.left,
+            monitorDetails.availableRect.bottom - monitorDetails.availableRect.top);
+
+        return display;
+    }
+
+    public getPrimaryDisplay(): Promise<Display> {
+        return new Promise<Display>((resolve, reject) => {
+            this.desktop.System.getMonitorInfo(monitorInfo => {
+                resolve(this.createDisplay(monitorInfo.primaryMonitor));
+            }, reject);
+        });
+    }
+
+    public getAllDisplays(): Promise<Display[]> {
+        return new Promise<Display[]>((resolve, reject) => {
+            this.desktop.System.getMonitorInfo(monitorInfo => {
+                resolve([monitorInfo.primaryMonitor].concat(monitorInfo.nonPrimaryMonitors).map(this.createDisplay));
+            }, reject);
         });
     }
 }

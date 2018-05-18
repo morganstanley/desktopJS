@@ -4,10 +4,22 @@ import { MenuItem } from "../../../src/menu";
 
 class MockDesktop {
     public static application: any = {
+        eventListeners: new Map(),
         uuid: "uuid",
         getChildWindows(callback) { callback([MockWindow.singleton]); },
         setTrayIcon() { },
-        getWindow() { return MockWindow.singleton; }
+        getWindow() { return MockWindow.singleton; },
+        addEventListener(eventName, listener) {
+            (this.eventListeners[eventName] = this.eventListeners[eventName] || []).push(listener);
+        },
+        listeners(eventName: string): ((event: any) => void)[] {
+            return (this.eventListeners[eventName] || []);
+        },
+        emit(eventName: string, ...eventArgs: any[]) {
+            for (const listener of this.listeners(eventName)) {
+                listener(...eventArgs);
+            }
+        }
     }
 
     Window: any = MockWindow;
@@ -74,6 +86,21 @@ class MockWindow {
     }
 
     hide(callback: () => void, error: (reason) => void): any {
+        callback();
+        return {};
+    }
+
+    minimize(callback: () => void, error: (reason) => void): any {
+        callback();
+        return {};
+    }
+
+    maximize(callback: () => void, error: (reason) => void): any {
+        callback();
+        return {};
+    }
+    
+    restore(callback: () => void, error: (reason) => void): any {
         callback();
         return {};
     }
@@ -176,6 +203,27 @@ describe("OpenFinContainerWindow", () => {
         }).then(done);
     });
 
+    it("minimize", (done) => {
+        spyOn(innerWin, "minimize").and.callThrough();
+        win.minimize().then(() => {
+            expect(innerWin.minimize).toHaveBeenCalled();
+        }).then(done);
+    });
+
+    it("maximize", (done) => {
+        spyOn(innerWin, "maximize").and.callThrough();
+        win.maximize().then(() => {
+            expect(innerWin.maximize).toHaveBeenCalled();
+        }).then(done);
+    });
+
+    it("restore", (done) => {
+        spyOn(innerWin, "restore").and.callThrough();
+        win.restore().then(() => {
+            expect(innerWin.restore).toHaveBeenCalled();
+        }).then(done);
+    });
+   
     it("isShowing", (done) => {
         spyOn(innerWin, "isShowing").and.callThrough();
         let success: boolean = false;
@@ -342,9 +390,10 @@ describe("OpenFinContainer", () => {
             let app;
 
             beforeEach(() => {
-                desktop = jasmine.createSpyObj("desktop", ["Application"]);
-                app = jasmine.createSpyObj("application", ["getCurrent", "registerUser"]);
+                desktop = jasmine.createSpyObj("desktop", ["Application", "InterApplicationBus"]);
+                app = jasmine.createSpyObj("application", ["getCurrent", "registerUser", "addEventListener"]);
                 Object.defineProperty(desktop, "Application", { value: app });
+                Object.defineProperty(desktop, "InterApplicationBus", { value: new MockInterApplicationBus() });
                 app.getCurrent.and.returnValue(app);
             });
 
@@ -431,9 +480,9 @@ describe("OpenFinContainer", () => {
                 });
         });
 
-        it("createWindow fires window-created", (done) => {
+        it("application window-created fires container window-created", (done) => {
             container.addListener("window-created", () => done());
-            container.createWindow("url");
+            MockDesktop.application.emit('window-created', { name: "name" });
         });
 
         describe("window management", () => {
@@ -605,5 +654,76 @@ describe("OpenFinMessageBus", () => {
         spyOn(mockBus, "send").and.callThrough();
         bus.publish("topic", message, { uuid: "uuid", name: "name" }).then(done);
         expect(mockBus.send).toHaveBeenCalledWith("uuid", "name", "topic", message, jasmine.any(Function), jasmine.any(Function));
+    });
+});
+
+describe("OpenFinDisplayManager", () => {
+    let desktop;
+    let app;
+    let container;
+    let system;
+   
+    beforeEach(() => {
+        desktop = jasmine.createSpyObj("desktop", ["Application", "System", "InterApplicationBus"]);
+        app = jasmine.createSpyObj("application", ["getCurrent", "addEventListener"]);
+        system = jasmine.createSpyObj("system", ["getMonitorInfo"]);
+        Object.defineProperty(desktop, "Application", { value: app });
+        Object.defineProperty(desktop, "System", { value: system });
+        Object.defineProperty(desktop, "InterApplicationBus", { value: new MockInterApplicationBus() });
+        system.getMonitorInfo.and.callFake(callback => callback(
+            {
+                primaryMonitor: {
+                    deviceId: "deviceId1",
+                    name: "name1",
+                    deviceScaleFactor: 1,
+                    monitorRect: { left: 2, top: 3, right: 4, bottom: 5 },
+                    availableRect: { left: 6, top: 7, right: 8, bottom: 9 }
+                },
+                nonPrimaryMonitors:
+                    [
+                        {
+                            deviceId: "deviceId2",
+                            name: "name2",
+                            deviceScaleFactor: 1,
+                            monitorRect: { left: 2, top: 3, right: 4, bottom: 5 },
+                            availableRect: { left: 6, top: 7, right: 8, bottom: 9 }
+                        }
+                    ]
+            }
+        ));
+        app.getCurrent.and.returnValue(app);
+
+        container = new OpenFinContainer(desktop);
+    });
+
+    it("screen to be defined", () => {
+        expect(container.screen).toBeDefined();
+    });
+
+    it("getPrimaryMonitor", (done) => {
+        container.screen.getPrimaryDisplay().then(display => {
+            expect(display).toBeDefined();
+            expect(display.id).toBe("name1");
+            expect(display.scaleFactor).toBe(1);
+            
+            expect(display.bounds.x).toBe(2);
+            expect(display.bounds.y).toBe(3);
+            expect(display.bounds.width).toBe(2);  // right - left
+            expect(display.bounds.height).toBe(2); // bottom - top
+
+            expect(display.workArea.x).toBe(6);
+            expect(display.workArea.y).toBe(7);
+            expect(display.workArea.width).toBe(2); // right - left
+            expect(display.workArea.height).toBe(2); // bottom - top
+        }).then(done);
+    });
+
+    it ("getAllDisplays", (done) => {
+        container.screen.getAllDisplays().then(displays => {
+            expect(displays).toBeDefined();
+            expect(displays.length).toBe(2);
+            expect(displays[0].id).toBe("name1");
+            expect(displays[1].id).toBe("name2");
+        }).then(done);
     });
 });

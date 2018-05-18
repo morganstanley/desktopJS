@@ -7,6 +7,9 @@ class MockWindow extends ContainerWindow {
     protected attachListener(eventName: WindowEventType, listener: (event: EventArgs) => void): void {
         return;
     }
+
+    public minimize(): Promise<void> { return Promise.resolve(); }
+    public restore(): Promise<void> { return Promise.resolve(); }
 }
 
 describe ("static events", () => {
@@ -302,7 +305,10 @@ describe("SnapAssistWindowManager", () => {
         win.addListener.and.callFake((event, fn) => callback = fn);
         win.getGroup.and.returnValue(Promise.resolve([]));
         win.getBounds.and.returnValue(Promise.resolve(new Rectangle(0, 0, 50, 50)));
-        win.setBounds.and.callFake(done);
+        win.setBounds.and.callFake(() => {
+            done();
+            return Promise.resolve();
+        });
 
         const win2 = jasmine.createSpyObj("targetWindow", ["addListener", "getBounds"]);
         Object.defineProperty(win2, "id", { value: "2" });

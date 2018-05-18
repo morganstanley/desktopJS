@@ -97,6 +97,15 @@ export abstract class ContainerWindow extends EventEmitter {
     /** Try to close the window.  This has the same effect as clicking the close button on the window. */
     public abstract close(): Promise<void>;
 
+    /** Minimizes the window. */
+    public abstract minimize(): Promise<void>;
+
+    /** Maximizes the window. */
+    public abstract maximize(): Promise<void>;
+
+    /** Restores the window to its previous state. */
+    public abstract restore(): Promise<void>;
+
     /** Determines whether the window is currently showing. */
     public abstract isShowing(): Promise<boolean>;
 
@@ -292,13 +301,13 @@ export class GroupWindowManager {
             win.addListener((typeof fin !== "undefined") ? <WindowEventType> "minimized" : "minimize", (e) => {
                 if ((this.windowStateTracking & WindowStateTracking.Main) && this.container.getMainWindow().id === e.sender.id) {
                     this.container.getAllWindows().then(windows => {
-                        windows.forEach(window => window.innerWindow.minimize());
+                        windows.forEach(window => window.minimize());
                     });
                 }
 
                 if (this.windowStateTracking & WindowStateTracking.Group) {
                     e.sender.getGroup().then(windows => {
-                        windows.forEach(window => window.innerWindow.minimize());
+                        windows.forEach(window => window.minimize());
                     });
                 }
             });
@@ -306,22 +315,24 @@ export class GroupWindowManager {
             win.addListener((typeof fin !== "undefined") ? <WindowEventType> "restored" : "restore", (e) => {
                 if ((this.windowStateTracking & WindowStateTracking.Main) && this.container.getMainWindow().id === e.sender.id) {
                     this.container.getAllWindows().then(windows => {
-                        windows.forEach(window => window.innerWindow.restore());
+                        windows.forEach(window => window.restore());
                     });
                 }
 
                 if (this.windowStateTracking & WindowStateTracking.Group) {
                     e.sender.getGroup().then(windows => {
-                        windows.forEach(window => window.innerWindow.restore());
+                        windows.forEach(window => window.restore());
                     });
                 }
             });
         } else {
             // Attach handlers to any new windows that open
             ContainerWindow.addListener("window-created", (args) => {
-                this.container.getWindowById(args.windowId).then(window => {
-                    this.attach(window);
-                });
+                if (this.container && this.container.getWindowById) {
+                    this.container.getWindowById(args.windowId).then(window => {
+                        this.attach(window);
+                    });
+                }
             });
 
             // Attach handlers to any windows already open

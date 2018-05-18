@@ -1,5 +1,6 @@
 import * as ContainerRegistry from "../registry";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
+import { ScreenManager, Display } from "../screen";
 import { Container, WebContainerBase } from "../container";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions, ContainerNotification } from "../notification";
@@ -16,7 +17,7 @@ ContainerRegistry.registerContainer("Electron", {
             return false;
         }
     },
-    create: () => new ElectronContainer()
+    create: (options) => new ElectronContainer(null, null, null, options)
 });
 
 class InternalMessageType {
@@ -69,6 +70,27 @@ export class ElectronContainerWindow extends ContainerWindow {
     public close(): Promise<void> {
         this.innerWindow.close();
         return Promise.resolve();
+    }
+
+    public maximize(): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.maximize();
+            resolve();
+        });
+    }
+
+    public minimize(): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.minimize();
+            resolve();
+        });
+    }
+
+    public restore(): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.restore();
+            resolve();
+        });
     }
 
     public isShowing(): Promise<boolean> {
@@ -233,7 +255,7 @@ export class ElectronContainer extends WebContainerBase {
 
     public windowOptionsMap: PropertyMap = ElectronContainer.windowOptionsMap;
 
-    public constructor(electron?: any, ipc?: NodeJS.EventEmitter | any, win?: any) {
+    public constructor(electron?: any, ipc?: NodeJS.EventEmitter | any, win?: any, options?: any) {
         super(win);
         this.hostType = "Electron";
 
@@ -257,18 +279,32 @@ export class ElectronContainer extends WebContainerBase {
             this.internalIpc = ipc || ((this.isRemote) ? require("electron").ipcRenderer : this.electron.ipcMain);
             this.ipc = new ElectronMessageBus(this.internalIpc, this.browserWindow);
 
-            if (!this.isRemote) {
+            if (!this.isRemote || (options && typeof options.isRemote !== "undefined" && !options.isRemote)) {
                 this.windowManager = new ElectronWindowManager(this.app, this.internalIpc, this.browserWindow);
+
+                this.app.on("browser-window-created", (event, window) => {
+                    Container.emit("window-created", { name: "window-created", windowId: window.webContents.id });
+                    ContainerWindow.emit("window-created", { name: "window-created", windowId: window.webContents.id });
+                });
             }
         } catch (e) {
             console.error(e);
         }
 
-        this.registerNotificationsApi();
+        let replaceNotificationApi = ElectronContainer.replaceNotificationApi;
+        if (options && typeof options.replaceNotificationApi !== "undefined") {
+            replaceNotificationApi = options.replaceNotificationApi;
+        }
+
+        if (replaceNotificationApi) {
+            this.registerNotificationsApi();
+        }
+
+        this.screen = new ElectronDisplayManager(this.electron);
     }
 
     protected registerNotificationsApi() {
-        if (ElectronContainer.replaceNotificationApi && typeof this.globalWindow !== "undefined" && this.globalWindow) {
+        if (typeof this.globalWindow !== "undefined" && this.globalWindow) {
             // Define owningContainer for closure to inner class
             const owningContainer: ElectronContainer = this; // tslint:disable-line
 
@@ -331,8 +367,6 @@ export class ElectronContainer extends WebContainerBase {
 
         const newWindow = this.wrapWindow(electronWindow);
         this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: electronWindow.id, windowName: windowName });
-        Container.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
-        ContainerWindow.emit("window-created", { name: "window-created", windowId: electronWindow.id, windowName: windowName });
         return Promise.resolve(newWindow);
     }
 
@@ -561,5 +595,44 @@ export class ElectronWindowManager {
 
             return accumulator;
         }, []);
+    }
+}
+
+/** @private */
+class ElectronDisplayManager implements ScreenManager {
+    private readonly electron: any;
+
+    public constructor(electron: any) {
+        this.electron = electron;
+    }
+
+    createDisplay(monitorDetails: any) {
+        const display = new Display();
+        display.id = monitorDetails.id;
+        display.scaleFactor = monitorDetails.scaleFactor;
+
+        display.bounds = new Rectangle(monitorDetails.bounds.x,
+            monitorDetails.bounds.y,
+            monitorDetails.bounds.width,
+            monitorDetails.bounds.height);
+
+        display.workArea = new Rectangle(monitorDetails.workArea.x,
+            monitorDetails.workArea.y,
+            monitorDetails.workArea.width,
+            monitorDetails.workArea.height);
+
+        return display;
+    }
+
+    public getPrimaryDisplay(): Promise<Display> {
+        return new Promise<Display>((resolve, reject) => {
+            resolve(this.createDisplay(this.electron.screen.getPrimaryDisplay()));
+        });
+    }
+
+    public getAllDisplays(): Promise<Display[]> {
+        return new Promise<Display[]>((resolve, reject) => {
+            resolve(this.electron.screen.getAllDisplays().map(this.createDisplay));
+        });
     }
 }

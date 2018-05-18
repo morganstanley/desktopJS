@@ -2,15 +2,15 @@ import * as registry from "../../src/registry";
 import { Container } from "../../src/container";
 import { DefaultContainer } from "../../src/Default/default";
 
-function registerCallback(): boolean {
-    return true;
-}
-
-function createCallback(): DefaultContainer {
-    return new TestContainer();
-}
-
 class TestContainer extends DefaultContainer {
+    static condition(options?: any): boolean {
+        return options && options.hostType === "Test";
+    }
+
+    static create(): Container {
+        return new TestContainer();
+    }
+
     constructor() {
         super();
         this.hostType = "Test";
@@ -19,30 +19,35 @@ class TestContainer extends DefaultContainer {
 
 describe("registry", () => {
     describe("resolveContainer", () => {
-        let container: Container = registry.resolveContainer();
+        beforeEach(() => {
+            registry.clearRegistry();
+        });
 
         it("No matching condition resolves default", () => {
+            let container: Container = registry.resolveContainer(true);
             expect(container).toBeDefined();
             expect(container.hostType).toEqual("Default");
         });
 
         it("Subsequent call returns from cache", () => {
-            let container2: Container = registry.resolveContainer();
+            let container: Container = registry.resolveContainer(true);
+            spyOn(registry, "container").and.returnValue(container);
+            let container2: Container = registry.resolveContainer(); // Specifically testing cached value
             expect(container2).toBeDefined();
-            expect(container2).toEqual(container);
+            expect(container2.uuid).toEqual(container.uuid);
         });
 
         it("Resolves registered test container", () => {
-            registry.registerContainer("Test", { condition: registerCallback, create: createCallback });
+            registry.registerContainer("Test", { condition: TestContainer.condition, create: TestContainer.create });
 
-            let container: Container = registry.resolveContainer(true);
+            let container: Container = registry.resolveContainer(true, {hostType: "Test"});
             expect(container).toBeDefined();
             expect(container.hostType).toEqual("Test");
         });
 
         it("Error on resolve logs to console", () => {
             spyOn(console, "error");
-            registry.registerContainer("Test", { condition: () => { throw new Error("Forced Error") }, create: createCallback });
+            registry.registerContainer("Test", { condition: () => { throw new Error("Forced Error") }, create: TestContainer.create });
             let container: Container = registry.resolveContainer(true);
             expect(console.error).toHaveBeenCalledWith("Error resolving container 'Test': Error: Forced Error");
         });

@@ -1,5 +1,6 @@
 import { ElectronContainer, ElectronContainerWindow, ElectronMessageBus, ElectronWindowManager } from "../../../src/Electron/electron";
 import { MessageBusSubscription } from "../../../src/ipc";
+import { ContainerWindow } from "../../../src/window";
 
 class MockEventEmitter {
     private eventListeners: Map<string, any> = new Map();
@@ -136,6 +137,27 @@ describe("ElectronContainerWindow", () => {
             spyOn(innerWin, "close").and.callThrough();
             win.close().then(() => {
                 expect(innerWin.close).toHaveBeenCalled();
+            }).then(done);
+        });
+
+        it("minimize", (done) => {
+            const browserWindow = jasmine.createSpyObj("BrowserWindow", ["minimize"]);
+            new ElectronContainerWindow(browserWindow, null).minimize().then(() => {
+                expect(browserWindow.minimize).toHaveBeenCalledTimes(1);
+            }).then(done);
+        });
+
+        it("maximize", (done) => {
+            const browserWindow = jasmine.createSpyObj("BrowserWindow", ["maximize"]);
+            new ElectronContainerWindow(browserWindow, null).maximize().then(() => {
+                expect(browserWindow.maximize).toHaveBeenCalledTimes(1);
+            }).then(done);
+        });
+        
+        it("restore", (done) => {
+            const browserWindow = jasmine.createSpyObj("BrowserWindow", ["restore"]);
+            new ElectronContainerWindow(browserWindow, null).restore().then(() => {
+                expect(browserWindow.restore).toHaveBeenCalledTimes(1);
             }).then(done);
         });
 
@@ -301,7 +323,7 @@ describe("ElectronContainer", () => {
         windows = [new MockWindow(), new MockWindow("Name")];
 
         electron = {
-            app: {},
+            app: new MockEventEmitter(),
             BrowserWindow: (options: any) => {
                 return {
                     loadURL: (url: string) => { },
@@ -395,6 +417,12 @@ describe("ElectronContainer", () => {
     it("createWindow fires window-created", (done) => {
         container.addListener("window-created", () => done());
         container.createWindow("url");
+    });
+
+    it ("app browser-window-created fires Container window-created", (done) => {
+        new ElectronContainer(electron, new MockMainIpc(), globalWindow, { isRemote: false });
+        ContainerWindow.addListener("window-created", () => done());
+        electron.app.emit("browser-window-created", {}, { webContents: {id: "id"}});
     });
 
     it("createWindow on main process invokes ElectronWindowManager.initializeWindow", (done) => {
@@ -782,5 +810,74 @@ describe("ElectronWindowManager", () => {
             expect(target.group).toBeNull();
             expect(target.removeListener).toHaveBeenCalledWith("move", jasmine.any(Function));
         });
+    });
+});
+
+describe("ElectronDisplayManager", () => {
+    let electron;
+    let screen;
+    let container;
+   
+    beforeEach(() => {
+        electron = jasmine.createSpyObj("electron", ["ipc"]);
+        screen = jasmine.createSpyObj("screen", ["getPrimaryDisplay", "getAllDisplays"]);
+        Object.defineProperty(electron, "screen", { value: screen });
+        screen.getPrimaryDisplay.and.returnValue(
+            {
+                id: "primary",
+                scaleFactor: 1,
+                bounds: { x: 2, y: 3, width: 4, height: 5 },
+                workArea: { x: 6, y: 7, width: 8, height: 9 }
+            }
+        );
+        screen.getAllDisplays.and.returnValue(
+            [
+                {
+                    id: "primary",
+                    scaleFactor: 1,
+                    bounds: { x: 2, y: 3, width: 4, height: 5 },
+                    workArea: { x: 6, y: 7, width: 8, height: 9 }
+                },
+                {
+                    id: "secondary",
+                    scaleFactor: 1,
+                    bounds: { x: 2, y: 3, width: 4, height: 5 },
+                    workArea: { x: 6, y: 7, width: 8, height: 9 }
+                }
+            ]
+        );
+
+        container = new ElectronContainer(electron, new MockIpc());
+    });
+
+    it("screen to be defined", () => {
+        expect(container.screen).toBeDefined();
+    });
+
+    it("getPrimaryMonitor", (done) => {
+        container.screen.getPrimaryDisplay().then(display => {
+            expect(display).toBeDefined();
+            expect(display.id).toBe("primary");
+            expect(display.scaleFactor).toBe(1);
+            
+            expect(display.bounds.x).toBe(2);
+            expect(display.bounds.y).toBe(3);
+            expect(display.bounds.width).toBe(4);
+            expect(display.bounds.height).toBe(5);
+
+            expect(display.workArea.x).toBe(6);
+            expect(display.workArea.y).toBe(7);
+            expect(display.workArea.width).toBe(8);
+            expect(display.workArea.height).toBe(9);
+        }).then(done);
+    });
+
+    it ("getAllDisplays", (done) => {
+        container.screen.getAllDisplays().then(displays => {
+            expect(displays).toBeDefined();
+            expect(displays.length).toBe(2);
+            expect(displays[0].id).toBe("primary");
+            expect(displays[1].id).toBe("secondary");
+        }).then(done);
     });
 });

@@ -2,7 +2,7 @@
   "name": "@morgan-stanley/desktopjs",
   "title": "desktopJS",
   "description": "Library for abstracting common container hosting",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "publishConfig": {
     "access": "public"
   },
@@ -42,7 +42,7 @@
     "gulp-istanbul-enforcer": "^1.0.3",
     "gulp-jasmine": "^4.0.0",
     "gulp-rename": "^1.2.2",
-    "gulp-replace": "^0.6.1",
+    "gulp-replace": "^1.0.0",
     "gulp-sourcemaps": "^2.5.0",
     "gulp-tslint": "^8.1.0",
     "gulp-typedoc": "^2.0.2",
