@@ -328,7 +328,7 @@ export class GroupWindowManager {
         } else {
             // Attach handlers to any new windows that open
             ContainerWindow.addListener("window-created", (args) => {
-                if (this.container) {
+                if (this.container && this.container.getWindowById) {
                     this.container.getWindowById(args.windowId).then(window => {
                         this.attach(window);
                     });
