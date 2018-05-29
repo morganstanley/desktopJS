@@ -8,7 +8,7 @@ let snapAssist;
 function createWindow() {
     let container = desktopJS.resolveContainer();
 
-    desktopJS.ContainerWindow.addListener("window-created", (e) => console.log("Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
+    desktopJS.ContainerWindow.addListener("window-created", (e) => container.log("info", "Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
     
     snapAssist = new desktopJS.SnapAssistWindowManager(container,
         {
@@ -29,7 +29,7 @@ function createWindow() {
     }, [{ label: "Exit", click: (menuItem) => app.quit() }]);
 
 	container.ipc.subscribe("stock.selected", function (event, message) {
-		console.log("Message received: " + message.symbol);
+		container.log("info", "Message received: " + message.symbol);
     });
 }
 

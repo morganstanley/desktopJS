@@ -419,6 +419,32 @@ describe("OpenFinContainer", () => {
         });
     });
 
+    describe("log", () => {
+        beforeEach(() => {
+            Object.defineProperty(desktop, "System", { value: jasmine.createSpyObj("System", ["log"]) });
+        });
+
+        it("debug", () => {
+            container.log("debug", "message");
+            expect(desktop.System.log).toHaveBeenCalledWith("debug", "message", jasmine.any(Function), jasmine.any(Function));
+        });
+
+        it("info", () => {
+            container.log("info", "message");
+            expect(desktop.System.log).toHaveBeenCalledWith("info", "message", jasmine.any(Function), jasmine.any(Function));
+        });
+
+        it("warn", () => {
+            container.log("warn", "message");
+            expect(desktop.System.log).toHaveBeenCalledWith("warn", "message", jasmine.any(Function), jasmine.any(Function));
+        });
+
+        it("error", () => {
+            container.log("error", "message");
+            expect(desktop.System.log).toHaveBeenCalledWith("error", "message", jasmine.any(Function), jasmine.any(Function));
+        });
+    });
+
     it("getMainWindow returns wrapped inner window", () => {
         const win: OpenFinContainerWindow = container.getMainWindow();
         expect(win).toBeDefined();

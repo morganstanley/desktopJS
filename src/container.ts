@@ -238,6 +238,39 @@ export abstract class ContainerBase extends Container {
             resolve(undefined);
         });
     }
+
+    /**
+     * Write a log message
+     * @param  {"debug" | "info" | "warn" | "error"} level The log level for the entry
+     * @param {string} message The log message text
+     */
+    public log(level: "debug" | "info" | "warn" | "error", message: string): Promise<void> {
+        return new Promise<void>(resolve => {
+            let logger;
+            switch (level) {
+                case "debug": {
+                    logger = console.debug;
+                    break;
+                }
+                case "warn": {
+                    logger = console.warn;
+                    break;
+                }
+                case "error": {
+                    logger = console.error;
+                    break;
+                }
+                default: {
+                    logger = console.log;
+                }
+            }
+
+            if (logger) {
+                logger(message);
+            }
+            resolve();
+        });
+    }
 }
 
 /**
