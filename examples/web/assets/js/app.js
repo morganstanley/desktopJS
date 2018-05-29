@@ -64,14 +64,14 @@ document.addEventListener("DOMContentLoaded", function (event) {
 	$("#button-joingroup").prop("disabled", !container.getCurrentWindow().allowGrouping);
 	$("#button-leavegroup").prop("disabled", !container.getCurrentWindow().allowGrouping);
 
-	container.addListener("window-created", (e) => console.log("Window created: " + e.window + ", " + e.windowId + ", " + e.windowName));
-	container.addListener("layout-loaded", (e) => console.log("Layout loaded"));
-	container.addListener("layout-saved", (e) => console.log("Layout saved"));
+	container.addListener("window-created", (e) => container.log("info", "Window created: " + e.window + ", " + e.windowId + ", " + e.windowName));
+	container.addListener("layout-loaded", (e) => container.log("info", "Layout loaded"));
+	container.addListener("layout-saved", (e) => container.log("info", "Layout saved"));
 
-	desktopJS.Container.addListener("window-created", (e) => console.log("Window created - static (Container): " + e.windowId + ", " + e.windowName));
-	desktopJS.ContainerWindow.addListener("window-created", (e) => console.log("Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
-	desktopJS.Container.addListener("layout-saved", (e) => console.log("Layout saved - static: " + e.layoutName));
-	desktopJS.Container.addListener("layout-loaded", (e) => console.log("Layout loaded - static: " + e.layoutName));
+	desktopJS.Container.addListener("window-created", (e) => container.log("info", "Window created - static (Container): " + e.windowId + ", " + e.windowName));
+	desktopJS.ContainerWindow.addListener("window-created", (e) => container.log("info", "Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
+	desktopJS.Container.addListener("layout-saved", (e) => container.log("info", "Layout saved - static: " + e.layoutName));
+	desktopJS.Container.addListener("layout-loaded", (e) => container.log("info", "Layout loaded - static: " + e.layoutName));
 
 	subscribe();
 

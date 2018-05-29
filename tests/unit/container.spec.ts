@@ -107,6 +107,32 @@ describe("container", () => {
         });
     });
 
+    describe("logging", () => {
+        it("debug", () => {
+            spyOn(console, "debug").and.stub();
+            container.log("debug", "message");
+            expect(console.debug).toHaveBeenCalledWith("message");
+        });
+
+        it("warn", () => {
+            spyOn(console, "warn").and.stub();
+            container.log("warn", "message");
+            expect(console.warn).toHaveBeenCalledWith("message");
+        });
+
+        it("error", () => {
+            spyOn(console, "error").and.stub();
+            container.log("error", "message");
+            expect(console.error).toHaveBeenCalledWith("message");
+        });
+
+        it("info", () => {
+            spyOn(console, "log").and.stub();
+            container.log("info", "message");
+            expect(console.log).toHaveBeenCalledWith("message");
+        });
+    });
+
     describe("ContainerBase", () => {
         describe("addTrayIcon", () => {
             it("Throws Not implemented", () => {
