@@ -339,6 +339,13 @@ describe("ElectronContainer", () => {
             Menu: {
                 buildFromTemplate: (menuItems: any) => { }
             },
+            Notification: (options: any) => {
+                return {
+                    show: () => {},
+                    addListener: () => {},
+                    once: () => {}
+                }
+            },
             require: (type: string) => { return {} },
             getCurrentWindow: () => { return windows[0]; }
         };
@@ -441,8 +448,10 @@ describe("ElectronContainer", () => {
     });
 
     describe("notifications", () => {
-        it("showNotification throws not implemented", () => {
-            expect(() => container.showNotification("title", {})).toThrowError(TypeError);
+        it("showNotification delegates to electron notification", () => {
+            spyOn(electron, "Notification").and.callThrough();
+            container.showNotification("title", <any> { onClick: () => {}, notification: { } });
+            expect(electron.Notification).toHaveBeenCalledWith({ title: "title", onClick: jasmine.any(Function), notification: jasmine.any(Object) });
         });
 
         it("requestPermission granted", (done) => {

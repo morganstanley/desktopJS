@@ -371,7 +371,16 @@ export class ElectronContainer extends WebContainerBase {
     }
 
     public showNotification(title: string, options?: NotificationOptions) {
-        throw new TypeError("showNotification requires an implementation.");
+        const Notification = this.electron.Notification;
+        const notify = new Notification(Object.assign(options || {}, { title: title }));
+        if (options["onClick"]) {
+            notify.addListener("click", options["onClick"]);
+        }
+        if (options["notification"]) {
+            notify.once("show", () => notify.addListener("click", options["notification"]["onclick"]));
+        }
+
+        notify.show();
     }
 
     public addTrayIcon(details: TrayIconDetails, listener: () => void, menuItems?: MenuItem[]) {
