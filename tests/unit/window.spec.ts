@@ -166,7 +166,7 @@ describe("GroupWindowManager", () => {
 describe("SnapAssistWindowManager", () => {
     it ("default options", () => {
         const mgr = new SnapAssistWindowManager(null);
-        expect(mgr.snapThreshold).toEqual(20);
+        expect(mgr.snapThreshold).toEqual(15);
         expect(mgr.snapOffset).toEqual(15);
         expect(mgr.autoGrouping).toEqual(true);
     });
@@ -317,7 +317,7 @@ describe("SnapAssistWindowManager", () => {
         const container = jasmine.createSpyObj("container", ["getAllWindows"]);
         container.getAllWindows.and.returnValue(Promise.resolve([ win, win2 ]));
 
-        const mgr = new SnapAssistWindowManager(container);
+        const mgr = new SnapAssistWindowManager(container, { snapThreshold: 20 });
         mgr.attach(win);
         callback(new WindowEventArgs(win, "move", undefined));
     });
@@ -326,7 +326,7 @@ describe("SnapAssistWindowManager", () => {
         let mgr;
 
         beforeAll(() => {
-            mgr = new SnapAssistWindowManager(null);
+            mgr = new SnapAssistWindowManager(null, { snapThreshold: 20 });
         });
 
         describe("left edge to right edge", () => {
