@@ -8,6 +8,7 @@ import { TrayIconDetails } from "../tray";
 import { MenuItem } from "../menu";
 import { Guid } from "../guid";
 import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../ipc";
+import { EventArgs } from "../events";
 
 ContainerRegistry.registerContainer("OpenFin", {
     condition: () => typeof window !== "undefined" && "fin" in window && "desktop" in fin,
@@ -152,6 +153,25 @@ export class OpenFinContainerWindow extends ContainerWindow {
 
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
         this.innerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
+    }
+
+    protected wrapListener(eventName: string, listener: (event: EventArgs) => void): (event: EventArgs) => void {
+        // Split OpenFin bounds-changed event to separate resize/move events
+        if (eventName === "resize") {
+            return (event) => {
+                if ((<any> event).changeType >= 1) {
+                    listener(new EventArgs(this, eventName, event));
+                }
+            };
+        } else if (eventName === "move") {
+            return (event) => {
+                if ((<any> event).changeType === 0) {
+                    listener(new EventArgs(this, eventName, event));
+                }
+            };
+        } else {
+            return super.wrapListener(eventName, listener);
+        }
     }
 
     protected detachListener(eventName: string, listener: (...args: any[]) => void): any {
