@@ -311,6 +311,26 @@ describe("OpenFinContainerWindow", () => {
                 win.addListener(unmappedEvent, () => { });
                 expect(win.innerWindow.addEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
             });
+
+            it ("resize wraps filtered bounds-changing", (done) => {
+                spyOn(win.innerWindow, "addEventListener").and.callFake((eventName, listener) => {
+                    listener({ changeType: 1 });
+                });
+                win.addListener("resize", (e) => {
+                    expect(e.innerEvent.changeType).toBeGreaterThanOrEqual(1);
+                    done();
+                });
+            });
+
+            it ("move wraps filtered bounds-changing", (done) => {
+                spyOn(win.innerWindow, "addEventListener").and.callFake((eventName, listener) => {
+                    listener({ changeType: 0 });
+                });
+                win.addListener("move", (e) => {
+                    expect(e.innerEvent.changeType).toEqual(0);
+                    done();
+                });
+            });
         });
 
         describe("removeListener", () => {
