@@ -477,7 +477,8 @@ export class OpenFinContainer extends WebContainerBase {
                 contextMenu: true,
                 resizable: false,
                 alwaysOnTop: true,
-                shadow: true
+                shadow: true,
+                smallWindow: true
             }
             , () => {
                 const win: Window = contextMenu.getNativeWindow();
