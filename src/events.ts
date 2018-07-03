@@ -34,12 +34,15 @@ export class EventEmitter {
     }
 
     protected registerAndWrapListener(eventName: string, listener: (event: EventArgs) => void): (event: EventArgs) => void {
-        const callback = (event) => {
-            listener(new EventArgs(this, eventName, event));
-        };
-
+        const callback = this.wrapListener(eventName, listener);
         this.wrappedListeners.set(listener, callback);
         return callback;
+    }
+
+    protected wrapListener(eventName: string, listener: (event: EventArgs) => void): (event: EventArgs) => void {
+        return (event) => {
+            listener(new EventArgs(this, eventName, event));
+        };
     }
 
     protected unwrapAndUnRegisterListener(listener: (event: EventArgs) => void): (event: EventArgs) => void {
