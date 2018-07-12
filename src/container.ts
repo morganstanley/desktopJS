@@ -29,6 +29,8 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
 
     private static _ipc: MessageBus; // tslint:disable-line
 
+    public static readonly windowOptionsPropertyKey: string = "desktopJS-options";
+
     /**
      * Display type of current Container.
      * @type {string}
@@ -176,7 +178,7 @@ export abstract class ContainerBase extends Container {
                 if (layout && layout.windows) {
                     const promises: Promise<ContainerWindow>[] = [];
                     for (const window of layout.windows) {
-                        const options: any = Object.assign({}, window.bounds);
+                        const options: any = Object.assign(window.options || {}, window.bounds);
                         options.name = window.name;
                         if (window.main) {
                             this.getMainWindow().setBounds(window.bounds);

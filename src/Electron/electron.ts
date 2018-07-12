@@ -320,7 +320,7 @@ export class ElectronContainer extends WebContainerBase {
 
     public getMainWindow(): ContainerWindow {
         for (const window of this.browserWindow.getAllWindows()) {
-            if (window.options && window.options.main) {
+            if (window[Container.windowOptionsPropertyKey] && window[Container.windowOptionsPropertyKey].main) {
                 return this.wrapWindow(window);
             }
         }
@@ -359,6 +359,7 @@ export class ElectronContainer extends WebContainerBase {
         */
         if (this.isRemote) {
             electronWindow["name"] = (<any>this.internalIpc).sendSync(InternalMessageType.initialize, { id: electronWindow.id, name: windowName, options: newOptions });
+            electronWindow[Container.windowOptionsPropertyKey] = options;
         } else {
             this.windowManager.initializeWindow(electronWindow, windowName, newOptions);
         }
@@ -444,6 +445,7 @@ export class ElectronContainer extends WebContainerBase {
                                     name: window.name,
                                     url: window.innerWindow.webContents.getURL(),
                                     main: (mainWindow === window.innerWindow),
+                                    options: window.innerWindow[Container.windowOptionsPropertyKey],
                                     bounds: window.innerWindow.getBounds(),
                                     group: group.map(win => win.id)
                                 });
@@ -502,7 +504,7 @@ export class ElectronWindowManager {
 
     public initializeWindow(win: any, name: string, options: any) {
         win.name = name;
-        win.options = options;
+        win[Container.windowOptionsPropertyKey] = options;
 
         if (options && options.main && (!("quitOnClose" in options) || options.quitOnClose)) {
             win.on("closed", () => {
