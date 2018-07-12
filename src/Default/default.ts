@@ -264,6 +264,7 @@ export class DefaultContainer extends WebContainerBase {
         }
 
         const window = this.globalWindow.open(url, target, features);
+        window[Container.windowOptionsPropertyKey] = options; // Store the original options
 
         // Set name as a unique desktopJS name property instead of overloading window.name
         window[DefaultContainer.windowNamePropertyKey] = newOptions.name;
@@ -342,7 +343,7 @@ export class DefaultContainer extends WebContainerBase {
             for (const key in windows) {
                 const win = windows[key];
                 if (this.globalWindow !== win) {
-                    layout.windows.push({ name: win.name, url: win.location.toString(), bounds: { x: win.screenX, y: win.screenY, width: win.outerWidth, height: win.outerHeight } });
+                    layout.windows.push({ name: win.name, url: win.location.toString(), bounds: { x: win.screenX, y: win.screenY, width: win.outerWidth, height: win.outerHeight }, options: win[Container.windowOptionsPropertyKey] });
                 }
             }
 

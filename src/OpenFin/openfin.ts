@@ -592,6 +592,7 @@ export class OpenFinContainer extends WebContainerBase {
                         promises.push(new Promise<void>((innerResolve, innerReject) => {
                             window.getBounds(bounds => {
                                 window.getOptions(options => {
+                                    delete (<any>options).show; // show is an undocumented option that interferes with the createWindow mapping of show -> autoShow
                                     window.getGroup(group => {
                                         layout.windows.push(
                                             {
@@ -599,6 +600,7 @@ export class OpenFinContainer extends WebContainerBase {
                                                 id: window.name,
                                                 url: window.getNativeWindow() ? window.getNativeWindow().location.toString() : options.url,
                                                 main: (mainWindow.name === window.name),
+                                                options: options,
                                                 bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
                                                 group: group.map(win => win.name)
                                             });

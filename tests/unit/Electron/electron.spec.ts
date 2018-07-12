@@ -1,6 +1,7 @@
 import { ElectronContainer, ElectronContainerWindow, ElectronMessageBus, ElectronWindowManager } from "../../../src/Electron/electron";
 import { MessageBusSubscription } from "../../../src/ipc";
 import { ContainerWindow } from "../../../src/window";
+import { Container } from "../../../src/container";
 
 class MockEventEmitter {
     private eventListeners: Map<string, any> = new Map();
@@ -377,7 +378,7 @@ describe("ElectronContainer", () => {
             fromId(): any {  };
         };
 
-        windows[1]["options"] = { main: true };
+        windows[1][Container.windowOptionsPropertyKey] = { main: true };
 
         spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
 

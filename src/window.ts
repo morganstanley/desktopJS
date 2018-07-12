@@ -251,6 +251,7 @@ export class PersistedWindow {
     public name: string;
     public id: string;
     public bounds: any;
+    public options?: any;
     public url?: string;
     public main?: boolean;
     public group?: string[];
