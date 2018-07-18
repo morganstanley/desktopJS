@@ -1,6 +1,6 @@
 import * as ContainerRegistry from "../registry";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
-import { ScreenManager, Display } from "../screen";
+import { ScreenManager, Display, Point } from "../screen";
 import { Container, WebContainerBase } from "../container";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions, ContainerNotification } from "../notification";
@@ -644,6 +644,12 @@ class ElectronDisplayManager implements ScreenManager {
     public getAllDisplays(): Promise<Display[]> {
         return new Promise<Display[]>((resolve, reject) => {
             resolve(this.electron.screen.getAllDisplays().map(this.createDisplay));
+        });
+    }
+
+    public getMousePosition(): Promise<Point> {
+        return new Promise<Point>((resolve, reject) => {
+            resolve(this.electron.screen.getCursorScreenPoint());
         });
     }
 }

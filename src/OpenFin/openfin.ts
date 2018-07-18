@@ -1,7 +1,7 @@
 import * as ContainerRegistry from "../registry";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
 import { Container, WebContainerBase } from "../container";
-import { ScreenManager, Display } from "../screen";
+import { ScreenManager, Display, Point } from "../screen";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { NotificationOptions, ContainerNotification } from "../notification";
 import { TrayIconDetails } from "../tray";
@@ -658,6 +658,14 @@ class OpenFinDisplayManager implements ScreenManager {
         return new Promise<Display[]>((resolve, reject) => {
             this.desktop.System.getMonitorInfo(monitorInfo => {
                 resolve([monitorInfo.primaryMonitor].concat(monitorInfo.nonPrimaryMonitors).map(this.createDisplay));
+            }, reject);
+        });
+    }
+
+    public getMousePosition(): Promise<Point> {
+        return new Promise<Point>((resolve, reject) => {
+            this.desktop.System.getMousePosition(position => {
+                resolve({ x: position.left, y: position.top });
             }, reject);
         });
     }
