@@ -712,10 +712,11 @@ describe("OpenFinDisplayManager", () => {
     beforeEach(() => {
         desktop = jasmine.createSpyObj("desktop", ["Application", "System", "InterApplicationBus"]);
         app = jasmine.createSpyObj("application", ["getCurrent", "addEventListener"]);
-        system = jasmine.createSpyObj("system", ["getMonitorInfo"]);
+        system = jasmine.createSpyObj("system", ["getMonitorInfo", "getMousePosition"]);
         Object.defineProperty(desktop, "Application", { value: app });
         Object.defineProperty(desktop, "System", { value: system });
         Object.defineProperty(desktop, "InterApplicationBus", { value: new MockInterApplicationBus() });
+        system.getMousePosition.and.callFake(callback => callback({ left: 1, top: 2 }));
         system.getMonitorInfo.and.callFake(callback => callback(
             {
                 primaryMonitor: {
@@ -770,6 +771,12 @@ describe("OpenFinDisplayManager", () => {
             expect(displays.length).toBe(2);
             expect(displays[0].id).toBe("name1");
             expect(displays[1].id).toBe("name2");
+        }).then(done);
+    });
+
+    it ("getMousePosition", (done) => {
+        container.screen.getMousePosition().then(point => {
+            expect(point).toEqual({ x: 1, y: 2});
         }).then(done);
     });
 });

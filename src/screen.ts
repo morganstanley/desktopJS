@@ -1,5 +1,11 @@
 import { Rectangle } from "./window";
 
+/** Represents a position in coordinates */
+export class Point {
+    public readonly x: number;
+    public readonly y: number;
+}
+
 /** Retrieve information about screen size, display, etc. */
 export interface ScreenManager {
     /**
@@ -13,6 +19,12 @@ export interface ScreenManager {
      * @returns {Promise<Display[]>} An array of all displays
      */
     getAllDisplays(): Promise<Display[]>;
+
+    /**
+     * Retrieves the current absolute position of the mouse pointer.
+     * @returns {Point} The current coordinates
+     */
+    getMousePosition(): Promise<Point>;
  }
 
  /** Details of a display connected to the system. */

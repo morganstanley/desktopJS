@@ -1,6 +1,6 @@
 import { Container, WebContainerBase } from "../container";
 import { ContainerWindow, PersistedWindowLayout, PersistedWindow, Rectangle } from "../window";
-import { ScreenManager, Display } from "../screen";
+import { ScreenManager, Display, Point } from "../screen";
 import { NotificationOptions } from "../notification";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { Guid } from "../guid";
@@ -384,6 +384,12 @@ class DefaultDisplayManager implements ScreenManager {
     public getAllDisplays(): Promise<Display[]> {
         return new Promise<Display[]>(resolve => {
             this.getPrimaryDisplay().then(display => resolve([ display ]));
+        });
+    }
+
+    public getMousePosition(): Promise<Point> {
+        return new Promise<Point>((resolve, reject) => {
+            resolve({ x: (<any>this.window.event).screenX, y: (<any>this.window.event).screenY });
         });
     }
 }

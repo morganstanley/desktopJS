@@ -830,8 +830,9 @@ describe("ElectronDisplayManager", () => {
    
     beforeEach(() => {
         electron = jasmine.createSpyObj("electron", ["ipc"]);
-        screen = jasmine.createSpyObj("screen", ["getPrimaryDisplay", "getAllDisplays"]);
+        screen = jasmine.createSpyObj("screen", ["getPrimaryDisplay", "getAllDisplays", "getCursorScreenPoint"]);
         Object.defineProperty(electron, "screen", { value: screen });
+        screen.getCursorScreenPoint.and.returnValue({ x: 1, y: 2 });
         screen.getPrimaryDisplay.and.returnValue(
             {
                 id: "primary",
@@ -890,4 +891,10 @@ describe("ElectronDisplayManager", () => {
             expect(displays[1].id).toBe("secondary");
         }).then(done);
     });
+
+    it ("getMousePosition", (done) => {
+        container.screen.getMousePosition().then(point => {
+            expect(point).toEqual({ x: 1, y: 2});
+        }).then(done);
+    });    
 });

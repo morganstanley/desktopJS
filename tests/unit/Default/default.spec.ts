@@ -474,6 +474,7 @@ describe("DefaultDisplayManager", () => {
         window = {};
         Object.defineProperty(window, "devicePixelRatio", { value: 1 });
         Object.defineProperty(window, "screen", { value: {availLeft: 2, availTop: 3, availWidth: 4, availHeight: 5, width: 6, height: 7} });
+        Object.defineProperty(window, "event", { value: { screenX: 1, screenY: 2 }});
         container = new DefaultContainer(window);
     });
 
@@ -506,4 +507,10 @@ describe("DefaultDisplayManager", () => {
             expect(displays[0].id).toBe("Current");
         }).then(done);
     });
+
+    it ("getMousePosition", (done) => {
+        container.screen.getMousePosition().then(point => {
+            expect(point).toEqual({ x: 1, y: 2});
+        }).then(done);
+    });    
 });
