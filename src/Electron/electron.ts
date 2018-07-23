@@ -277,7 +277,7 @@ export class ElectronContainer extends WebContainerBase {
             this.menu = this.electron.Menu;
 
             this.internalIpc = ipc || ((this.isRemote) ? require("electron").ipcRenderer : this.electron.ipcMain);
-            this.ipc = new ElectronMessageBus(this.internalIpc, this.browserWindow);
+            this.ipc = this.createMessageBus();
 
             if (!this.isRemote || (options && typeof options.isRemote !== "undefined" && !options.isRemote)) {
                 this.windowManager = new ElectronWindowManager(this.app, this.internalIpc, this.browserWindow);
@@ -301,6 +301,10 @@ export class ElectronContainer extends WebContainerBase {
         }
 
         this.screen = new ElectronDisplayManager(this.electron);
+    }
+
+    protected createMessageBus() : MessageBus {
+        return new ElectronMessageBus(this.internalIpc, this.browserWindow);
     }
 
     protected registerNotificationsApi() {

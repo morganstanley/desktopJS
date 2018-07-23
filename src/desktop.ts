@@ -3,6 +3,7 @@ import { Container } from "./container";
 import { ContainerNotification } from "./notification";
 import { ObjectTransform } from "./propertymapping";
 import { ContainerWindow, WindowStateTracking, GroupWindowManager, SnapAssistWindowManager } from "./window";
+import { MessageBusSubscription, MessageBusOptions } from "./ipc";
 import * as Default from "./Default/default";
 import * as Electron from "./Electron/electron";
 import * as OpenFin from "./OpenFin/openfin";
@@ -21,4 +22,6 @@ export default class Desktop { //tslint:disable-line
     static get WindowStateTracking(): typeof WindowStateTracking { return WindowStateTracking; }
     static get GroupWindowManager(): typeof GroupWindowManager { return GroupWindowManager; }
     static get SnapAssistWindowManager(): typeof SnapAssistWindowManager { return SnapAssistWindowManager; }
+    static get MessageBusSubscription(): typeof MessageBusSubscription { return MessageBusSubscription; }
+    static get MessageBusOptions(): typeof MessageBusOptions { return MessageBusOptions; }
 }
