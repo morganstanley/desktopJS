@@ -346,7 +346,7 @@ export class OpenFinContainer extends WebContainerBase {
             this.desktop.Application.getCurrent().registerUser(options.userName, options.appName);
         }
 
-        this.ipc = new OpenFinMessageBus(this.desktop.InterApplicationBus, (<any>this.desktop.Application.getCurrent()).uuid);
+        this.ipc = this.createMessageBus();
 
         let replaceNotificationApi = OpenFinContainer.replaceNotificationApi;
         if (options && typeof options.replaceNotificationApi !== "undefined") {
@@ -364,6 +364,10 @@ export class OpenFinContainer extends WebContainerBase {
         });
 
         this.screen = new OpenFinDisplayManager(this.desktop);
+    }
+
+    protected createMessageBus() : MessageBus {
+        return new OpenFinMessageBus(this.desktop.InterApplicationBus, (<any>this.desktop.Application.getCurrent()).uuid);
     }
 
     protected registerNotificationsApi() {

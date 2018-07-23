@@ -193,7 +193,7 @@ export class DefaultContainer extends WebContainerBase {
         super(win);
         this.hostType = "Default";
 
-        this.ipc = new DefaultMessageBus(this);
+        this.ipc = this.createMessageBus();
 
         // Create a global windows object for tracking all windows and add the current global window for current
         if (this.globalWindow && !(DefaultContainer.windowsPropertyKey in this.globalWindow)) {
@@ -201,6 +201,10 @@ export class DefaultContainer extends WebContainerBase {
         }
 
         this.screen = new DefaultDisplayManager(this.globalWindow);
+    }
+
+    protected createMessageBus() : MessageBus {
+        return new DefaultMessageBus(this);
     }
 
     public getMainWindow(): ContainerWindow {
