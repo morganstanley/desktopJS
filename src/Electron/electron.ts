@@ -283,8 +283,10 @@ export class ElectronContainer extends WebContainerBase {
                 this.windowManager = new ElectronWindowManager(this.app, this.internalIpc, this.browserWindow);
 
                 this.app.on("browser-window-created", (event, window) => {
-                    Container.emit("window-created", { name: "window-created", windowId: window.webContents.id });
-                    ContainerWindow.emit("window-created", { name: "window-created", windowId: window.webContents.id });
+                    setImmediate(() => {
+                        Container.emit("window-created", { name: "window-created", windowId: window.webContents.id });
+                        ContainerWindow.emit("window-created", { name: "window-created", windowId: window.webContents.id });
+                    });
                 });
             }
         } catch (e) {
