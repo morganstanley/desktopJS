@@ -25,6 +25,7 @@ class InternalMessageType {
     public static readonly getGroup: string = "desktopJS.window-getGroup";
     public static readonly joinGroup: string = "desktopJS.window-joinGroup";
     public static readonly leaveGroup: string = "desktopJS.window-leaveGroup";
+    public static readonly getOptions: string = "desktopJS.window-getOptions";
 }
 
 const windowEventMap = {};
@@ -162,6 +163,16 @@ export class ElectronContainerWindow extends ContainerWindow {
         }
 
         return Promise.resolve();
+    }
+
+    public getOptions(): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            const options = (this.isRemote)
+                ? (<any>this.container.internalIpc).sendSync(InternalMessageType.getOptions, { source: this.id })
+                : this.innerWindow[Container.windowOptionsPropertyKey];
+
+            resolve(options);
+        });
     }
 
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
@@ -505,6 +516,11 @@ export class ElectronWindowManager {
         this.ipc.on(InternalMessageType.getGroup, (event: any, message: any) => {
             const { "source": sourceId } = message;
             event.returnValue = this.getGroup(this.browserWindow.fromId(sourceId));
+        });
+
+        this.ipc.on(InternalMessageType.getOptions, (event: any, message: any) => {
+            const { "source": sourceId } = message;
+            event.returnValue = this.browserWindow.fromId(sourceId)[Container.windowOptionsPropertyKey];
         });
     }
 

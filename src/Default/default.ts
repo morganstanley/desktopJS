@@ -94,6 +94,12 @@ export class DefaultContainerWindow extends ContainerWindow {
         });
     }
 
+    public getOptions(): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            resolve(this.innerWindow[Container.windowOptionsPropertyKey]);
+        });
+    }
+
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
         this.innerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
     }

@@ -151,6 +151,12 @@ export class OpenFinContainerWindow extends ContainerWindow {
         });
     }
 
+    public getOptions(): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            this.innerWindow.getOptions(options => resolve(options.customData ? JSON.parse(options.customData) : undefined), reject);
+        });
+    }
+
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
         this.innerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
     }
@@ -411,6 +417,7 @@ export class OpenFinContainer extends WebContainerBase {
 
     protected getWindowOptions(options?: any): any {
         const newOptions = ObjectTransform.transformProperties(options, this.windowOptionsMap);
+        newOptions.customData = options ? JSON.stringify(options) : undefined;
 
         // Default behavior is to show window so if there is no override in options, show the window
         if (!("autoShow" in newOptions)) {

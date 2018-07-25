@@ -186,7 +186,8 @@ describe("SnapAssistWindowManager", () => {
 
     it ("attach enumerates all open windows and hooks handlers", () => {
         const container = jasmine.createSpyObj("container", [ "getAllWindows" ]);
-        const win = jasmine.createSpyObj("window", [ "addListener"] );
+        const win = jasmine.createSpyObj("window", [ "addListener", "getOptions"] );
+        win.getOptions.and.returnValue(Promise.resolve(undefined));
         container.getAllWindows.and.returnValue(Promise.resolve([win]));
         const mgr = new SnapAssistWindowManager(container);
         //expect(win.addListener).toHaveBeenCalled();
@@ -194,8 +195,8 @@ describe("SnapAssistWindowManager", () => {
 
     it ("hook handlers on window attach", () => {
         const mgr = new SnapAssistWindowManager(null);
-        const win = new MockWindow(null);
-        spyOn(win, "addListener").and.stub();
+        const win = jasmine.createSpyObj("win", ["addListener", "getOptions"]); //new MockWindow(null);
+        win.getOptions.and.returnValue(Promise.resolve(undefined));
         mgr.attach(win);
         expect(win.addListener).toHaveBeenCalled();
     });
@@ -299,10 +300,9 @@ describe("SnapAssistWindowManager", () => {
     });
 
     it ("move handler", (done) => {
-        const win = jasmine.createSpyObj("window", ["addListener", "getGroup", "getBounds", "setBounds"]);
+        const win = jasmine.createSpyObj("window", ["addListener", "getGroup", "getBounds", "setBounds", "getOptions"]);
         Object.defineProperty(win, "id", { value: "1" });
-        let callback;
-        win.addListener.and.callFake((event, fn) => callback = fn);
+        win.getOptions.and.returnValue(Promise.resolve(undefined));
         win.getGroup.and.returnValue(Promise.resolve([]));
         win.getBounds.and.returnValue(Promise.resolve(new Rectangle(0, 0, 50, 50)));
         win.setBounds.and.callFake(() => {
@@ -310,16 +310,17 @@ describe("SnapAssistWindowManager", () => {
             return Promise.resolve();
         });
 
-        const win2 = jasmine.createSpyObj("targetWindow", ["addListener", "getBounds"]);
+        const win2 = jasmine.createSpyObj("targetWindow", ["addListener", "getBounds", "getOptions"]);
         Object.defineProperty(win2, "id", { value: "2" });
         win2.getBounds.and.returnValue(Promise.resolve(new Rectangle(52, 0, 50, 50)));
+        win2.getOptions.and.returnValue(Promise.resolve({}));
 
         const container = jasmine.createSpyObj("container", ["getAllWindows"]);
         container.getAllWindows.and.returnValue(Promise.resolve([ win, win2 ]));
 
         const mgr = new SnapAssistWindowManager(container, { snapThreshold: 20 });
         mgr.attach(win);
-        callback(new WindowEventArgs(win, "move", undefined));
+        mgr.onMoving(new WindowEventArgs(win, "move", undefined));
     });
 
     describe("getSnapBounds", () => {
