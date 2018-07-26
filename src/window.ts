@@ -61,7 +61,7 @@ export type WindowEventType =
     "maximize" |
     "minimize" |
     "restore"
-;
+    ;
 
 export class WindowEventArgs extends EventArgs {
     public readonly window?: ContainerWindow;
@@ -83,7 +83,7 @@ export abstract class ContainerWindow extends EventEmitter {
     public constructor(wrap: any) {
         super();
         this.innerWindow = wrap;
-   }
+    }
 
     /** Gives focus to the window. */
     public abstract focus(): Promise<void>;
@@ -137,6 +137,8 @@ export abstract class ContainerWindow extends EventEmitter {
     public leaveGroup(): Promise<void> {
         return Promise.resolve();
     }
+
+    public abstract getOptions(): Promise<any>;
 
     /**
      * Override to provide custom container logic for adding an event handler.
@@ -267,7 +269,7 @@ export class PersistedWindowLayout {
     }
 }
 
-type WindowGroupStatus = {window: ContainerWindow, isGrouped: boolean};
+type WindowGroupStatus = { window: ContainerWindow, isGrouped: boolean };
 
 /** Specifies the tracking behavior for window state linking */
 export enum WindowStateTracking {
@@ -285,7 +287,7 @@ export class GroupWindowManager {
     protected readonly container: Container;
     public windowStateTracking: WindowStateTracking = WindowStateTracking.None;
 
-    public constructor(container: Container, options? : any) {
+    public constructor(container: Container, options?: any) {
         this.container = container;
 
         if (options) {
@@ -299,7 +301,7 @@ export class GroupWindowManager {
 
     public attach(win?: ContainerWindow) {
         if (win) {
-            win.addListener((typeof fin !== "undefined") ? <WindowEventType> "minimized" : "minimize", (e) => {
+            win.addListener((typeof fin !== "undefined") ? <WindowEventType>"minimized" : "minimize", (e) => {
                 if ((this.windowStateTracking & WindowStateTracking.Main) && this.container.getMainWindow().id === e.sender.id) {
                     this.container.getAllWindows().then(windows => {
                         windows.forEach(window => window.minimize());
@@ -313,7 +315,7 @@ export class GroupWindowManager {
                 }
             });
 
-            win.addListener((typeof fin !== "undefined") ? <WindowEventType> "restored" : "restore", (e) => {
+            win.addListener((typeof fin !== "undefined") ? <WindowEventType>"restored" : "restore", (e) => {
                 if ((this.windowStateTracking & WindowStateTracking.Main) && this.container.getMainWindow().id === e.sender.id) {
                     this.container.getAllWindows().then(windows => {
                         windows.forEach(window => window.restore());
@@ -339,8 +341,8 @@ export class GroupWindowManager {
             // Attach handlers to any windows already open
             if (this.container) {
                 this.container.getAllWindows().then(windows => {
-                      windows.forEach(window => this.attach(window));
-                  });
+                    windows.forEach(window => this.attach(window));
+                });
             }
         }
     }
@@ -384,7 +386,7 @@ export class SnapAssistWindowManager extends GroupWindowManager {
         // Attach listeners for handling when the move/resize of a window is done
         if (typeof fin !== "undefined") {
             // OpenFin moved handler
-            win.addListener(<WindowEventType> "disabled-frame-bounds-changed", () => this.onMoved(win));
+            win.addListener(<WindowEventType>"disabled-frame-bounds-changed", () => this.onMoved(win));
         } else {
             // Electron windows specific moved handler
             if (win.innerWindow && win.innerWindow.hookWindowMessage) {
@@ -397,63 +399,78 @@ export class SnapAssistWindowManager extends GroupWindowManager {
         super.attach(win);
 
         if (win) {
-            this.onAttached(win);
-
-            win.addListener((typeof fin !== "undefined") ? <WindowEventType> "disabled-frame-bounds-changing" : "move", (e) => {
-                const id = e.sender.id;
-
-                if (this.snappingWindow === id) {
+            win.getOptions().then(options => {
+                if (options && typeof (options.snap) !== "undefined" && options.snap === false) {
                     return;
                 }
 
-                e.sender.getGroup().then(groupedWindows => {
-                    const getBounds: Promise<Rectangle> = (typeof fin !== "undefined")
-                        ? Promise.resolve(new Rectangle(e.innerEvent.left, e.innerEvent.top, e.innerEvent.width, e.innerEvent.height))
-                        : e.sender.getBounds();
+                this.onAttached(win);
+                win.addListener((typeof fin !== "undefined") ? <WindowEventType>"disabled-frame-bounds-changing" : "move", (e) => this.onMoving(e));
+            });
+        }
+    }
 
-                    getBounds.then(bounds => {
-                        // If we are already in a group, don't snap or group with other windows, ungrouped windows need to group to us
-                        if (groupedWindows.length > 0) {
-                            if (typeof fin !== "undefined") {
-                                this.moveWindow(e.sender, bounds);
-                            }
+    protected onMoving(e: any) {
+        const id = e.sender.id;
 
-                            return;
+        if (this.snappingWindow === id) {
+            return;
+        }
+
+        e.sender.getOptions().then(senderOptions => {
+            if (senderOptions && typeof (senderOptions.snap) !== "undefined" && senderOptions.snap === false) {
+                return;
+            }
+
+            e.sender.getGroup().then(groupedWindows => {
+                const getBounds: Promise<Rectangle> = (typeof fin !== "undefined")
+                    ? Promise.resolve(new Rectangle(e.innerEvent.left, e.innerEvent.top, e.innerEvent.width, e.innerEvent.height))
+                    : e.sender.getBounds();
+
+                getBounds.then(bounds => {
+                    // If we are already in a group, don't snap or group with other windows, ungrouped windows need to group to us
+                    if (groupedWindows.length > 0) {
+                        if (typeof fin !== "undefined") {
+                            this.moveWindow(e.sender, bounds);
                         }
 
-                        const promises: Promise<{window: ContainerWindow, bounds: Rectangle}>[] = [];
-                        this.container.getAllWindows().then(windows => {
-                            windows.filter(window => id !== window.id).forEach(window => {
-                                promises.push(new Promise(resolve => {
-                                    window.getBounds().then(targetBounds => resolve({ window: window, bounds: targetBounds}));
-                                }));
-                            });
+                        return;
+                    }
 
-                            Promise.all(promises).then(responses => {
-                                let isSnapped = false;
-                                let snapHint;
+                    const promises: Promise<{ window: ContainerWindow, bounds: Rectangle, options: any }>[] = [];
+                    this.container.getAllWindows().then(windows => {
+                        windows.filter(window => id !== window.id).forEach(window => {
+                            promises.push(new Promise(resolve => {
+                                window.getOptions().then(targetOptions => {
+                                    window.getBounds().then(targetBounds => resolve({ window: window, bounds: targetBounds, options: targetOptions }));
+                                });
+                            }));
+                        });
 
-                                for (const target of responses) {
-                                    snapHint = this.getSnapBounds(snapHint || bounds, target.bounds);
-                                    if (snapHint) {
-                                        isSnapped = true;
-                                        this.showGroupingHint(target.window);
-                                        this.moveWindow(e.sender, snapHint);
-                                    } else {
-                                        this.hideGroupingHint(target.window);
-                                    }
+                        Promise.all(promises).then(responses => {
+                            let isSnapped = false;
+                            let snapHint;
+
+                            for (const target of responses.filter(response => !(response.options && typeof (response.options.snap) !== "undefined" && response.options.snap === false))) {
+                                snapHint = this.getSnapBounds(snapHint || bounds, target.bounds);
+                                if (snapHint) {
+                                    isSnapped = true;
+                                    this.showGroupingHint(target.window);
+                                    this.moveWindow(e.sender, snapHint);
+                                } else {
+                                    this.hideGroupingHint(target.window);
                                 }
+                            }
 
-                                // If the window wasn't moved as part of snapping, we need to manually move for OpenFin since dragging was disabled
-                                if (!isSnapped && typeof fin !== "undefined") {
-                                    this.moveWindow(e.sender, bounds);
-                                }
-                            });
+                            // If the window wasn't moved as part of snapping, we need to manually move for OpenFin since dragging was disabled
+                            if (!isSnapped && typeof fin !== "undefined") {
+                                this.moveWindow(e.sender, bounds);
+                            }
                         });
                     });
                 });
             });
-        }
+        });
     }
 
     protected moveWindow(win: ContainerWindow, bounds: Rectangle) {
@@ -491,7 +508,7 @@ export class SnapAssistWindowManager extends GroupWindowManager {
 
     protected showGroupingHint(win: ContainerWindow) {
         if (win.innerWindow && win.innerWindow.updateOptions) {
-            win.innerWindow.updateOptions({opacity: 0.75});
+            win.innerWindow.updateOptions({ opacity: 0.75 });
         }
 
         this.targetGroup.set(win.id, win);
@@ -499,7 +516,7 @@ export class SnapAssistWindowManager extends GroupWindowManager {
 
     protected hideGroupingHint(win: ContainerWindow) {
         if (win.innerWindow && win.innerWindow.updateOptions) {
-            win.innerWindow.updateOptions({opacity: 1.0});
+            win.innerWindow.updateOptions({ opacity: 1.0 });
         }
 
         this.targetGroup.delete(win.id);

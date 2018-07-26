@@ -224,6 +224,18 @@ describe("ElectronContainerWindow", () => {
             });
         });
 
+        it ("getOptions sends synchronous ipc message", (done) => {
+            spyOn(container.internalIpc, "sendSync").and.returnValue({ foo: "bar"});
+            spyOnProperty(win, "id", "get").and.returnValue(5);
+            spyOn(container, "wrapWindow").and.returnValue(new MockWindow());
+            spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
+
+            win.getOptions().then(options => {
+                expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getOptions", { source: 5});
+                expect(options).toEqual({ foo: "bar" });
+            }).then(done);
+        });
+
         it("addListener calls underlying Electron window addListener", () => {
             spyOn(win.innerWindow, "addListener").and.callThrough()
             win.addListener("move", () => {});
@@ -633,11 +645,12 @@ describe("ElectronWindowManager", () => {
         const ipc = new MockMainIpc();
         spyOn(ipc, "on").and.callThrough();
         new ElectronWindowManager({}, ipc, { });
-        expect(ipc.on).toHaveBeenCalledTimes(4);
+        expect(ipc.on).toHaveBeenCalledTimes(5);
         expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-initialize", jasmine.any(Function));
         expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-joinGroup", jasmine.any(Function));
         expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-leaveGroup", jasmine.any(Function));
         expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-getGroup", jasmine.any(Function));
+        expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-getOptions", jasmine.any(Function));
     });
 
     it ("initializeWindow on non-main does not attach to close", () => {

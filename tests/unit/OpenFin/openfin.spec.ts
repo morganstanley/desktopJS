@@ -298,6 +298,23 @@ describe("OpenFinContainerWindow", () => {
             });
         });
 
+        describe("getOptions", () => {
+            it("getOptions invokes underlying getOptions and returns undefined customData", (done) => {
+                spyOn(win.innerWindow, "getOptions").and.callFake(callback => callback({ }));
+                win.getOptions().then(options => {
+                    expect(options).toBeUndefined();
+                }).then(done);
+            });
+
+            it("getOptions invokes underlying getOptions and parses non-null customData", (done) => {
+                spyOn(win.innerWindow, "getOptions").and.callFake(callback => callback({ customData: '{ "a": "foo"}' }));
+                win.getOptions().then(options => {
+                    expect(options).toBeDefined();
+                    expect(options.a).toEqual("foo");
+                }).then(done);
+            });
+        });
+
         describe("addListener", () => {
             it("addListener calls underlying OpenFin window addEventListener with mapped event name", () => {
                 spyOn(win.innerWindow, "addEventListener").and.callThrough()
@@ -485,25 +502,25 @@ describe("OpenFinContainer", () => {
         it("defaults", (done) => {
             container.createWindow("url").then(win => {
                 expect(win).toBeDefined();
-                expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: jasmine.stringMatching(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/) }, jasmine.any(Function), jasmine.any(Function));
+                expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: jasmine.stringMatching(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/), customData: undefined }, jasmine.any(Function), jasmine.any(Function));
                 done();
             });
         });
 
         it("createWindow defaults", (done) => {
             spyOn<any>(container, "ensureAbsoluteUrl").and.returnValue("absoluteIcon");
+            const options = {
+                x: "x",
+                y: "y",
+                height: "height",
+                width: "width",
+                taskbar: "taskbar",
+                center: "center",
+                icon: "icon",
+                name: "name"
+            }
 
-            container.createWindow("url",
-                {
-                    x: "x",
-                    y: "y",
-                    height: "height",
-                    width: "width",
-                    taskbar: "taskbar",
-                    center: "center",
-                    icon: "icon",
-                    name: "name"
-                }).then(win => {
+            container.createWindow("url", options).then(win => {
                     expect(win).toBeDefined();
                     expect(desktop.Window).toHaveBeenCalledWith(
                         {
@@ -517,7 +534,8 @@ describe("OpenFinContainer", () => {
                             autoShow: true,
                             saveWindowState: false,
                             url: "url",
-                            name: "name"
+                            name: "name",
+                            customData: JSON.stringify(options)
                         },
                         jasmine.any(Function),
                         jasmine.any(Function)

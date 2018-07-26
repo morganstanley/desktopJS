@@ -128,6 +128,14 @@ describe("DefaultContainerWindow", () => {
         });
     });
 
+    it("getOptions", async (done) => {
+        const win = await new DefaultContainer(<any>new MockWindow()).createWindow("url", { a: "foo" });
+        win.getOptions().then(options => {
+            expect(options).toBeDefined();
+            expect(options).toEqual({ a: "foo"});
+        }).then(done);
+    });    
+
     describe("addListener", () => {
         it("addListener calls underlying window addEventListener with mapped event name", () => {
             spyOn(win.innerWindow, "addEventListener").and.callThrough()
