@@ -167,7 +167,7 @@
         "no-parameter-properties": true,
         "no-relative-imports": false,
         "no-require-imports": false,
-        "no-shadowed-variable": true,
+        "no-shadowed-variable": false,
         "no-suspicious-comment": true,
         "no-typeof-undefined": false,
         "no-unnecessary-field-initialization": true,
