@@ -7,6 +7,8 @@ export class EventArgs {
 
     public readonly name: string;
 
+    public returnValue? : any;
+
     constructor(sender: any, name: string, innerEvent?: any) {
         this.sender = sender;
         this.name = name;
@@ -41,8 +43,22 @@ export class EventEmitter {
 
     protected wrapListener(eventName: string, listener: (event: EventArgs) => void): (event: EventArgs) => void {
         return (event) => {
-            listener(new EventArgs(this, eventName, event));
+            const args = new EventArgs(this, eventName, event);
+            this.preProcessArgs(args);
+            const result = listener(args);
+            this.postProcessArgs(args);
+            return result;
         };
+    }
+
+    protected preProcessArgs(args: EventArgs) {
+        // Do nothing in base
+    }
+
+    protected postProcessArgs(args: EventArgs) {
+        if (args && typeof args.returnValue !== "undefined") {
+            (<any>args.innerEvent).returnValue = args.returnValue;
+        }
     }
 
     protected unwrapAndUnRegisterListener(listener: (event: EventArgs) => void): (event: EventArgs) => void {

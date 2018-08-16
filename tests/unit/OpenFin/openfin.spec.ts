@@ -314,57 +314,63 @@ describe("OpenFinContainerWindow", () => {
                 }).then(done);
             });
         });
+    });
 
-        describe("addListener", () => {
-            it("addListener calls underlying OpenFin window addEventListener with mapped event name", () => {
-                spyOn(win.innerWindow, "addEventListener").and.callThrough()
-                win.addListener("move", () => { });
-                expect(win.innerWindow.addEventListener).toHaveBeenCalledWith("bounds-changing", jasmine.any(Function));
+    describe("addListener", () => {
+        it("addListener calls underlying OpenFin window addEventListener with mapped event name", () => {
+            spyOn(win.innerWindow, "addEventListener").and.callThrough()
+            win.addListener("move", () => { });
+            expect(win.innerWindow.addEventListener).toHaveBeenCalledWith("bounds-changing", jasmine.any(Function));
+        });
+
+        it("addListener calls underlying OpenFin window addEventListener with unmapped event name", () => {
+            const unmappedEvent = "closed";
+            spyOn(win.innerWindow, "addEventListener").and.callThrough()
+            win.addListener(unmappedEvent, () => { });
+            expect(win.innerWindow.addEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
+        });
+
+        it ("resize wraps filtered bounds-changing", (done) => {
+            spyOn(win.innerWindow, "addEventListener").and.callFake((eventName, listener) => {
+                listener({ changeType: 1 });
             });
-
-            it("addListener calls underlying OpenFin window addEventListener with unmapped event name", () => {
-                const unmappedEvent = "closed";
-                spyOn(win.innerWindow, "addEventListener").and.callThrough()
-                win.addListener(unmappedEvent, () => { });
-                expect(win.innerWindow.addEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
-            });
-
-            it ("resize wraps filtered bounds-changing", (done) => {
-                spyOn(win.innerWindow, "addEventListener").and.callFake((eventName, listener) => {
-                    listener({ changeType: 1 });
-                });
-                win.addListener("resize", (e) => {
-                    expect(e.innerEvent.changeType).toBeGreaterThanOrEqual(1);
-                    done();
-                });
-            });
-
-            it ("move wraps filtered bounds-changing", (done) => {
-                spyOn(win.innerWindow, "addEventListener").and.callFake((eventName, listener) => {
-                    listener({ changeType: 0 });
-                });
-                win.addListener("move", (e) => {
-                    expect(e.innerEvent.changeType).toEqual(0);
-                    done();
-                });
+            win.addListener("resize", (e) => {
+                expect(e.innerEvent.changeType).toBeGreaterThanOrEqual(1);
+                done();
             });
         });
 
-        describe("removeListener", () => {
-            it("removeListener calls underlying OpenFin window removeEventListener with mapped event name", () => {
-                spyOn(win.innerWindow, "removeEventListener").and.callThrough()
-                win.removeListener("move", () => { });
-                expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith("bounds-changing", jasmine.any(Function));
+        it ("move wraps filtered bounds-changing", (done) => {
+            spyOn(win.innerWindow, "addEventListener").and.callFake((eventName, listener) => {
+                listener({ changeType: 0 });
             });
+            win.addListener("move", (e) => {
+                expect(e.innerEvent.changeType).toEqual(0);
+                done();
+            });
+        });
 
-            it("removeListener calls underlying OpenFin window removeEventListener with unmapped event name", () => {
-                const unmappedEvent = "closed";
-                spyOn(win.innerWindow, "removeEventListener").and.callThrough()
-                win.removeListener(unmappedEvent, () => { });
-                expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
-            });
+        it ("beforeunload attaches to underlying close-requested ", () => {
+            spyOn(win.innerWindow, "addEventListener").and.stub()
+            win.addListener("beforeunload", (e) => {});
+            expect(win.innerWindow.addEventListener).toHaveBeenCalledWith("close-requested", jasmine.any(Function));
         });
     });
+
+    describe("removeListener", () => {
+        it("removeListener calls underlying OpenFin window removeEventListener with mapped event name", () => {
+            spyOn(win.innerWindow, "removeEventListener").and.callThrough()
+            win.removeListener("move", () => { });
+            expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith("bounds-changing", jasmine.any(Function));
+        });
+
+        it("removeListener calls underlying OpenFin window removeEventListener with unmapped event name", () => {
+            const unmappedEvent = "closed";
+            spyOn(win.innerWindow, "removeEventListener").and.callThrough()
+            win.removeListener(unmappedEvent, () => { });
+            expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
+        });
+    });    
 
     describe("window grouping", () => {
         it("allowGrouping is true", () => {

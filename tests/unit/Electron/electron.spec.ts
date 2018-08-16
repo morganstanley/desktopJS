@@ -236,10 +236,31 @@ describe("ElectronContainerWindow", () => {
             }).then(done);
         });
 
-        it("addListener calls underlying Electron window addListener", () => {
-            spyOn(win.innerWindow, "addListener").and.callThrough()
-            win.addListener("move", () => {});
-            expect(win.innerWindow.addListener).toHaveBeenCalledWith("move", jasmine.any(Function));
+        describe("addListener", () => {
+            it("calls underlying Electron window addListener", () => {
+                spyOn(win.innerWindow, "addListener").and.callThrough()
+                win.addListener("move", () => {});
+                expect(win.innerWindow.addListener).toHaveBeenCalledWith("move", jasmine.any(Function));
+            });
+    
+            describe("beforeunload", () => {
+                it ("beforeunload attaches to underlying dom window", () => {
+                    var window = jasmine.createSpyObj("window", ["addEventListener"]);
+                    spyOn(container, "getCurrentWindow").and.returnValue({ id: 1});
+                    win = new ElectronContainerWindow(innerWin, container, window);
+                    spyOnProperty(win, "id", "get").and.returnValue(1);
+                    win.addListener("beforeunload", () => {});
+                    expect(window.addEventListener).toHaveBeenCalledWith("beforeunload", jasmine.any(Function));
+                });
+    
+                it ("beforeunload throws error if not current window", () => {
+                    var window = jasmine.createSpyObj("window", ["addEventListener"]);
+                    spyOn(container, "getCurrentWindow").and.returnValue({ id: 2});
+                    win = new ElectronContainerWindow(innerWin, container, window);
+                    spyOnProperty(win, "id", "get").and.returnValue(1);
+                    expect(() => {win.addListener("beforeunload", () => {})}).toThrowError("Event handler for 'beforeunload' can only be added on current window");
+                });
+            });
         });
 
         it("removeListener calls underlying Electron window removeListener", () => {

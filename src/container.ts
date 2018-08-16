@@ -251,19 +251,19 @@ export abstract class ContainerBase extends Container {
             let logger;
             switch (level) {
                 case "debug": {
-                    logger = console.debug;
+                    logger = console.debug; // tslint:disable-line
                     break;
                 }
                 case "warn": {
-                    logger = console.warn;
+                    logger = console.warn; // tslint:disable-line
                     break;
                 }
                 case "error": {
-                    logger = console.error;
+                    logger = console.error; // tslint:disable-line
                     break;
                 }
                 default: {
-                    logger = console.log;
+                    logger = console.log; // tslint:disable-line
                 }
             }
 
