@@ -35,10 +35,12 @@ const windowEventMap = {};
  */
 export class ElectronContainerWindow extends ContainerWindow {
     private readonly container: ElectronContainer;
+    private readonly window: Window;
 
-    public constructor(wrap: any, container: ElectronContainer) {
+    public constructor(wrap: any, container: ElectronContainer, win?: Window) {
         super(wrap);
         this.container = container;
+        this.window = win;
     }
 
     private get isRemote(): boolean {
@@ -176,7 +178,16 @@ export class ElectronContainerWindow extends ContainerWindow {
     }
 
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
-        this.innerWindow.addListener(windowEventMap[eventName] || eventName, listener);
+        if (eventName === "beforeunload") {
+            const win = this.window || window;
+            if (win && this.id === this.container.getCurrentWindow().id) {
+                win.addEventListener("beforeunload", listener);
+            } else {
+                throw new Error("Event handler for 'beforeunload' can only be added on current window");
+            }
+        } else {
+            this.innerWindow.addListener(windowEventMap[eventName] || eventName, listener);
+        }
     }
 
     protected detachListener(eventName: string, listener: (...args: any[]) => void): void {
