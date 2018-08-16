@@ -158,7 +158,17 @@ export class OpenFinContainerWindow extends ContainerWindow {
     }
 
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
-        this.innerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
+        if (eventName === "beforeunload") {
+            this.innerWindow.addEventListener("close-requested", (e) => {
+                const args = new EventArgs(this, "beforeunload", e);
+                listener(args);
+                if (typeof args.returnValue === "undefined") {
+                    this.innerWindow.close(true);
+                }
+            });
+        } else {
+            this.innerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
+        }
     }
 
     protected wrapListener(eventName: string, listener: (event: EventArgs) => void): (event: EventArgs) => void {

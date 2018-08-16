@@ -60,7 +60,8 @@ export type WindowEventType =
     "blur" |
     "maximize" |
     "minimize" |
-    "restore"
+    "restore" |
+    "beforeunload"
     ;
 
 export class WindowEventArgs extends EventArgs {
