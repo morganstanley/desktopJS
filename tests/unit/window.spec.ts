@@ -12,6 +12,12 @@ class MockWindow extends ContainerWindow {
     public restore(): Promise<void> { return Promise.resolve(); }
 }
 
+describe ("ContainerWindow", () => {
+    it("nativeWindow returns undefined", () => {
+        expect(new MockWindow(undefined).nativeWindow).toBeUndefined();
+    });
+});
+
 describe ("static events", () => {
     let container: TestContainer;
 

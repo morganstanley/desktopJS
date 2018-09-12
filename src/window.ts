@@ -141,6 +141,13 @@ export abstract class ContainerWindow extends EventEmitter {
 
     public abstract getOptions(): Promise<any>;
 
+    /** Gets the underlying native JavaScript window object. As some containers
+     * do not support native access, check for undefined.
+     */
+    public get nativeWindow(): Window {
+        return undefined;
+    }
+
     /**
      * Override to provide custom container logic for adding an event handler.
      */
