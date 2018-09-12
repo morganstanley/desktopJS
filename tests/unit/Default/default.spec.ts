@@ -190,6 +190,13 @@ describe("DefaultContainerWindow", () => {
             });
         });
     });
+
+    it("nativeWindow returns wrapped window", () => {
+        const innerWindow = {};
+        const nativeWindow = new DefaultContainerWindow(innerWindow).nativeWindow;
+        expect(nativeWindow).toBeDefined();
+        expect(nativeWindow).toEqual(<any>innerWindow);
+    });
 });
 
 describe("DefaultContainer", () => {

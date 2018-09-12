@@ -107,6 +107,10 @@ export class DefaultContainerWindow extends ContainerWindow {
     protected detachListener(eventName: string, listener: (...args: any[]) => void): void {
         this.innerWindow.removeEventListener(windowEventMap[eventName] || eventName, listener);
     }
+
+    public get nativeWindow(): Window {
+        return this.innerWindow;
+    }
 }
 
 /**

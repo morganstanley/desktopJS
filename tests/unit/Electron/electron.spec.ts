@@ -268,6 +268,12 @@ describe("ElectronContainerWindow", () => {
             win.removeListener("move", () => {});
             expect(win.innerWindow.removeListener).toHaveBeenCalledWith("move", jasmine.any(Function));
         });
+
+        it("nativeWindow returns window", () => {
+            var window = {};
+            const win = new ElectronContainerWindow(innerWin, container, <any>window);
+            expect(win.nativeWindow).toEqual(<any>window);
+        });
     });
 
     describe("window grouping", () => {

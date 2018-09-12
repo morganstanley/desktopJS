@@ -193,6 +193,10 @@ export class OpenFinContainerWindow extends ContainerWindow {
     protected detachListener(eventName: string, listener: (...args: any[]) => void): any {
         this.innerWindow.removeEventListener(windowEventMap[eventName] || eventName, listener);
     }
+
+    public get nativeWindow(): Window {
+        return this.innerWindow.getNativeWindow();
+    }
 }
 
 /**

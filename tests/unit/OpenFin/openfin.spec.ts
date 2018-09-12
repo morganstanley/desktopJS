@@ -57,6 +57,7 @@ class MockInterApplicationBus {
 
 class MockWindow {
     static singleton: MockWindow = new MockWindow("Singleton");
+    public nativeWindow: Window = jasmine.createSpyObj("window", ["location"]);
 
     constructor(name?: string) {
         this.name = name;
@@ -68,7 +69,7 @@ class MockWindow {
 
     getParentWindow(): any { return MockWindow.singleton; }
 
-    getNativeWindow(): any { return jasmine.createSpyObj("window", ["location"]); }
+    getNativeWindow(): any { return this.nativeWindow; }
 
     focus(callback: () => void, error: (reason) => void): any {
         callback();
@@ -173,6 +174,14 @@ describe("OpenFinContainerWindow", () => {
     it ("name returns underlying name", () => {
         innerWin.name = "NAME";
         expect(win.name).toEqual("NAME");
+    });
+
+    it ("nativeWindow invokes underlying getNativeWindow", () => {
+        spyOn(innerWin, "getNativeWindow").and.callThrough();
+        const nativeWin = win.nativeWindow;
+        expect(innerWin.getNativeWindow).toHaveBeenCalled();
+        expect(nativeWin).toBeDefined();
+        expect(nativeWin).toEqual(innerWin.nativeWindow);
     });
 
     it("focus", (done) => {

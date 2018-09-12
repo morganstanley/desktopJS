@@ -193,6 +193,11 @@ export class ElectronContainerWindow extends ContainerWindow {
     protected detachListener(eventName: string, listener: (...args: any[]) => void): void {
         this.innerWindow.removeListener(windowEventMap[eventName] || eventName, listener);
     }
+
+    public get nativeWindow(): Window {
+        // For Electron we can only return in and for current renderer
+        return this.window || window;
+    }
 }
 
 /**
