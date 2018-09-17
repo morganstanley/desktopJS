@@ -445,7 +445,7 @@ describe("DefaultMessageBus", () => {
         let message: any = { data: "data" };
         spyOn(mockWindow, "postMessage").and.callThrough();
         bus.publish("topic", message).then(done);
-        expect(mockWindow.postMessage).toHaveBeenCalledWith(JSON.stringify({ source: "desktopJS", topic: "topic", message: message }), "origin");
+        expect(mockWindow.postMessage).toHaveBeenCalledWith({ source: "desktopJS", topic: "topic", message: message }, "origin");
     });
 
     it("publish with non matching optional name does not invoke underling send", (done) => {
