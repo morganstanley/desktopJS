@@ -431,7 +431,7 @@ describe("DefaultMessageBus", () => {
 
     it("listener callback attached", (done) => {
         bus.subscribe("topic", callback).then((subscriber) => {
-            subscriber.listener({ origin: "origin", data: JSON.stringify({ source: "desktopJS", topic: "topic", message: "message" }) });
+            subscriber.listener({ origin: "origin", data: { source: "desktopJS", topic: "topic", message: "message" } });
         }).then(done);
     });
 
