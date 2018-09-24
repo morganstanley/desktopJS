@@ -28,6 +28,13 @@ export class DefaultContainerWindow extends ContainerWindow {
         return this.innerWindow[DefaultContainer.windowNamePropertyKey];
     }
 
+    public load(url: string, options?: any): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.location.replace(url);
+            resolve();
+        });
+    }
+
     public focus(): Promise<void> {
         this.innerWindow.focus();
         return Promise.resolve();

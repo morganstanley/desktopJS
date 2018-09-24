@@ -71,6 +71,11 @@ class MockWindow {
 
     getNativeWindow(): any { return this.nativeWindow; }
 
+    navigate(url: string, callback: () => void, error: (reason) => void): any {
+        callback();
+        return {};
+    }
+
     focus(callback: () => void, error: (reason) => void): any {
         callback();
         return {};
@@ -182,6 +187,13 @@ describe("OpenFinContainerWindow", () => {
         expect(innerWin.getNativeWindow).toHaveBeenCalled();
         expect(nativeWin).toBeDefined();
         expect(nativeWin).toEqual(innerWin.nativeWindow);
+    });
+
+    it("load", (done) => {
+        spyOn(innerWin, "navigate").and.callThrough();
+        win.load("url").then(() => {
+            expect(innerWin.navigate).toHaveBeenCalledWith("url", jasmine.any(Function), jasmine.any(Function));
+        }).then(done);
     });
 
     it("focus", (done) => {

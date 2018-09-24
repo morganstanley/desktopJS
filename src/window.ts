@@ -86,6 +86,9 @@ export abstract class ContainerWindow extends EventEmitter {
         this.innerWindow = wrap;
     }
 
+    /** Navigate window to a new url */
+    public abstract load(url: string, options?: any): Promise<void>;
+
     /** Gives focus to the window. */
     public abstract focus(): Promise<void>;
 
