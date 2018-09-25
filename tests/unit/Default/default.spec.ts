@@ -16,7 +16,10 @@ class MockWindow {
     public screenY: any = 1;
     public outerWidth: any = 2;
     public outerHeight: any = 3;
-    location: any = { origin: "origin" };
+    location: any = {
+        origin: "origin",
+        replace(url: string) {}
+    };
 }
 
 describe("DefaultContainerWindow", () => {
@@ -34,6 +37,13 @@ describe("DefaultContainerWindow", () => {
 
             expect(mockWindow.focus).toHaveBeenCalled();
         });
+    });
+
+    it ("load invokes underlying location.replace", (done) => {
+        spyOn(mockWindow.location, 'replace').and.callThrough();
+        win.load("url").then(() => {
+            expect(mockWindow.location.replace).toHaveBeenCalledWith("url");
+        }).then(done);
     });
 
     it ("id returns underlying id", () => {

@@ -38,6 +38,7 @@ class MockWindow extends MockEventEmitter {
         this.name = name;
     }
 
+    public loadURL(url: string, options?: any): void { }
     public focus(): void { }
     public show(): void { }
     public close(): void { }
@@ -113,6 +114,21 @@ describe("ElectronContainerWindow", () => {
     });
 
     describe("Window members", () => {
+        it("load", (done) => {
+            spyOn(innerWin, "loadURL").and.callThrough();
+            win.load("url").then(() => {
+                expect(innerWin.loadURL).toHaveBeenCalledWith("url");
+            }).then(done);
+        });
+
+        it("load with options", (done) => {
+            spyOn(innerWin, "loadURL").and.callThrough();
+            const options = { prop: "value" };
+            win.load("url", options).then(() => {
+                expect(innerWin.loadURL).toHaveBeenCalledWith("url", options);
+            }).then(done);
+        });
+
         it("focus", (done) => {
             spyOn(innerWin, "focus").and.callThrough();
             win.focus().then(() => {
