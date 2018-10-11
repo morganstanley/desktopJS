@@ -42,6 +42,12 @@ export class OpenFinContainerWindow extends ContainerWindow {
         return this.innerWindow.name;
     }
 
+    public load(url: string, options?: any): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.innerWindow.navigate(url, resolve, reject);
+        });
+    }
+
     public focus(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.innerWindow.focus(resolve, reject);

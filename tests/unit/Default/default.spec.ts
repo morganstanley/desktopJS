@@ -16,7 +16,10 @@ class MockWindow {
     public screenY: any = 1;
     public outerWidth: any = 2;
     public outerHeight: any = 3;
-    location: any = { origin: "origin" };
+    location: any = {
+        origin: "origin",
+        replace(url: string) {}
+    };
 }
 
 describe("DefaultContainerWindow", () => {
@@ -34,6 +37,13 @@ describe("DefaultContainerWindow", () => {
 
             expect(mockWindow.focus).toHaveBeenCalled();
         });
+    });
+
+    it ("load invokes underlying location.replace", (done) => {
+        spyOn(mockWindow.location, 'replace').and.callThrough();
+        win.load("url").then(() => {
+            expect(mockWindow.location.replace).toHaveBeenCalledWith("url");
+        }).then(done);
     });
 
     it ("id returns underlying id", () => {
@@ -430,9 +440,15 @@ describe("DefaultMessageBus", () => {
     });
 
     it("listener callback attached", (done) => {
-        bus.subscribe("topic", callback).then((subscriber) => {
-            subscriber.listener({ origin: "origin", data: JSON.stringify({ source: "desktopJS", topic: "topic", message: "message" }) });
-        }).then(done);
+        const handler = (e, data) => {
+            expect(e.topic).toEqual("topic");
+            expect(data).toEqual("message");
+            done();
+        };
+
+        bus.subscribe("topic", handler).then((subscriber) => {
+            subscriber.listener({ origin: "origin", data: { source: "desktopJS", topic: "topic", message: "message" } });
+        });
     });
 
     it("unsubscribe invokes underlying unsubscribe", (done) => {
@@ -444,8 +460,9 @@ describe("DefaultMessageBus", () => {
     it("publish invokes underling publish", (done) => {
         let message: any = { data: "data" };
         spyOn(mockWindow, "postMessage").and.callThrough();
-        bus.publish("topic", message).then(done);
-        expect(mockWindow.postMessage).toHaveBeenCalledWith(JSON.stringify({ source: "desktopJS", topic: "topic", message: message }), "origin");
+        bus.publish("topic", message).then(() => {
+            expect(mockWindow.postMessage).toHaveBeenCalledWith({ source: "desktopJS", topic: "topic", message: message }, "origin");
+        }).then(done);
     });
 
     it("publish with non matching optional name does not invoke underling send", (done) => {

@@ -28,6 +28,13 @@ export class DefaultContainerWindow extends ContainerWindow {
         return this.innerWindow[DefaultContainer.windowNamePropertyKey];
     }
 
+    public load(url: string, options?: any): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.location.replace(url);
+            resolve();
+        });
+    }
+
     public focus(): Promise<void> {
         this.innerWindow.focus();
         return Promise.resolve();
@@ -133,7 +140,7 @@ export class DefaultMessageBus implements MessageBus {
                 }
 
                 // Make sure topic received matches the one that was subscribed
-                const { source, "topic": receivedTopic, message } = JSON.parse(event.data);
+                const { source, "topic": receivedTopic, message } = event.data;
 
                 if (source === DefaultMessageBus.messageSource && topic === receivedTopic) {
                     listener({ topic: topic }, message);
@@ -173,7 +180,7 @@ export class DefaultMessageBus implements MessageBus {
                     continue;
                 }
 
-                win.postMessage(JSON.stringify({ source: DefaultMessageBus.messageSource, topic: topic, message: message }), this.container.globalWindow.location.origin);
+                win.postMessage({ source: DefaultMessageBus.messageSource, topic: topic, message: message }, this.container.globalWindow.location.origin);
             }
         }
 

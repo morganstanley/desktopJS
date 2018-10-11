@@ -55,6 +55,17 @@ export class ElectronContainerWindow extends ContainerWindow {
         return this.innerWindow.name;
     }
 
+    public load(url: string, options?: any) : Promise<void> {
+        return new Promise<void>(resolve => {
+            if (options) {
+                this.innerWindow.loadURL(url, options);
+            } else {
+                this.innerWindow.loadURL(url);
+            }
+            resolve();
+        });
+    }
+
     public focus(): Promise<void> {
         this.innerWindow.focus();
         return Promise.resolve();
