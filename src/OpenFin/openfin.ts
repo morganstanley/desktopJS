@@ -163,6 +163,22 @@ export class OpenFinContainerWindow extends ContainerWindow {
         });
     }
 
+    public getState(): Promise<any> {
+        return new Promise<any>(resolve => {
+            (this.nativeWindow && (<any>this.nativeWindow).getState) ? resolve((<any>this.nativeWindow).getState()) : resolve(undefined);
+        });
+    }
+
+    public setState(state: any): Promise<void> {
+        return new Promise<void>(resolve => {
+            if (this.nativeWindow && (<any>this.nativeWindow).setState) {
+                (<any>this.nativeWindow).setState(state);
+            }
+
+            resolve();
+        });
+    }
+
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
         if (eventName === "beforeunload") {
             this.innerWindow.addEventListener("close-requested", (e) => {
@@ -612,41 +628,42 @@ export class OpenFinContainer extends WebContainerBase {
     public saveLayout(name: string): Promise<PersistedWindowLayout> {
         const layout = new PersistedWindowLayout();
 
-        return new Promise<PersistedWindowLayout>((resolve, reject) => {
-            this.desktop.Application.getCurrent().getChildWindows(windows => {
-                const promises: Promise<void>[] = [];
-                const mainWindow = this.desktop.Application.getCurrent().getWindow();
+        return new Promise<PersistedWindowLayout>(async (resolve, reject) => {
+            const windows = await this.getAllWindows();
+            const mainWindow = this.getMainWindow();
+            const promises: Promise<void>[] = [];
 
-                windows.concat(mainWindow)
-                    .filter(window => window.name !== "queueCounter" && !window.name.startsWith(OpenFinContainer.notificationGuid))
-                    .forEach(window => {
-                        promises.push(new Promise<void>((innerResolve, innerReject) => {
-                            window.getBounds(bounds => {
-                                window.getOptions(options => {
-                                    delete (<any>options).show; // show is an undocumented option that interferes with the createWindow mapping of show -> autoShow
-                                    window.getGroup(group => {
-                                        layout.windows.push(
-                                            {
-                                                name: window.name,
-                                                id: window.name,
-                                                url: window.getNativeWindow() ? window.getNativeWindow().location.toString() : options.url,
-                                                main: (mainWindow.name === window.name),
-                                                options: options,
-                                                bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
-                                                group: group.map(win => win.name)
-                                            });
-                                        innerResolve();
-                                    }, innerReject);
+            windows.filter(window => window.name !== "queueCounter" && !window.name.startsWith(OpenFinContainer.notificationGuid))
+                .forEach(djsWindow => {
+                    promises.push(new Promise<void>(async (innerResolve, innerReject) => {
+                        const state = await djsWindow.getState();
+                        const window = djsWindow.innerWindow;
+                        window.getBounds(bounds => {
+                            window.getOptions(options => {
+                                delete (<any>options).show; // show is an undocumented option that interferes with the createWindow mapping of show -> autoShow
+                                window.getGroup(group => {
+                                    layout.windows.push(
+                                        {
+                                            name: window.name,
+                                            id: window.name,
+                                            url: window.getNativeWindow() ? window.getNativeWindow().location.toString() : options.url,
+                                            main: (mainWindow && (mainWindow.name === window.name)),
+                                            options: options,
+                                            state: state,
+                                            bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
+                                            group: group.map(win => win.name)
+                                        });
+                                    innerResolve();
                                 }, innerReject);
                             }, innerReject);
-                        }));
-                    });
+                        }, innerReject);
+                    }));
+                });
 
-                Promise.all(promises).then(() => {
-                    this.saveLayoutToStorage(name, layout);
-                    resolve(layout);
-                }).catch(reason => reject(reason));
-            });
+            Promise.all(promises).then(() => {
+                this.saveLayoutToStorage(name, layout);
+                resolve(layout);
+            }).catch(reason => reject(reason));
         });
     }
 }

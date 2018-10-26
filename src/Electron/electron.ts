@@ -188,6 +188,22 @@ export class ElectronContainerWindow extends ContainerWindow {
         });
     }
 
+    public getState(): Promise<any> {
+        if (this.innerWindow && this.innerWindow.webContents) {
+            return this.innerWindow.webContents.executeJavaScript("getState ? getState() : undefined");
+        } else {
+            return Promise.resolve(undefined);
+        }
+    }
+
+    public setState(state: any): Promise<void> {
+        if (this.innerWindow && this.innerWindow.webContents) {
+            return this.innerWindow.webContents.executeJavaScript(`if (setState) setState(JSON.parse(\`${JSON.stringify(state)}\`))`);
+        } else {
+            return Promise.resolve();
+        }
+    }
+
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
         if (eventName === "beforeunload") {
             const win = this.window || window;
@@ -482,13 +498,14 @@ export class ElectronContainer extends WebContainerBase {
             this.getAllWindows().then(windows => {
                 windows.forEach(window => {
                     promises.push(new Promise<void>((innerResolve, innerReject) => {
-                        window.getGroup().then(group => {
+                        window.getGroup().then(async group => {
                             layout.windows.push(
                                 {
                                     id: window.id,
                                     name: window.name,
                                     url: window.innerWindow.webContents.getURL(),
                                     main: (mainWindow === window.innerWindow),
+                                    state: await window.getState(),
                                     options: window.innerWindow[Container.windowOptionsPropertyKey],
                                     bounds: window.innerWindow.getBounds(),
                                     group: group.map(win => win.id)

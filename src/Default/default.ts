@@ -107,6 +107,22 @@ export class DefaultContainerWindow extends ContainerWindow {
         });
     }
 
+    public getState(): Promise<any> {
+        return new Promise<any>(resolve => {
+            (this.nativeWindow && (<any>this.nativeWindow).getState) ? resolve((<any>this.nativeWindow).getState()) : resolve(undefined);
+        });
+    }
+
+    public setState(state: any): Promise<void> {
+        return new Promise<void>(resolve => {
+            if (this.nativeWindow && (<any>this.nativeWindow).setState) {
+                (<any>this.nativeWindow).setState(state);
+            }
+
+            resolve();
+        });
+    }
+
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
         this.innerWindow.addEventListener(windowEventMap[eventName] || eventName, listener);
     }
@@ -329,7 +345,7 @@ export class DefaultContainer extends WebContainerBase {
             const windows: ContainerWindow[] = [];
             const trackedWindows = this.globalWindow[DefaultContainer.windowsPropertyKey];
             for (const key in trackedWindows) {
-                windows.push(trackedWindows[key]);
+                windows.push(this.wrapWindow(trackedWindows[key]));
             }
             resolve(windows);
         });
@@ -360,16 +376,33 @@ export class DefaultContainer extends WebContainerBase {
         const layout = new PersistedWindowLayout();
 
         return new Promise<PersistedWindowLayout>((resolve, reject) => {
-            const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
-            for (const key in windows) {
-                const win = windows[key];
-                if (this.globalWindow !== win) {
-                    layout.windows.push({ name: win.name, url: win.location.toString(), bounds: { x: win.screenX, y: win.screenY, width: win.outerWidth, height: win.outerHeight }, options: win[Container.windowOptionsPropertyKey] });
-                }
-            }
+            const promises: Promise<void>[] = [];
 
-            this.saveLayoutToStorage(name, layout);
-            resolve(layout);
+            this.getAllWindows().then(windows => {
+                windows.forEach(window => {
+                    promises.push(new Promise<void>(async (innerResolve) => {
+                        const nativeWin = window.nativeWindow;
+                        if (this.globalWindow !== nativeWin) {
+                            layout.windows.push(
+                                {
+                                    name: window.name,
+                                    url: nativeWin.location.toString(),
+                                    id: window.id,
+                                    bounds: { x: nativeWin.screenX, y: nativeWin.screenY, width: nativeWin.outerWidth, height: nativeWin.outerHeight },
+                                    options: nativeWin[Container.windowOptionsPropertyKey],
+                                    state: await window.getState()
+                                }
+                            );
+                        }
+                        innerResolve();
+                    }));
+                });
+
+                Promise.all(promises).then(() => {
+                    this.saveLayoutToStorage(name, layout);
+                    resolve(layout);
+                }).catch(reason => reject(reason));
+            });
         });
     }
 }

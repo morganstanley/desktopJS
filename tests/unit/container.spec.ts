@@ -28,8 +28,10 @@ export class MockMessageBus implements MessageBus { // tslint:disable-line
 
 export class TestContainer extends ContainerBase {
     getMainWindow(): ContainerWindow {
-        const win = jasmine.createSpyObj("ContainerWindow", ["setBounds"]);
+        const win = jasmine.createSpyObj("ContainerWindow", ["setBounds", "getState", "setState"]);
         Object.defineProperty(win, "name", { value: "1" });
+        win.getState.and.returnValue(Promise.resolve({}));
+        win.setState.and.returnValue(Promise.resolve());
         return win;
     }
 
@@ -40,9 +42,11 @@ export class TestContainer extends ContainerBase {
     }
 
     createWindow(url: string, options?: any): Promise<ContainerWindow> {
-        const win = jasmine.createSpyObj("ContainerWindow", ["id"]);
+        const win = jasmine.createSpyObj("ContainerWindow", ["id", "getState", "setState"]);
         Object.defineProperty(win, "name", { value: options.name || "1" });
         Object.defineProperty(win, "id", { value: options.name || "1" });
+        win.getState.and.returnValue(Promise.resolve({}));
+        win.setState.and.returnValue(Promise.resolve());
         return Promise.resolve(win);
     }
 
@@ -54,7 +58,7 @@ export class TestContainer extends ContainerBase {
         this.storage = <any> {
             getItem(key: string): string {
                 const layout: PersistedWindowLayout = new PersistedWindowLayout();
-                layout.windows.push({ name: "1", id: "1", url: "url", bounds: {}, group: ["1", "2", "3"]});
+                layout.windows.push({ name: "1", id: "1", url: "url", bounds: {}, state: { "value": "foo" }, group: ["1", "2", "3"]});
                 layout.windows.push({ name: "2", id: "2", main: true, url: "url", bounds: {}, group: ["1", "2", "3"]});
                 layout.windows.push({ name: "3", id: "3", url: "url", bounds: {}, group: ["1", "2", "3"]});
                 layout.name = "Test";

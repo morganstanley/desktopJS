@@ -144,6 +144,16 @@ export abstract class ContainerWindow extends EventEmitter {
 
     public abstract getOptions(): Promise<any>;
 
+    /** Retrieves custom window state from underlying native window by invoking 'window.getState()' if defined. */
+    public getState(): Promise<any> {
+        return Promise.resolve(undefined);
+    }
+
+    /** Provide custom window state to underlying native window by invoking 'window.setState()' if defined */
+    public setState(state: any): Promise<void> {
+        return Promise.resolve();
+    }
+
     /** Gets the underlying native JavaScript window object. As some containers
      * do not support native access, check for undefined.
      */
@@ -265,6 +275,7 @@ export class PersistedWindow {
     public id: string;
     public bounds: any;
     public options?: any;
+    public state?: any;
     public url?: string;
     public main?: boolean;
     public group?: string[];
