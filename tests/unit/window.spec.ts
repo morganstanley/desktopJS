@@ -16,6 +16,18 @@ describe ("ContainerWindow", () => {
     it("nativeWindow returns undefined", () => {
         expect(new MockWindow(undefined).nativeWindow).toBeUndefined();
     });
+
+    it("getState returns undefined", (done) => {
+        new MockWindow(undefined).getState().then(state => {
+            expect(state).toBeUndefined();
+        }).then(done);
+    });
+
+    it("setState returns", (done) => {
+        new MockWindow(undefined).setState({}).then(() => {
+            expect(true);
+        }).then(done);
+    });
 });
 
 describe ("static events", () => {
