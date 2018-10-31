@@ -190,7 +190,7 @@ export class ElectronContainerWindow extends ContainerWindow {
 
     public getState(): Promise<any> {
         if (this.innerWindow && this.innerWindow.webContents) {
-            return this.innerWindow.webContents.executeJavaScript("getState ? getState() : undefined");
+            return this.innerWindow.webContents.executeJavaScript("window.getState ? window.getState() : undefined");
         } else {
             return Promise.resolve(undefined);
         }
@@ -198,7 +198,7 @@ export class ElectronContainerWindow extends ContainerWindow {
 
     public setState(state: any): Promise<void> {
         if (this.innerWindow && this.innerWindow.webContents) {
-            return this.innerWindow.webContents.executeJavaScript(`if (setState) setState(JSON.parse(\`${JSON.stringify(state)}\`))`);
+            return this.innerWindow.webContents.executeJavaScript(`if (window.setState) { window.setState(JSON.parse(\`${JSON.stringify(state)}\`)); }`);
         } else {
             return Promise.resolve();
         }
