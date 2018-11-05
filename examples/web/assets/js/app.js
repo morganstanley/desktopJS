@@ -203,3 +203,13 @@ loadlayoutButton.onclick = function () {
 savelayoutButton.onclick = function () {
 	container.saveLayout("Layout");
 };
+
+/** Invoked by window layout saving to maintain state specific to this window */
+function getState() {
+	return { value: "Foo" };
+}
+
+/** Invoked by window layout loading to restore state specific to this window */
+function setState(state) {
+	this.container.log("info", state);
+}

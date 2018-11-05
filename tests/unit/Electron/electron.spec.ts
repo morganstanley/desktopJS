@@ -31,7 +31,6 @@ class MockWindow extends MockEventEmitter {
     public id: number;
     public group: string;
     private bounds: any = { x: 0, y: 1, width: 2, height: 3 }
-    public innerWindow: any = {};
 
     constructor(name?: string) {
         super();
@@ -55,7 +54,8 @@ class MockWindow extends MockEventEmitter {
 
     public webContents: any = {
         send(channel: string, ...args: any[]) { },
-        getURL() { return "url"; }
+        getURL() { return "url"; },
+        executeJavaScript() {}
     }
 
     public getBounds(): any { return this.bounds; }
@@ -190,6 +190,47 @@ describe("ElectronContainerWindow", () => {
                 expect(success).toEqual(true);
                 expect(innerWin.isVisible).toHaveBeenCalled();
             }).then(done);
+        });
+
+        describe("getState", () => {
+            it("getState undefined", (done) => {
+                let mockWindow = new MockWindow();
+                mockWindow.webContents = null;
+                let win = new ElectronContainerWindow(mockWindow, container);
+
+                win.getState().then(state => {
+                    expect(state).toBeUndefined();
+                }).then(done);
+            });
+
+            it("getState defined", (done) => {
+                const mockState = { value: "Foo" };
+                spyOn(innerWin.webContents, "executeJavaScript").and.returnValue(Promise.resolve(mockState));
+                
+                win.getState().then(state => {
+                    expect(innerWin.webContents.executeJavaScript).toHaveBeenCalled();
+                    expect(state).toEqual(mockState);
+                }).then(done);
+            });
+        });        
+    
+        describe("setState", () => {
+            it("setState undefined", (done) => {
+                let mockWindow = new MockWindow();
+                mockWindow.webContents = null;
+                let win = new ElectronContainerWindow(mockWindow, container);
+
+                win.setState({}).then(done);
+            });
+
+            it("setState defined", (done) => {
+                const mockState = { value: "Foo" };
+                spyOn(innerWin.webContents, "executeJavaScript").and.returnValue(Promise.resolve());
+
+                win.setState(mockState).then(() => {
+                    expect(innerWin.webContents.executeJavaScript).toHaveBeenCalled();
+                }).then(done);  
+            });
         });
 
         it("getSnapshot", (done) => {

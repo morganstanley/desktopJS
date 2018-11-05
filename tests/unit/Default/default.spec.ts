@@ -3,6 +3,7 @@ import { DefaultContainerWindow, DefaultContainer, DefaultMessageBus } from "../
 class MockWindow {
     public listener: any;
 
+    public name: string = "Name";
     public focus(): void { };
     public show(): void { };
     public close(): Promise<void> { return Promise.resolve(); };
@@ -12,6 +13,8 @@ class MockWindow {
     public postMessage(message: string, origin: string): void { };
     public moveTo(x: number, y: number): void { };
     public resizeTo(width: number, height: number): void { }
+    public getState(): Promise<any> { return Promise.resolve(undefined); }
+    public setState(): Promise<void> { return Promise.resolve(); }
     public screenX: any = 0;
     public screenY: any = 1;
     public outerWidth: any = 2;
@@ -66,6 +69,46 @@ describe("DefaultContainerWindow", () => {
 
     it("isShowing throws no errors", () => {
         expect(win.isShowing()).toBeDefined();
+    });
+
+    describe("getState", () => {
+        it("getState undefined", (done) => {
+            let mockWindow = new MockWindow();
+            delete mockWindow.getState;            
+            let win = new DefaultContainerWindow(mockWindow);
+
+            win.getState().then(state => {
+                expect(state).toBeUndefined();
+            }).then(done);
+        });
+
+        it("getState defined", (done) => {
+            const mockState = { value: "Foo" };
+            spyOn(win.innerWindow, "getState").and.returnValue(Promise.resolve(mockState));
+            win.getState().then(state => {
+                expect(win.innerWindow.getState).toHaveBeenCalled();
+                expect(state).toEqual(mockState);
+            }).then(done);
+        });
+    });        
+
+    describe("setState", () => {
+        it("setState undefined", (done) => {
+            let mockWindow = new MockWindow();
+            delete mockWindow.setState;            
+            let win = new DefaultContainerWindow(mockWindow);
+            
+            win.setState({}).then(done);
+        });
+
+        it("setState defined", (done) => {
+            const mockState = { value: "Foo" };
+            spyOn(win.innerWindow, "setState").and.returnValue(Promise.resolve());
+            
+            win.setState(mockState).then(() => {
+                expect(win.innerWindow.setState).toHaveBeenCalledWith(mockState);
+            }).then(done);      
+        });
     });
 
     it("getSnapshot rejects", (done) => {
@@ -333,6 +376,7 @@ describe("DefaultContainer", () => {
             container.getAllWindows().then(wins => {
                 expect(wins).not.toBeNull();
                 expect(wins.length).toEqual(2);
+                wins.forEach(win => expect(win instanceof DefaultContainerWindow).toBeTruthy("Window is not of type DefaultContainerWindow"));
                 done();
             });
         });

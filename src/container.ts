@@ -193,8 +193,12 @@ export abstract class ContainerBase extends Container {
 
                         // de-dupe window grouping
                         windows.forEach(window => {
-                            let found = false;
+                            const matchingWindow = layout.windows.find(win => win.name === window.name);
+                            if (matchingWindow && matchingWindow.state && window.setState) {
+                                window.setState(matchingWindow.state).catch(e => this.log("error", "Error invoking setState: " + e));
+                            }
 
+                            let found = false;
                             groupMap.forEach((targets, win) => {
                                 if (!found && targets.indexOf(window.id) >= 0) {
                                     found = true;
@@ -202,7 +206,6 @@ export abstract class ContainerBase extends Container {
                             });
 
                             if (!found) {
-                                const matchingWindow = layout.windows.find(win => win.name === window.name);
                                 const group = matchingWindow ? matchingWindow.group : undefined;
                                 if (group && group.length > 0) {
                                     groupMap.set(window, group.filter(id => id !== window.id));

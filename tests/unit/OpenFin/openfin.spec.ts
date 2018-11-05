@@ -57,7 +57,7 @@ class MockInterApplicationBus {
 
 class MockWindow {
     static singleton: MockWindow = new MockWindow("Singleton");
-    public nativeWindow: Window = jasmine.createSpyObj("window", ["location"]);
+    public nativeWindow: Window = jasmine.createSpyObj("window", ["location", "getState", "setState"]);
 
     constructor(name?: string) {
         this.name = name;
@@ -258,6 +258,48 @@ describe("OpenFinContainerWindow", () => {
             expect(innerWin.isShowing).toHaveBeenCalled();
         }).then(done);
     });
+
+
+    describe("getState", () => {
+        it("getState undefined", (done) => {
+            let mockWindow = new MockWindow();
+            delete (<any>mockWindow.nativeWindow).getState;
+            let win = new OpenFinContainerWindow(innerWin);
+
+            win.getState().then(state => {
+                expect(state).toBeUndefined();
+            }).then(done);
+        });
+
+        it("getState defined", (done) => {
+            const mockState = { value: "Foo" };
+            innerWin.nativeWindow.getState.and.returnValue(mockState);
+    
+            win.getState().then(state => {
+                expect(innerWin.nativeWindow.getState).toHaveBeenCalled();
+                expect(state).toEqual(mockState);
+            }).then(done);
+        });
+        });        
+
+    describe("setState", () => {
+        it("setState undefined", (done) => {
+            let mockWindow = new MockWindow();
+            delete (<any>mockWindow.nativeWindow).setState;
+            let win = new OpenFinContainerWindow(innerWin);
+
+            win.setState({}).then(done);
+        });
+
+        it("setState defined", (done) => {
+            const mockState = { value: "Foo" };
+            innerWin.nativeWindow.setState.and.returnValue(Promise.resolve());
+    
+            win.setState(mockState).then(() => {
+                expect(innerWin.nativeWindow.setState).toHaveBeenCalledWith(mockState);
+            }).then(done);
+        });
+        });
 
     describe("getSnapshot", () => {
         it("getSnapshot invokes underlying getSnapshot", (done) => {
