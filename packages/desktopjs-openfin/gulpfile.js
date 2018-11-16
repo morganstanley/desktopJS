@@ -3,7 +3,7 @@
 var gulp = require('gulp'),
     pkg = require('./package.json'),
     runSequence = require('run-sequence'),
-    gulpConfig = require('../../.gulp/gulpconfig');
+    gulpConfig = require('../../.gulp/gulpConfig');
 
 gulpConfig.test.coverage.threshold = 75;
 
