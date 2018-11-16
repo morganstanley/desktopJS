@@ -1,0 +1,41 @@
+{
+  "name": "@morgan-stanley/desktopjs-electron",
+  "title": "desktopJS-electron",
+  "description": "desktopJS container implementation for Electron",
+  "version": "3.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/desktopjs-electron.js",
+  "types": "dist/desktopjs-electron.d.ts",
+  "license": "Apache-2.0",
+  "author": "Morgan Stanley",
+  "repository": "https://github.com/Morgan-Stanley/desktopJS/tree/master/packages/desktopjs-electron",
+  "bugs": {
+    "url": "https://github.com/Morgan-Stanley/desktopJS/issues"
+  },
+  "keywords": [
+    "container",
+    "desktop wrapper",
+    "desktop",
+    "electron"
+  ],  
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "gulp clean",
+    "tslint": "gulp tslint",
+    "build:lerna": "gulp build:lerna",
+    "build": "gulp build",
+    "test": "gulp test",
+    "watch": "gulp watch"
+  },
+  "devDependencies": {
+    "@morgan-stanley/desktopjs": "^3.0.0",
+    "@types/jasmine": "^2.8.11",
+    "@types/node": "^10.12.6",
+    "gulp": "^3.9.1",
+    "run-sequence": "^2.2.1"
+  }
+}
