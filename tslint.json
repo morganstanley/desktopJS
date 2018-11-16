@@ -8,7 +8,7 @@
          */
         "insecure-random": true,
         "no-banned-terms": true,
-        "no-cookies": true,
+        "no-cookies": false,
         "no-delete-expression": true,
         "no-disable-auto-sanitization": true,
         "no-document-domain": true,
@@ -36,7 +36,7 @@
         /**
          * Common Bugs and Correctness.
          */
-        "await-promise": true,
+        "await-promise": false,
         "forin": false,
         "jquery-deferred-must-complete": true,
         "label-position": true,
@@ -59,10 +59,10 @@
         "no-constant-condition": true,
         "no-control-regex": true,
         "no-debugger": true,
-        "no-duplicate-case": true,
+        "no-duplicate-case": false,
         "no-duplicate-variable": true,
         "no-empty": true,
-        "no-floating-promises": true,
+        "no-floating-promises": false,
         "no-for-in-array": false,
         "no-increment-decrement": false,
         "no-invalid-regexp": true,
@@ -77,19 +77,19 @@
         "no-unnecessary-bind": true,
         "no-unnecessary-initializer": true,
         "no-unnecessary-override": true,
-        "no-unsafe-any": true,
+        "no-unsafe-any": false,
         "no-unsafe-finally": true,
         "no-unused-expression": true,
         "no-unused-new": false,
-        "no-use-before-declare": true,
+        "no-use-before-declare": false,
         "no-with-statement": true,
-        "promise-function-async": true,
+        "promise-function-async": false,
         "promise-must-complete": true,
         "radix": true,
         "react-this-binding-issue": true,
         "react-unused-props-and-state": true,
-        "restrict-plus-operands": true, // the plus operand should really only be used for strings and numbers
-        "strict-boolean-expressions": true,
+        "restrict-plus-operands": false, // the plus operand should really only be used for strings and numbers
+        "strict-boolean-expressions": false,
         "switch-default": true,
         "triple-equals": [
             true,
@@ -97,7 +97,7 @@
         ],
         "use-isnan": true,
         "use-named-parameter": true,
-        "valid-typeof": true,
+        "valid-typeof": false,
         
         /**
          * Code Clarity.
@@ -116,7 +116,7 @@
             true
         ],
         "completed-docs": [
-            true,
+            false,
             "classes"
         ],
         "export-name": true,
@@ -172,12 +172,12 @@
         "no-typeof-undefined": false,
         "no-unnecessary-field-initialization": true,
         "no-unnecessary-local-variable": true,
-        "no-unnecessary-qualifier": true,
+        "no-unnecessary-qualifier": false,
         "no-unsupported-browser-code": true,
         "no-var-keyword": true,
         "no-var-requires": true,
-        "no-var-self": true,
-        "no-void-expression": true,
+        "no-var-self": false,
+        "no-void-expression": false,
         "object-literal-sort-keys": false, // turn object-literal-sort-keys off and sort keys in a meaningful manner
         "one-variable-per-declaration": [
             false
