@@ -536,18 +536,18 @@ describe("ElectronContainer", () => {
         expect((<any>container).browserWindow).toHaveBeenCalledWith({ x: "x", skipTaskbar: true });
     });
 
-    xit("createWindow fires window-created", (done) => {
+    it("createWindow fires window-created", (done) => {
         container.addListener("window-created", () => done());
         container.createWindow("url");
     });
 
-    xit("app browser-window-created fires Container window-created", (done) => {
+    it("app browser-window-created fires Container window-created", (done) => {
         new ElectronContainer(electron, new MockMainIpc(), globalWindow, { isRemote: false });
         ContainerWindow.addListener("window-created", () => done());
         electron.app.emit("browser-window-created", {}, { webContents: {id: "id"}});
     });
 
-    xit("createWindow on main process invokes ElectronWindowManager.initializeWindow", (done) => {
+    it("createWindow on main process invokes ElectronWindowManager.initializeWindow", (done) => {
         (<any>container).isRemote = false;
         // @ts-ignore
         container.windowManager = new ElectronWindowManager({}, new MockMainIpc(), { fromId(): any {}, getAllWindows(): any {} })

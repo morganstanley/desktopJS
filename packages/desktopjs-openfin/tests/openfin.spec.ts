@@ -578,7 +578,7 @@ describe("OpenFinContainer", () => {
             spyOn(desktop, "Window").and.callFake((options?: any, callback?: Function) => { if (callback) { callback(); } });
         });
 
-        xit("defaults", (done) => {
+        it("defaults", (done) => {
             container.createWindow("url").then(win => {
                 expect(win).toBeDefined();
                 expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: jasmine.stringMatching(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/), customData: undefined }, jasmine.any(Function), jasmine.any(Function));
@@ -586,7 +586,7 @@ describe("OpenFinContainer", () => {
             });
         });
 
-        xit("createWindow defaults", (done) => {
+        it("createWindow defaults", (done) => {
             spyOn<any>(container, "ensureAbsoluteUrl").and.returnValue("absoluteIcon");
             const options = {
                 x: "x",
