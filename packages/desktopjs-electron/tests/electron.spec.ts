@@ -260,8 +260,7 @@ describe("ElectronContainerWindow", () => {
         it("setBounds sets underlying window position", (done) => {
             spyOn(win.innerWindow, "setBounds").and.callThrough()
             const bounds = { x: 0, y: 1, width: 2, height: 3 };
-            // @ts-ignore
-            win.setBounds(bounds).then(() => {
+            win.setBounds(<any>bounds).then(() => {
                 expect(win.innerWindow.setBounds).toHaveBeenCalledWith(bounds);
             }).then(done);
         });
@@ -283,14 +282,12 @@ describe("ElectronContainerWindow", () => {
         });
 
         it ("getOptions sends synchronous ipc message", (done) => {
-            // @ts-ignore
             spyOn(container.internalIpc, "sendSync").and.returnValue({ foo: "bar"});
             spyOnProperty(win, "id", "get").and.returnValue(5);
             spyOn(container, "wrapWindow").and.returnValue(new MockWindow());
             spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
 
             win.getOptions().then(options => {
-                // @ts-ignore
                 expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getOptions", { source: 5});
                 expect(options).toEqual({ foo: "bar" });
             }).then(done);
@@ -342,14 +339,12 @@ describe("ElectronContainerWindow", () => {
         });
 
         it ("getGroup sends synchronous ipc message", (done) => {
-            // @ts-ignore
             spyOn(container.internalIpc, "sendSync").and.returnValue([ 1, 5, 2 ]);
             spyOnProperty(win, "id", "get").and.returnValue(5);
             spyOn(container, "wrapWindow").and.returnValue(new MockWindow());
             spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
 
             win.getGroup().then(windows => {
-                // @ts-ignore
                 expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getGroup", { source: 5});
                 expect(container.wrapWindow).toHaveBeenCalledTimes(2);
                 expect(windows.length).toEqual(3);
@@ -359,37 +354,30 @@ describe("ElectronContainerWindow", () => {
         it ("getGroup invokes method directly in main process", () => {
             container = new ElectronContainer({ BrowserWindow: { fromId(): any {  } } }, new MockMainIpc(), {});
             win = new ElectronContainerWindow(innerWin, container);
-            // @ts-ignore
-            container.windowManager = jasmine.createSpyObj("WindowManager", ["getGroup"]);
-            // @ts-ignore
-            container.windowManager.getGroup.and.returnValue([]);
+            (<any>container).windowManager = jasmine.createSpyObj("WindowManager", ["getGroup"]);
+            (<any>container).windowManager.getGroup.and.returnValue([]);
             win.getGroup();
-            // @ts-ignore
-            expect(container.windowManager.getGroup).toHaveBeenCalled();
+            expect((<any>container).windowManager.getGroup).toHaveBeenCalled();
         });
 
         it ("joinGroup sends ipc message", (done) => {
-            // @ts-ignore
             spyOn(container.internalIpc, "send").and.callThrough();
             spyOnProperty(win, "id", "get").and.returnValue(1);
             const targetWin = new ElectronContainerWindow(innerWin, container);
             spyOnProperty(targetWin, "id", "get").and.returnValue(2);
 
             win.joinGroup(targetWin).then(() => {
-                // @ts-ignore
                 expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-joinGroup", { source: 1, target: 2 });
             }).then(done);
         });
 
         it ("joinGroup with source == target does not send ipc message", (done) => {
-            // @ts-ignore
             spyOn(container.internalIpc, "send").and.callThrough();
             spyOnProperty(win, "id", "get").and.returnValue(1);
             const targetWin = new ElectronContainerWindow(innerWin, container);
             spyOnProperty(targetWin, "id", "get").and.returnValue(1);
 
             win.joinGroup(targetWin).then(() => {
-                // @ts-ignore
                 expect(container.internalIpc.send).toHaveBeenCalledTimes(0);
             }).then(done);
         });
@@ -397,21 +385,17 @@ describe("ElectronContainerWindow", () => {
         it ("joinGroup invokes method directly in main process", () => {
             container = new ElectronContainer({ BrowserWindow: { fromId(): any {  } } }, new MockMainIpc(), {});
             win = new ElectronContainerWindow(innerWin, container);
-            // @ts-ignore
-            container.windowManager = jasmine.createSpyObj("WindowManager", ["groupWindows"]);
+            (<any>container).windowManager = jasmine.createSpyObj("WindowManager", ["groupWindows"]);
             const targetWin = new ElectronContainerWindow(innerWin, container);
             spyOnProperty(targetWin, "id", "get").and.returnValue(2);
             win.joinGroup(targetWin);
-            // @ts-ignore
-            expect(container.windowManager.groupWindows).toHaveBeenCalled();
+            expect((<any>container).windowManager.groupWindows).toHaveBeenCalled();
         });
 
         it ("leaveGroup sends ipc message", (done) => {
-            // @ts-ignore
             spyOn(container.internalIpc, "send").and.callThrough();
             spyOnProperty(win, "id", "get").and.returnValue(5);
             win.leaveGroup().then(() => {
-                // @ts-ignore
                 expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-leaveGroup", { source: 5});
             }).then(done);
         });
@@ -419,11 +403,9 @@ describe("ElectronContainerWindow", () => {
         it ("leaveGroup invokes method directly in main process", () => {
             container = new ElectronContainer({ BrowserWindow: { fromId(): any {  } } }, new MockMainIpc(), {});
             win = new ElectronContainerWindow(innerWin, container);
-            // @ts-ignore
-            container.windowManager = jasmine.createSpyObj("WindowManager", ["ungroupWindows"]);
+            (<any>container).windowManager = jasmine.createSpyObj("WindowManager", ["ungroupWindows"]);
             win.leaveGroup();
-            // @ts-ignore
-            expect(container.windowManager.ungroupWindows).toHaveBeenCalled();
+            expect((<any>container).windowManager.ungroupWindows).toHaveBeenCalled();
         });
     });
 });
@@ -549,14 +531,11 @@ describe("ElectronContainer", () => {
 
     it("createWindow on main process invokes ElectronWindowManager.initializeWindow", (done) => {
         (<any>container).isRemote = false;
-        // @ts-ignore
-        container.windowManager = new ElectronWindowManager({}, new MockMainIpc(), { fromId(): any {}, getAllWindows(): any {} })
-        // @ts-ignore
-        spyOn(container.windowManager, "initializeWindow").and.callThrough();
+        (<any>container).windowManager = new ElectronWindowManager({}, new MockMainIpc(), { fromId(): any {}, getAllWindows(): any {} })
+        spyOn((<any>container).windowManager, "initializeWindow").and.callThrough();
         const options = { name: "name" };
         container.createWindow("url", options).then(done);
-        // @ts-ignore
-        expect(container.windowManager.initializeWindow).toHaveBeenCalledWith(jasmine.any(Object), "name", options);
+        expect((<any>container).windowManager.initializeWindow).toHaveBeenCalledWith(jasmine.any(Object), "name", options);
     });
 
     it("addTrayIcon", () => {
@@ -749,7 +728,6 @@ describe("ElectronWindowManager", () => {
     it ("subscribed to ipc", () => {
         const ipc = new MockMainIpc();
         spyOn(ipc, "on").and.callThrough();
-        // @ts-ignore
         new ElectronWindowManager({}, ipc, { });
         expect(ipc.on).toHaveBeenCalledTimes(5);
         expect(ipc.on).toHaveBeenCalledWith("desktopJS.window-initialize", jasmine.any(Function));
@@ -769,23 +747,19 @@ describe("ElectronWindowManager", () => {
     it ("initializeWindow attaches to close on main window and invokes quit", (done) => {
         const win: MockWindow = new MockWindow();
         spyOn(win, "on").and.callThrough();
-        // @ts-ignore
-        spyOn(mgr.app, "quit").and.callFake(done);
+        spyOn((<any>mgr).app, "quit").and.callFake(done);
         mgr.initializeWindow(win, "name", { main: true });
         expect(win.on).toHaveBeenCalledWith("closed", jasmine.any(Function));
         win.emit("closed");
-        // @ts-ignore
-        expect(mgr.app.quit).toHaveBeenCalled();
+        expect((<any>mgr).app.quit).toHaveBeenCalled();
     });
 
     describe("main ipc handlers", () => {
         it ("setname sets and returns supplied name", ()=> {
             const win: MockWindow = new MockWindow();
-            // @ts-ignore
-            spyOn(mgr.browserWindow, "fromId").and.returnValue(win);
+            spyOn((<any>mgr).browserWindow, "fromId").and.returnValue(win);
             const event: any = {};
-            // @ts-ignore
-            mgr.ipc.emit("desktopJS.window-initialize", event, { id: 1, name: "NewName" });
+            (<any>mgr).ipc.emit("desktopJS.window-initialize", event, { id: 1, name: "NewName" });
             expect(win.name).toEqual("NewName");
             expect(event.returnValue).toEqual("NewName");
         });
@@ -797,10 +771,8 @@ describe("ElectronWindowManager", () => {
             target.id = 2;
 
             spyOn(mgr, "groupWindows").and.stub();
-            // @ts-ignore
-            spyOn(mgr.browserWindow, "fromId").and.callFake(id => (id === source.id) ? source : target);
-            // @ts-ignore
-            mgr.ipc.emit("desktopJS.window-joinGroup", {}, { source: 1, target: 2 });
+            spyOn((<any>mgr).browserWindow, "fromId").and.callFake(id => (id === source.id) ? source : target);
+            (<any>mgr).ipc.emit("desktopJS.window-joinGroup", {}, { source: 1, target: 2 });
 
             expect(mgr.groupWindows).toHaveBeenCalledWith(target, source);
         });
@@ -809,10 +781,8 @@ describe("ElectronWindowManager", () => {
             const win: MockWindow = new MockWindow();
 
             spyOn(mgr, "ungroupWindows").and.stub();
-            // @ts-ignore
-            spyOn(mgr.browserWindow, "fromId").and.callFake(id => win);
-            // @ts-ignore
-            mgr.ipc.emit("desktopJS.window-leaveGroup", {}, { source: 1 });
+            spyOn((<any>mgr).browserWindow, "fromId").and.callFake(id => win);
+            (<any>mgr).ipc.emit("desktopJS.window-leaveGroup", {}, { source: 1 });
 
             expect(mgr.ungroupWindows).toHaveBeenCalledWith(win);
         });
@@ -827,13 +797,10 @@ describe("ElectronWindowManager", () => {
 
             win1.group = win2.group = "group";
 
-            // @ts-ignore
-            spyOn(mgr.browserWindow, "fromId").and.returnValue(win1);
-            // @ts-ignore
-            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([ win1, win2, win3 ]);
+            spyOn((<any>mgr).browserWindow, "fromId").and.returnValue(win1);
+            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([ win1, win2, win3 ]);
             const event: any = {};
-            // @ts-ignore
-            mgr.ipc.emit("desktopJS.window-getGroup", event, { id: 1 });
+            (<any>mgr).ipc.emit("desktopJS.window-getGroup", event, { id: 1 });
             expect(event.returnValue).toEqual([ 1, 2 ]);
         });
 
@@ -843,13 +810,10 @@ describe("ElectronWindowManager", () => {
             const win2: MockWindow = new MockWindow();
             win2.id = 2;
 
-            // @ts-ignore
-            spyOn(mgr.browserWindow, "fromId").and.returnValue(win1);
-            // @ts-ignore
-            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([ win1, win2 ]);
+            spyOn((<any>mgr).browserWindow, "fromId").and.returnValue(win1);
+            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([ win1, win2 ]);
             const event: any = {};
-            // @ts-ignore
-            mgr.ipc.emit("desktopJS.window-getGroup", event, { id: 1 });
+            (<any>mgr).ipc.emit("desktopJS.window-getGroup", event, { id: 1 });
             expect(event.returnValue).toEqual([]);
         });
     });
@@ -904,18 +868,15 @@ describe("ElectronWindowManager", () => {
 
         it ("resize is ignored", () => {
             mgr.groupWindows(target, win1, win2);
-            // @ts-ignore
-            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([]);
+            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([]);
             win1.setBounds({ x: 0, y: 1, width: 10, height: 10});
 
-            // @ts-ignore
-            expect(mgr.browserWindow.getAllWindows).toHaveBeenCalledTimes(0);
+            expect((<any>mgr).browserWindow.getAllWindows).toHaveBeenCalledTimes(0);
         });
 
         it("move updates other grouped window bounds", () => {
             mgr.groupWindows(target, win1, win2);
-            // @ts-ignore
-            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
+            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
             win1.setBounds({ x: 10, y: 1, width: 2, height: 3});
 
             expect(target.getBounds().x).toEqual(10);
@@ -939,8 +900,7 @@ describe("ElectronWindowManager", () => {
             expect(win1.group).toBeDefined();
             expect(win2.group).toBeDefined();
 
-            // @ts-ignore
-            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
+            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
             mgr.ungroupWindows(win1, win2);
 
             expect(win1.group).toBeNull();
@@ -949,8 +909,7 @@ describe("ElectronWindowManager", () => {
 
         it ("unhooks orphanded grouped window", () => {
             mgr.groupWindows(target, win1, win2);
-            // @ts-ignore
-            spyOn(mgr.browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
+            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
             spyOn(target, "removeListener").and.callThrough();
 
             mgr.ungroupWindows(win1, win2);

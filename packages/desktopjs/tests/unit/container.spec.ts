@@ -100,27 +100,23 @@ describe("container", () => {
     describe("Static events", () => {
         it("addListener adds callback to listeners", () => {
             expect(Container.listeners("TestEvent").length).toEqual(0);
-            // @ts-ignore
-            Container.addListener("TestEvent", (event: EventArgs) => { });
+            Container.addListener(<any>"TestEvent", (event: EventArgs) => { });
             expect(Container.listeners("TestEvent").length).toEqual(1);
         });
 
         it("removeListener removes callback to listeners", () => {
             expect(Container.listeners("TestEvent").length).toEqual(0);
             const callback = (event: EventArgs) => { };
-            // @ts-ignore
-            Container.addListener("TestEvent", callback);
+            Container.addListener(<any>"TestEvent", callback);
             expect(Container.listeners("TestEvent").length).toEqual(1);
-            // @ts-ignore
-            Container.removeListener("TestEvent", callback);
+            Container.removeListener(<any>"TestEvent", callback);
             expect(Container.listeners("TestEvent").length).toEqual(0);
         });
 
         it("emit invokes ipc publish", () => {
             const args = new EventArgs(undefined, "TestEvent", {});
             spyOn(container.ipc, "publish").and.callThrough();
-            // @ts-ignore
-            Container.emit(args.name, args);
+            Container.emit(<any>args.name, args);
             expect(container.ipc.publish).toHaveBeenCalledWith("desktopJS.static-event", { eventName: "container-" + args.name, eventArgs: args });
         });
     });
@@ -160,8 +156,7 @@ describe("container", () => {
 
         describe("showNotification", () => {
             it("Throws Not implemented", () => {
-                // @ts-ignore
-                expect(() => container.showNotification(new NotificationOptions())).toThrowError(TypeError);
+                expect(() => container.showNotification(<any>new NotificationOptions())).toThrowError(TypeError);
             });
         });
 
@@ -194,8 +189,7 @@ describe("container", () => {
 
             it("saveLayoutToStorage", () => {
                 const layout: PersistedWindowLayout = new PersistedWindowLayout();
-                // @ts-ignore
-                container.saveLayoutToStorage("Test", layout);
+                (<any>container).saveLayoutToStorage("Test", layout);
             });
 
             it("saveLayoutToStorage fires layout-saved", (done) => {
@@ -204,8 +198,7 @@ describe("container", () => {
                     expect((<any>e).layout).toEqual(layout);
                     done();
                 });
-                // @ts-ignore
-                container.saveLayoutToStorage("Test", layout);
+                (<any>container).saveLayoutToStorage("Test", layout);
             });
 
             it("getLayouts", (done) => {

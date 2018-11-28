@@ -167,8 +167,7 @@ describe("DefaultContainerWindow", () => {
     it("setBounds sets underlying window position", (done) => {
         spyOn(win.innerWindow, "moveTo").and.callThrough()
         spyOn(win.innerWindow, "resizeTo").and.callThrough();
-        // @ts-ignore
-        win.setBounds({ x: 0, y: 1, width: 2, height: 3 }).then(() => {
+        win.setBounds(<any>{ x: 0, y: 1, width: 2, height: 3 }).then(() => {
             expect(win.innerWindow.moveTo).toHaveBeenCalledWith(0, 1);
             expect(win.innerWindow.resizeTo).toHaveBeenCalledWith(2, 3);
         }).then(done);

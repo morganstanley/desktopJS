@@ -225,8 +225,7 @@ describe("SnapAssistWindowManager", () => {
         const innerWin = jasmine.createSpyObj("innerwindow", ["disableFrame"]);
         Object.defineProperty(win, "innerWindow", { value: innerWin });
         const mgr = new SnapAssistWindowManager(null);
-        // @ts-ignore
-        mgr.onAttached(win);
+        (<any>mgr).onAttached(win);
         expect(innerWin.disableFrame).toHaveBeenCalled();
     });
 
@@ -235,8 +234,7 @@ describe("SnapAssistWindowManager", () => {
         const innerWin = jasmine.createSpyObj("innerwindow", ["hookWindowMessage"]);
         Object.defineProperty(win, "innerWindow", { value: innerWin });
         const mgr = new SnapAssistWindowManager(null);
-        // @ts-ignore
-        mgr.onAttached(win);
+        (<any>mgr).onAttached(win);
         expect(innerWin.hookWindowMessage).toHaveBeenCalledWith(0x0232, jasmine.any(Function));
     });
 
@@ -245,8 +243,7 @@ describe("SnapAssistWindowManager", () => {
         const innerWin = jasmine.createSpyObj("innerwindow", ["updateOptions"]);
         Object.defineProperty(win, "innerWindow", { value: innerWin });
         const mgr = new SnapAssistWindowManager(null);
-        // @ts-ignore
-        mgr.showGroupingHint(win);
+        (<any>mgr).showGroupingHint(win);
         expect(innerWin.updateOptions).toHaveBeenCalledWith({opacity: 0.75});
     });
 
@@ -255,8 +252,7 @@ describe("SnapAssistWindowManager", () => {
         const innerWin = jasmine.createSpyObj("innerwindow", ["updateOptions"]);
         Object.defineProperty(win, "innerWindow", { value: innerWin });
         const mgr = new SnapAssistWindowManager(null);
-        // @ts-ignore
-        mgr.hideGroupingHint(win);
+        (<any>mgr).hideGroupingHint(win);
         expect(innerWin.updateOptions).toHaveBeenCalledWith({opacity: 1.0});
     });
 
@@ -265,10 +261,8 @@ describe("SnapAssistWindowManager", () => {
         win.setBounds.and.returnValue(Promise.resolve());
         Object.defineProperty(win, "id", { value: "5" });
         const mgr = new SnapAssistWindowManager(null);
-        // @ts-ignore
-        mgr.moveWindow(win, new Rectangle(0, 0, 0, 0));
-        // @ts-ignore
-        expect(mgr.snappingWindow).toEqual("5");
+        (<any>mgr).moveWindow(win, new Rectangle(0, 0, 0, 0));
+        expect((<any>mgr).snappingWindow).toEqual("5");
         expect(win.setBounds).toHaveBeenCalled();
     });
 
@@ -345,8 +339,7 @@ describe("SnapAssistWindowManager", () => {
 
         const mgr = new SnapAssistWindowManager(container, { snapThreshold: 20 });
         mgr.attach(win);
-        // @ts-ignore
-        mgr.onMoving(new WindowEventArgs(win, "move", undefined));
+        (<any>mgr).onMoving(new WindowEventArgs(win, "move", undefined));
     });
 
     describe("getSnapBounds", () => {
