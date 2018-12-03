@@ -9,7 +9,9 @@ matrix:
   fast_finish: true
 
 script:
+  - npm run bootstrap
   - npm run build
+  - npm test
   - npm run docs
 
 after_success:

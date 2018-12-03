@@ -1,4 +1,5 @@
-﻿const desktopJS = require('../../dist/desktop.js');
+﻿const desktopJS = require('@morgan-stanley/desktopjs');
+const djsElectron = require('@morgan-stanley/desktopjs-electron');
 const electron = require('electron');
 const app = electron.app;
 
