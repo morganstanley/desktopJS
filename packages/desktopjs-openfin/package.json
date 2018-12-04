@@ -34,7 +34,7 @@
     "deploy": "npm publish"
   },
   "devDependencies": {
-    "@morgan-stanley/desktopjs": "^3.0.0",
+    "@morgan-stanley/desktopjs": "^3.0.0-beta.1",
     "@types/jasmine": "^2.8.11",
     "@types/node": "^10.12.6",
     "gulp": "^3.9.1",
