@@ -2,7 +2,7 @@
   "name": "@morgan-stanley/desktopjs-electron",
   "title": "desktopJS-electron",
   "description": "desktopJS container implementation for Electron",
-  "version": "3.0.0",
+  "version": "3.0.0-beta.1",
   "publishConfig": {
     "access": "public"
   },
@@ -29,7 +29,8 @@
     "build:lerna": "gulp build:lerna",
     "build": "gulp build",
     "test": "gulp test",
-    "watch": "gulp watch"
+    "watch": "gulp watch",
+    "deploy": "npm publish"
   },
   "devDependencies": {
     "@morgan-stanley/desktopjs": "^3.0.0",
