@@ -2,7 +2,7 @@
   "name": "@morgan-stanley/desktopjs",
   "title": "desktopJS",
   "description": "Library for abstracting common container hosting",
-  "version": "3.0.0",
+  "version": "3.0.0-beta.1",
   "publishConfig": {
     "access": "public"
   },  
@@ -34,7 +34,8 @@
     "build:lerna": "gulp build:lerna",
     "build": "gulp build",
     "test": "gulp test",
-    "watch": "gulp watch"
+    "watch": "gulp watch",
+    "deploy": "npm publish"
   },
   "dependencies": {},
   "devDependencies": {

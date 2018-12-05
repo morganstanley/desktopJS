@@ -2,7 +2,7 @@
   "name": "@morgan-stanley/desktopjs-openfin",
   "title": "desktopJS-openfin",
   "description": "desktopJS container implementation for OpenFin",
-  "version": "3.0.0",
+  "version": "3.0.0-beta.1",
   "publishConfig": {
     "access": "public"
   },
@@ -30,10 +30,11 @@
     "build:lerna": "gulp build:lerna",
     "build": "gulp build",
     "test": "gulp test",
-    "watch": "gulp watch"
+    "watch": "gulp watch",
+    "deploy": "npm publish"
   },
   "devDependencies": {
-    "@morgan-stanley/desktopjs": "^3.0.0",
+    "@morgan-stanley/desktopjs": "^3.0.0-beta.1",
     "@types/jasmine": "^2.8.11",
     "@types/node": "^10.12.6",
     "gulp": "^3.9.1",

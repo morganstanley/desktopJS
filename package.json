@@ -12,7 +12,8 @@
     "test": "gulp test",
     "start": "gulp server",
     "docs": "gulp docs",
-    "watch": "lerna run --parallel watch"
+    "watch": "lerna run --parallel watch",
+    "deploy": "lerna run deploy"
   },
   "dependencies": {},
   "devDependencies": {
