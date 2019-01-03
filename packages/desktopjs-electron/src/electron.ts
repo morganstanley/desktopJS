@@ -177,6 +177,13 @@ export class ElectronContainerWindow extends ContainerWindow {
         return Promise.resolve();
     }
 
+    public bringToFront(): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.innerWindow.moveTop();
+            resolve();
+        });
+    }
+
     public getOptions(): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             const options = (this.isRemote)

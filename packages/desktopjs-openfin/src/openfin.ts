@@ -155,6 +155,12 @@ export class OpenFinContainerWindow extends ContainerWindow {
         });
     }
 
+    public bringToFront(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.innerWindow.bringToFront(resolve, reject);
+        });
+    }
+
     public getOptions(): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             this.innerWindow.getOptions(options => resolve(options.customData ? JSON.parse(options.customData) : undefined), reject);
