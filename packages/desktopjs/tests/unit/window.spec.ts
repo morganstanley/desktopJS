@@ -9,6 +9,7 @@ class MockWindow extends ContainerWindow {
         return;
     }
 
+    public focus(): Promise<void> { return Promise.resolve(); }
     public minimize(): Promise<void> { return Promise.resolve(); }
     public restore(): Promise<void> { return Promise.resolve(); }
 }
@@ -28,6 +29,14 @@ describe ("ContainerWindow", () => {
         new MockWindow(undefined).setState({}).then(() => {
             expect(true);
         }).then(done);
+    });
+
+    it("bringToFront invokes focus by default", (done) => {
+        const win = new MockWindow(undefined)
+        spyOn(win, "focus").and.callThrough();
+        win.bringToFront().then(() =>  {
+            expect(win.focus).toHaveBeenCalled();
+        }).then(done);     
     });
 });
 

@@ -151,6 +151,10 @@ class MockWindow {
     joinGroup(target: any, callback: any, errorCallback: any) { }
     leaveGroup(callback: any, errorCallback: any) { }
 
+    bringToFront(callback:any, errorCallback: any) {
+        callback();
+    }
+
     addEventListener(eventName: string, listener: any): void { }
 
     removeEventListener(eventName: string, listener: any): void { }
@@ -473,6 +477,13 @@ describe("OpenFinContainerWindow", () => {
                 expect(innerWin.leaveGroup).toHaveBeenCalled();
             }).then(done);
         });
+    });
+
+    it("bringToFront invokes underlying bringToFront", (done) => {
+        spyOn(innerWin, "bringToFront").and.callThrough();
+        win.bringToFront().then(() => {
+            expect(innerWin.bringToFront).toHaveBeenCalled();
+        }).then(done);
     });
 });
 

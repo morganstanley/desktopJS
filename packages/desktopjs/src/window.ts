@@ -145,6 +145,11 @@ export abstract class ContainerWindow extends EventEmitter {
         return Promise.resolve();
     }
 
+    public bringToFront(): Promise<void> {
+        // Provide simple delegation to focus/activate by default
+        return this.focus();
+    }
+
     public abstract getOptions(): Promise<any>;
 
     /** Retrieves custom window state from underlying native window by invoking 'window.getState()' if defined. */

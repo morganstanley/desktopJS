@@ -65,7 +65,9 @@ class MockWindow extends MockEventEmitter {
         this.emit("move", null);
      }
 
-     public flashFrame(enable: boolean): void { }
+    public flashFrame(enable: boolean): void { }
+
+    public moveTop(): void { }
 }
 
 class MockCapture {
@@ -407,6 +409,13 @@ describe("ElectronContainerWindow", () => {
             win.leaveGroup();
             expect((<any>container).windowManager.ungroupWindows).toHaveBeenCalled();
         });
+    });
+
+    it ("bringToFront invokes underlying moveTop", (done) => {
+        spyOn(win.innerWindow, "moveTop").and.callThrough()
+        win.bringToFront().then(() => {
+            expect(innerWin.moveTop).toHaveBeenCalled();
+        }).then(done);
     });
 });
 
