@@ -6,7 +6,7 @@ var gulp = require('gulp'),
 
 gulp.task('test', require('./.gulp/tasks/tests')(gulp, gulpConfig));
 
-gulp.task("server", [], function () {
+gulp.task("server", function () {
     return gulp.src(['examples/web', 'packages/desktopjs/dist', 'packages/desktopjs-electron/dist', 'packages/desktopjs-openfin/dist'])
         .pipe(webserver({
             fallback: 'index.html',

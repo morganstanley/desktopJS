@@ -20,7 +20,7 @@
     "desktop",
     "openfin",
     "hadouken"
-  ],  
+  ],
   "files": [
     "dist"
   ],
@@ -37,7 +37,6 @@
     "@morgan-stanley/desktopjs": "^3.0.0",
     "@types/jasmine": "^2.8.11",
     "@types/node": "^10.12.6",
-    "gulp": "^3.9.1",
-    "run-sequence": "^2.2.1"
+    "gulp": "^4.0.0"
   }
 }
