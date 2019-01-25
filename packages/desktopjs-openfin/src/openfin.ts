@@ -145,13 +145,19 @@ export class OpenFinContainerWindow extends ContainerWindow {
         }
 
         return new Promise<void>((resolve, reject) => {
-            this.innerWindow.joinGroup(target.innerWindow, resolve, reject);
+            this.innerWindow.joinGroup(target.innerWindow, () => {
+                ContainerWindow.emit("window-joinGroup", { name: "window-joinGroup", windowId: this.id, targetWindowId: target.id } );
+                resolve();
+            }, reject);
         });
     }
 
     public leaveGroup(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.innerWindow.leaveGroup(resolve, reject);
+            this.innerWindow.leaveGroup(() => {
+                ContainerWindow.emit("window-leaveGroup", { name: "window-leaveGroup", windowId: this.id } );
+                resolve();
+            }, reject);
         });
     }
 

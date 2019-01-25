@@ -73,6 +73,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
 	desktopJS.Container.addListener("layout-saved", (e) => container.log("info", "Layout saved - static: " + e.layoutName));
 	desktopJS.Container.addListener("layout-loaded", (e) => container.log("info", "Layout loaded - static: " + e.layoutName));
 
+	desktopJS.ContainerWindow.addListener("window-joinGroup", (e) => container.log("info", "grouped " + JSON.stringify(e)));
+	desktopJS.ContainerWindow.addListener("window-leaveGroup", (e) => container.log("info", "ungrouped" + JSON.stringify(e)));
+
 	subscribe();
 
 	// If url is provided a hash, try to navigate to bootstrap tab if exists

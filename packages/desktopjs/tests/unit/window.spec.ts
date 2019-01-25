@@ -1,5 +1,5 @@
 import {} from "jasmine";
-import { ContainerWindow, WindowEventType, WindowEventArgs, WindowStateTracking, GroupWindowManager, SnapAssistWindowManager, Rectangle } from "../../src/window";
+import { ContainerWindow, WindowEventType, ContainerWindowEventType, WindowEventArgs, WindowStateTracking, GroupWindowManager, SnapAssistWindowManager, Rectangle } from "../../src/window";
 import { EventArgs, EventEmitter } from "../../src/events";
 import { TestContainer } from "./container.spec";
 
@@ -66,7 +66,7 @@ describe ("static events", () => {
     it("emit invokes ipc publish", () => {
         const args = new EventArgs(undefined, "window-created", {});
         spyOn(container.ipc, "publish").and.callThrough();
-        ContainerWindow.emit(<WindowEventType> args.name, <WindowEventArgs> args);
+        ContainerWindow.emit(<ContainerWindowEventType> args.name, <WindowEventArgs> args);
         expect(container.ipc.publish).toHaveBeenCalledWith("desktopJS.static-event", { eventName: "containerwindow-" + args.name, eventArgs: args });
     });
 });
