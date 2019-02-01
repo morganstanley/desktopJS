@@ -1004,3 +1004,35 @@ describe("ElectronDisplayManager", () => {
         }).then(done);
     });    
 });
+
+describe("ElectronGlobalShortcutManager", () => {
+    describe("invokes underlying Electron", () => {
+        let electron;
+        let container;
+
+        beforeEach(() => {
+            electron = {  globalShortcut: jasmine.createSpyObj("Electron", ["register", "unregister", "isRegistered", "unregisterAll"]) };
+            container = new ElectronContainer(electron);
+        });
+
+        it ("register", () => {
+            container.globalShortcut.register("shortcut", () => {});
+            expect(electron.globalShortcut.register).toHaveBeenCalledWith("shortcut", jasmine.any(Function));
+        });
+
+        it ("unregister", () => {
+            container.globalShortcut.unregister("shortcut");
+            expect(electron.globalShortcut.unregister).toHaveBeenCalledWith("shortcut");
+        });
+
+        it ("isRegistered", () => {
+            container.globalShortcut.isRegistered("shortcut");
+            expect(electron.globalShortcut.isRegistered).toHaveBeenCalledWith("shortcut");
+        });
+
+        it ("unregisterAll", () => {
+            container.globalShortcut.unregisterAll();
+            expect(electron.globalShortcut.unregisterAll).toHaveBeenCalledWith();
+        }); 
+    });
+});

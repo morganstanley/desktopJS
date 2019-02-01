@@ -15,6 +15,7 @@ export * from "./registry";
 export * from "./screen";
 export * from "./tray";
 export * from "./window";
+export * from "./shortcut";
 export * from "./Default/default";
 
 export const version: string = "PACKAGE_VERSION";

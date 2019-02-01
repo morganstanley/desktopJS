@@ -5,7 +5,7 @@
 import {
     registerContainer, ContainerWindow, PersistedWindowLayout, Rectangle, Container, WebContainerBase,
     ScreenManager, Display, Point, ObjectTransform, PropertyMap, NotificationOptions, ContainerNotification,
-    TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions
+    TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions, GlobalShortcutManager
 } from "@morgan-stanley/desktopjs";
 
 registerContainer("Electron", {
@@ -363,6 +363,8 @@ export class ElectronContainer extends WebContainerBase {
         }
 
         this.screen = new ElectronDisplayManager(this.electron);
+
+        this.globalShortcut = new ElectronGlobalShortcutManager(this.electron);
     }
 
     protected createMessageBus() : MessageBus {
@@ -725,6 +727,43 @@ class ElectronDisplayManager implements ScreenManager {
     public getMousePosition(): Promise<Point> {
         return new Promise<Point>((resolve, reject) => {
             resolve(this.electron.screen.getCursorScreenPoint());
+        });
+    }
+}
+
+/** @private */
+class ElectronGlobalShortcutManager extends GlobalShortcutManager {
+    private readonly electron: any;
+
+    public constructor(electron: any) {
+        super();
+        this.electron = electron;
+    }
+
+    public register(shortcut: string, callback: () => void): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.electron.globalShortcut.register(shortcut, callback);
+            resolve();
+        });
+    }
+
+    public isRegistered(shortcut: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.electron.globalShortcut.isRegistered(shortcut));
+        });
+    }
+
+    public unregister(shortcut: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.electron.globalShortcut.unregister(shortcut);
+            resolve();
+        });
+    }
+
+    public unregisterAll(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.electron.globalShortcut.unregisterAll();
+            resolve();
         });
     }
 }
