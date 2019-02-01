@@ -55,6 +55,8 @@ export class Rectangle { // tslint:disable-line
 
 export type WindowEventType =
     "window-created" |
+    "window-joinGroup" |
+    "window-leaveGroup" |
     "move" |
     "resize" |
     "close" |
@@ -64,13 +66,16 @@ export type WindowEventType =
     "maximize" |
     "minimize" |
     "restore" |
-    "beforeunload"
-    ;
+    "beforeunload";
 
 export class WindowEventArgs extends EventArgs {
     public readonly window?: ContainerWindow;
     public readonly windowId: string;
     public readonly windowName?: string;
+}
+
+export class WindowGroupEventArgs extends WindowEventArgs {
+    public readonly targetWindowId?: string;
 }
 
 /** Represents a container window. */
@@ -201,15 +206,15 @@ export abstract class ContainerWindow extends EventEmitter {
         return super.removeListener(eventName, callback);
     }
 
-    public static addListener(eventName: WindowEventType, listener: (event: WindowEventArgs) => void): void { // tslint:disable-line
+    public static addListener(eventName: WindowEventType, listener: (event: WindowEventArgs | WindowGroupEventArgs) => void): void { // tslint:disable-line
         EventEmitter.addListener(ContainerWindow.staticEventScopePrefix + eventName, listener);
     }
 
-    public static removeListener(eventName: WindowEventType, listener: (event: WindowEventArgs) => void): void { // tslint:disable-line
+    public static removeListener(eventName: WindowEventType, listener: (event: WindowEventArgs | WindowGroupEventArgs) => void): void { // tslint:disable-line
         EventEmitter.removeListener(ContainerWindow.staticEventScopePrefix + eventName, listener);
     }
 
-    public static emit(eventName: WindowEventType, eventArgs: WindowEventArgs): void { // tslint:disable-line
+    public static emit(eventName: WindowEventType, eventArgs: WindowEventArgs | WindowGroupEventArgs): void { // tslint:disable-line
         EventEmitter.emit(ContainerWindow.staticEventScopePrefix + eventName, eventArgs, Container.ipc);
     }
 

@@ -611,6 +611,8 @@ export class ElectronWindowManager {
         for (const win of windows) {
             win.group = target.group || (target.group = Guid.newGuid());
             this.registerWindowEvents(win);
+
+            ContainerWindow.emit("window-joinGroup", { name: "window-joinGroup", windowId: win.id, targetWindowId: target.id });
         }
 
         this.registerWindowEvents(target);
@@ -621,6 +623,7 @@ export class ElectronWindowManager {
         for (const win of windows) {
             this.unregisterWindowEvents(win);
             win.group = null;
+            ContainerWindow.emit("window-leaveGroup", { name: "window-leaveGroup", windowId: win.id });
         }
 
         // Group all windows by group and for any group consisting of one window unhook and clear the group

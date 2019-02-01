@@ -10,6 +10,8 @@ function createWindow() {
     let container = desktopJS.resolveContainer();
 
     desktopJS.ContainerWindow.addListener("window-created", (e) => container.log("info", "Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
+	desktopJS.ContainerWindow.addListener("window-joinGroup", (e) => container.log("info", "grouped " + JSON.stringify(e)));
+	desktopJS.ContainerWindow.addListener("window-leaveGroup", (e) => container.log("info", "ungrouped" +  JSON.stringify(e)));
     
     snapAssist = new desktopJS.SnapAssistWindowManager(container,
         {
