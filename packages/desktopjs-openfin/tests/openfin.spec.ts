@@ -21,7 +21,7 @@ class MockDesktop {
             }
         }
     }
-
+    GlobalHotkey: any;
     Window: any = MockWindow;
     Notification(): any { return {}; }
     InterApplicationBus: any = new MockInterApplicationBus();
@@ -30,6 +30,7 @@ class MockDesktop {
             return MockDesktop.application;
         }
     }
+
 }
 
 class MockInterApplicationBus {
@@ -886,5 +887,51 @@ describe("OpenFinDisplayManager", () => {
         container.screen.getMousePosition().then(point => {
             expect(point).toEqual({ x: 1, y: 2});
         }).then(done);
+    });
+});
+
+describe("OpenfinGlobalShortcutManager", () => {
+    let desktop;
+    let container;
+
+    beforeEach(() => {
+        desktop = new MockDesktop()
+    });
+
+    it ("Unavailable in OpenFin is unavailable on container", () => {
+        delete desktop.GlobalHotkey;
+        const container = new OpenFinContainer(desktop);
+        spyOn(console, "warn").and.stub();
+        expect(container.globalShortcut).toBeUndefined();
+        expect(console.warn).toHaveBeenCalledWith("Global shortcuts require minimum OpenFin runtime of 9.61.32.34");
+    });  
+
+    describe("invokes underlying OpenFin", () => {
+        beforeEach(() => {
+            desktop.GlobalHotkey = jasmine.createSpyObj("GlobalHotKey", ["register", "unregister", "isRegistered", "unregisterAll"]);
+            container = new OpenFinContainer(desktop);
+        });
+
+        it ("register", () => {
+            container.globalShortcut.register("shortcut", () => {});
+            expect(desktop.GlobalHotkey.register).toHaveBeenCalledWith("shortcut", jasmine.any(Function), jasmine.any(Function), jasmine.any(Function));
+        });
+
+        it ("unregister", () => {
+            container.globalShortcut.unregister("shortcut");
+            expect(desktop.GlobalHotkey.unregister).toHaveBeenCalledWith("shortcut", jasmine.any(Function), jasmine.any(Function));
+        });
+
+        it ("isRegistered", (done) => {
+            desktop.GlobalHotkey.isRegistered.and.callFake((shortcut, resolve, reject) => resolve(true));
+            container.globalShortcut.isRegistered("shortcut").then(() => {
+                expect(desktop.GlobalHotkey.isRegistered).toHaveBeenCalledWith("shortcut", jasmine.any(Function), jasmine.any(Function));
+            }).then(done);
+        });
+
+        it ("unregisterAll", () => {
+            container.globalShortcut.unregisterAll();
+            expect(desktop.GlobalHotkey.unregisterAll).toHaveBeenCalledWith(jasmine.any(Function), jasmine.any(Function));
+        }); 
     });
 });

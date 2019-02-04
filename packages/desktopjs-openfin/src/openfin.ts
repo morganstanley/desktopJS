@@ -5,7 +5,8 @@
 import {
     registerContainer, ContainerWindow, PersistedWindowLayout, Rectangle, Container, WebContainerBase,
     ScreenManager, Display, Point, ObjectTransform, PropertyMap, NotificationOptions, ContainerNotification,
-    TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions, EventArgs
+    TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions, EventArgs,
+    GlobalShortcutManager
 } from "@morgan-stanley/desktopjs";
 
 registerContainer("OpenFin", {
@@ -416,6 +417,12 @@ export class OpenFinContainer extends WebContainerBase {
         });
 
         this.screen = new OpenFinDisplayManager(this.desktop);
+
+        if (this.desktop.GlobalHotkey) {
+            this.globalShortcut = new OpenFinGlobalShortcutManager(this.desktop);
+        } else {
+            console.warn("Global shortcuts require minimum OpenFin runtime of 9.61.32.34");
+        }
     }
 
     protected createMessageBus(): MessageBus {
@@ -725,6 +732,40 @@ class OpenFinDisplayManager implements ScreenManager {
             this.desktop.System.getMousePosition(position => {
                 resolve({ x: position.left, y: position.top });
             }, reject);
+        });
+    }
+}
+
+/** @private */
+class OpenFinGlobalShortcutManager extends GlobalShortcutManager {
+    private readonly desktop: any;
+
+    public constructor(desktop: any) {
+        super();
+        this.desktop = desktop;
+    }
+
+    public register(shortcut: string, callback: () => void): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.desktop.GlobalHotkey.register(shortcut, callback, resolve, reject);
+        });
+    }
+
+    public isRegistered(shortcut: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            this.desktop.GlobalHotkey.isRegistered(shortcut, resolve, reject);
+        });
+    }
+
+    public unregister(shortcut: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.desktop.GlobalHotkey.unregister(shortcut, resolve, reject);
+        });
+    }
+
+    public unregisterAll(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.desktop.GlobalHotkey.unregisterAll(resolve, reject);
         });
     }
 }

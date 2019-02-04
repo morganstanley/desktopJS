@@ -10,6 +10,7 @@ import { MessageBus } from "./ipc";
 import { TrayIconDetails } from "./tray";
 import { MenuItem } from "./menu";
 import { Guid } from "./guid";
+import { GlobalShortcutManager } from "./shortcut";
 
 export type ContainerEventType =
     "window-created" |
@@ -103,6 +104,11 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
      *  Retrieve information about screen size and displays.
      */
     public screen: ScreenManager;
+
+    /**
+     * Register/unregister global keyboard shortcut with the operating system.
+     */
+    public globalShortcut: GlobalShortcutManager;
 
     public addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { // tslint:disable-line
         return super.addListener(eventName, listener);
