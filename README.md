@@ -63,7 +63,7 @@ To run the examples or to manually test scenarios in each container, there is a 
 a local server with live reload.  This can be run directly via gulp or through npm.
 
 ```
-$ npm run server
+$ npm run start
 ```
 
 This is configured to listen at [http://localhost:8000](http://localhost:8000) and will reload upon
