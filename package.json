@@ -15,7 +15,9 @@
     "watch": "lerna run --parallel watch",
     "deploy": "lerna run deploy"
   },
-  "dependencies": {},
+  "dependencies": {
+    "gulp-connect": "^5.7.0"
+  },
   "devDependencies": {
     "codecov": "^3.0.0",
     "dts-bundle": "^0.7.3",
@@ -31,7 +33,6 @@
     "gulp-typedoc": "^2.0.2",
     "gulp-typescript": "^4.0.2",
     "gulp-uglify": "^3.0.1",
-    "gulp-webserver": "^0.9.1",
     "lerna": "^3.4.3",
     "merge2": "^1.2.3",
     "remap-istanbul": "^0.12.0",
