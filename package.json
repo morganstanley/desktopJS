@@ -15,14 +15,13 @@
     "watch": "lerna run --parallel watch",
     "deploy": "lerna run deploy"
   },
-  "dependencies": {
-    "gulp-connect": "^5.7.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "codecov": "^3.0.0",
     "dts-bundle": "^0.7.3",
     "gulp": "^4.0.0",
     "gulp-clean": "^0.4.0",
+    "gulp-connect": "^5.7.0",
     "gulp-istanbul": "^1.1.3",
     "gulp-istanbul-enforcer": "^1.0.3",
     "gulp-jasmine": "^4.0.0",
