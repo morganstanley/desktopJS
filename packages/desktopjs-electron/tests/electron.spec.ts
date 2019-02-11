@@ -1012,7 +1012,7 @@ describe("ElectronGlobalShortcutManager", () => {
 
         beforeEach(() => {
             electron = {  globalShortcut: jasmine.createSpyObj("Electron", ["register", "unregister", "isRegistered", "unregisterAll"]) };
-            container = new ElectronContainer(electron);
+            container = new ElectronContainer(electron, new MockIpc());
         });
 
         it ("register", () => {

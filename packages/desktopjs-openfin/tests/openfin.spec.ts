@@ -21,7 +21,7 @@ class MockDesktop {
             }
         }
     }
-    GlobalHotkey: any;
+    GlobalHotkey: any = { };
     Window: any = MockWindow;
     Notification(): any { return {}; }
     InterApplicationBus: any = new MockInterApplicationBus();
@@ -508,7 +508,7 @@ describe("OpenFinContainer", () => {
             let app;
 
             beforeEach(() => {
-                desktop = jasmine.createSpyObj("desktop", ["Application", "InterApplicationBus"]);
+                desktop = jasmine.createSpyObj("desktop", ["Application", "InterApplicationBus", "GlobalHotkey"]);
                 app = jasmine.createSpyObj("application", ["getCurrent", "registerUser", "addEventListener"]);
                 Object.defineProperty(desktop, "Application", { value: app });
                 Object.defineProperty(desktop, "InterApplicationBus", { value: new MockInterApplicationBus() });
@@ -819,7 +819,7 @@ describe("OpenFinDisplayManager", () => {
     let system;
    
     beforeEach(() => {
-        desktop = jasmine.createSpyObj("desktop", ["Application", "System", "InterApplicationBus"]);
+        desktop = jasmine.createSpyObj("desktop", ["Application", "System", "InterApplicationBus", "GlobalHotkey"]);
         app = jasmine.createSpyObj("application", ["getCurrent", "addEventListener"]);
         system = jasmine.createSpyObj("system", ["getMonitorInfo", "getMousePosition"]);
         Object.defineProperty(desktop, "Application", { value: app });
@@ -900,8 +900,8 @@ describe("OpenfinGlobalShortcutManager", () => {
 
     it ("Unavailable in OpenFin is unavailable on container", () => {
         delete desktop.GlobalHotkey;
-        const container = new OpenFinContainer(desktop);
         spyOn(console, "warn").and.stub();
+        const container = new OpenFinContainer(desktop);
         expect(container.globalShortcut).toBeUndefined();
         expect(console.warn).toHaveBeenCalledWith("Global shortcuts require minimum OpenFin runtime of 9.61.32.34");
     });  
