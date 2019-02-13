@@ -12,7 +12,7 @@ module.exports = function (gulp, config) {
             .pipe(istanbul.hookRequire())
             .on('finish', function () {
                 gulp.src(config.test.src)
-                    .pipe(jasmine({ verbose: true, errorOnFail: false, includeStackTrace: false }))
+                    .pipe(jasmine({ verbose: true, errorOnFail: true, includeStackTrace: false }))
                     .pipe(istanbul.writeReports({
                         dir: config.test.coverage.dest,
                         reporters: ['json']
