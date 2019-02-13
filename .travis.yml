@@ -9,7 +9,9 @@ matrix:
   fast_finish: true
 
 script:
+  - npm run bootstrap
   - npm run build
+  - npm test
   - npm run docs
 
 after_success:
@@ -26,10 +28,9 @@ deploy:
     github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
     on:
       branch: master
-  - provider: npm
+  - provider: script
+    script: bash deploy.sh
     skip_cleanup: true
-    email: "Brian.Ingenito@morganstanley.com"
-    api_key: $NPMJS_TOKEN # Set in travis-ci.org dashboard
     on:
       tags: true
       branch: master

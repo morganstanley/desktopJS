@@ -1,0 +1,42 @@
+{
+  "name": "@morgan-stanley/desktopjs-openfin",
+  "title": "desktopJS-openfin",
+  "description": "desktopJS container implementation for OpenFin",
+  "version": "3.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/desktopjs-openfin.js",
+  "types": "dist/desktopjs-openfin.d.ts",
+  "license": "Apache-2.0",
+  "author": "Morgan Stanley",
+  "repository": "https://github.com/Morgan-Stanley/desktopJS/tree/master/packages/desktopjs-openfin",
+  "bugs": {
+    "url": "https://github.com/Morgan-Stanley/desktopJS/issues"
+  },
+  "keywords": [
+    "container",
+    "desktop wrapper",
+    "desktop",
+    "openfin",
+    "hadouken"
+  ],
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "gulp clean",
+    "tslint": "gulp tslint",
+    "build:lerna": "gulp build:lerna",
+    "build": "gulp build",
+    "test": "gulp test",
+    "watch": "gulp watch",
+    "deploy": "npm publish"
+  },
+  "devDependencies": {
+    "@morgan-stanley/desktopjs": "^3.0.0",
+    "@types/jasmine": "^2.8.11",
+    "@types/node": "^10.12.6",
+    "gulp": "^4.0.0"
+  }
+}

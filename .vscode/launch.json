@@ -7,7 +7,7 @@
 			"request": "attach",
 			"port": 9090,
 			"address": "localhost",
-			"webRoot": "${workspaceRoot}/dist",
+			"webRoot": "${workspaceRoot}/packages/desktopjs-openfin/dist",
 			"sourceMaps": true
 		},
 		{
