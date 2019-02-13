@@ -1,0 +1,45 @@
+{
+  "name": "@morgan-stanley/desktopjs",
+  "title": "desktopJS",
+  "description": "Library for abstracting common container hosting",
+  "version": "3.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/desktop.js",
+  "types": "dist/desktopjs.d.ts",
+  "license": "Apache-2.0",
+  "author": "Morgan Stanley",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Morgan-Stanley/desktopJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Morgan-Stanley/desktopJS/issues"
+  },
+  "keywords": [
+    "container",
+    "desktop wrapper",
+    "desktop",
+    "openfin",
+    "hadouken",
+    "electron"
+  ],
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "gulp clean",
+    "tslint": "gulp tslint",
+    "build:lerna": "gulp build:lerna",
+    "build": "gulp build",
+    "test": "gulp test",
+    "watch": "gulp watch",
+    "deploy": "npm publish"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jasmine": "^2.8.11",
+    "gulp": "^4.0.0"
+  }
+}

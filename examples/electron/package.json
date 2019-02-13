@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "description": "desktopJS Demo",
   "main": "electron.js",
+  "private": true,
   "dependencies": {
+    "@morgan-stanley/desktopjs": "^3.0.0",
+    "@morgan-stanley/desktopjs-electron": "^3.0.0",
     "electron-notify": "^0.1.0"
   }
 }
