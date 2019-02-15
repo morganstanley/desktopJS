@@ -20,7 +20,7 @@ module.exports = function (gulp, pkg, config, name, input, iffe, preventReload) 
                     // Wrap umd with a condition checking if desktopJS is already defined to not overwrite it.  This will allow
                     // preload registration of desktopJS without hosted web script includes redefining.
                     gulp.src(pkg.main)
-                        .pipe(replace(/(\(function \(global, factory\)[\s\S]*}\)\)\);)([\s\S]*)/, "if (typeof desktopJS === \"undefined\") {$1}$2"))
+                        .pipe(replace(/(\(function \(global, factory\)[\s\S]*}\)\);)([\s\S]*)/, "if (typeof desktopJS === \"undefined\") {$1}$2"))
                         .pipe(clean())
                         .pipe(gulp.dest(config.dest));
                 }
