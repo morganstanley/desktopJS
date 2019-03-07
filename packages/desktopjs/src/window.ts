@@ -5,8 +5,6 @@
 import { Container } from "./container";
 import { EventEmitter, EventArgs } from "./events";
 
-const fin: any = (typeof window !== "undefined") ? (<any>window).fin : undefined;
-
 /** Represents the bounds of a rectangle */
 export class Rectangle { // tslint:disable-line
     /** The x coordinate of the origin of the rectangle
@@ -318,6 +316,10 @@ export enum WindowStateTracking {
     Group = 1 << 1
 }
 
+function isOpenFin() {
+  return (typeof window !== "undefined" && (<any>window).fin);
+}
+
 export class GroupWindowManager {
     protected readonly container: Container;
     public windowStateTracking: WindowStateTracking = WindowStateTracking.None;
@@ -336,7 +338,7 @@ export class GroupWindowManager {
 
     public attach(win?: ContainerWindow) {
         if (win) {
-            win.addListener((typeof fin !== "undefined") ? <WindowEventType>"minimized" : "minimize", (e) => {
+            win.addListener(isOpenFin() ? <WindowEventType>"minimized" : "minimize", (e) => {
                 if ((this.windowStateTracking & WindowStateTracking.Main) && this.container.getMainWindow().id === e.sender.id) {
                     this.container.getAllWindows().then(windows => {
                         windows.forEach(window => window.minimize());
@@ -350,7 +352,7 @@ export class GroupWindowManager {
                 }
             });
 
-            win.addListener((typeof fin !== "undefined") ? <WindowEventType>"restored" : "restore", (e) => {
+            win.addListener(isOpenFin() ? <WindowEventType>"restored" : "restore", (e) => {
                 if ((this.windowStateTracking & WindowStateTracking.Main) && this.container.getMainWindow().id === e.sender.id) {
                     this.container.getAllWindows().then(windows => {
                         windows.forEach(window => window.restore());
@@ -419,7 +421,7 @@ export class SnapAssistWindowManager extends GroupWindowManager {
         }
 
         // Attach listeners for handling when the move/resize of a window is done
-        if (typeof fin !== "undefined") {
+        if (isOpenFin()) {
             // OpenFin moved handler
             win.addListener(<WindowEventType>"disabled-frame-bounds-changed", () => this.onMoved(win));
         } else {
@@ -440,7 +442,7 @@ export class SnapAssistWindowManager extends GroupWindowManager {
                 }
 
                 this.onAttached(win);
-                win.addListener((typeof fin !== "undefined") ? <WindowEventType>"disabled-frame-bounds-changing" : "move", (e) => this.onMoving(e));
+                win.addListener(isOpenFin() ? <WindowEventType>"disabled-frame-bounds-changing" : "move", (e) => this.onMoving(e));
             });
         }
     }
@@ -458,14 +460,14 @@ export class SnapAssistWindowManager extends GroupWindowManager {
             }
 
             e.sender.getGroup().then(groupedWindows => {
-                const getBounds: Promise<Rectangle> = (typeof fin !== "undefined")
+                const getBounds: Promise<Rectangle> = (isOpenFin())
                     ? Promise.resolve(new Rectangle(e.innerEvent.left, e.innerEvent.top, e.innerEvent.width, e.innerEvent.height))
                     : e.sender.getBounds();
 
                 getBounds.then(bounds => {
                     // If we are already in a group, don't snap or group with other windows, ungrouped windows need to group to us
                     if (groupedWindows.length > 0) {
-                        if (typeof fin !== "undefined") {
+                        if (isOpenFin()) {
                             this.moveWindow(e.sender, bounds);
                         }
 
@@ -498,7 +500,7 @@ export class SnapAssistWindowManager extends GroupWindowManager {
                             }
 
                             // If the window wasn't moved as part of snapping, we need to manually move for OpenFin since dragging was disabled
-                            if (!isSnapped && typeof fin !== "undefined") {
+                            if (!isSnapped && isOpenFin()) {
                                 this.moveWindow(e.sender, bounds);
                             }
                         });
