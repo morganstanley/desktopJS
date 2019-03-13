@@ -35,11 +35,13 @@
     "build": "gulp build",
     "test": "gulp test",
     "watch": "gulp watch",
-    "deploy": "npm publish"
+    "deploy": "npm publish",
+    "prepublishOnly": "copyfiles ../../README.md . -u 2"
   },
   "dependencies": {},
   "devDependencies": {
     "@types/jasmine": "^2.8.11",
+    "copyfiles": "^2.1.0",
     "gulp": "^4.0.0"
   }
 }
