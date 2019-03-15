@@ -424,6 +424,7 @@ export class SnapAssistWindowManager extends GroupWindowManager {
         if (isOpenFin()) {
             // OpenFin moved handler
             win.addListener(<WindowEventType>"disabled-frame-bounds-changed", () => this.onMoved(win));
+            win.addListener(<WindowEventType>"frame-enabled", () => win.innerWindow.disableFrame());
         } else {
             // Electron windows specific moved handler
             if (win.innerWindow && win.innerWindow.hookWindowMessage) {
