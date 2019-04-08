@@ -19,8 +19,8 @@ node process.
 From your bootstrap, use the same consistent api as you would from your application.
 
 ```
-const desktopJS = require('desktopjs');
-const electron = require('electron');
+const desktopJS = require('@morgan-stanley/desktopjs');
+const djsElectron = require('@morgan-stanley/desktopjs-electron');
 const app = electron.app;
 
 let mainWindow;
@@ -41,6 +41,7 @@ index.html
 <html>
 <head>
     <script type="text/javascript" src="desktop.js"></script>
+	<script type="text/javascript" src="desktopjs-electron.js"></script>
     <script type="text/javascript" src="app.js"></script>
 </head>
 <body>
