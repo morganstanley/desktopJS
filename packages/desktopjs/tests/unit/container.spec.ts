@@ -97,6 +97,10 @@ describe("container", () => {
         expect(container.ipc).toBeDefined();
     });
 
+    it("ready resolves", (done) => {
+        container.ready().then(done);
+    });
+
     describe("Static events", () => {
         it("addListener adds callback to listeners", () => {
             expect(Container.listeners("TestEvent").length).toEqual(0);

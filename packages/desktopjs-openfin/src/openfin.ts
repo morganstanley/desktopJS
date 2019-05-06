@@ -456,6 +456,10 @@ export class OpenFinContainer extends WebContainerBase {
         });
     }
 
+    public ready(): Promise<void> {
+        return new Promise(resolve => this.desktop.main(resolve));
+    }
+
     public getMainWindow(): ContainerWindow {
         if (!this.mainWindow) {
             this.mainWindow = this.wrapWindow(this.desktop.Application.getCurrent().getWindow());

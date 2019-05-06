@@ -48,6 +48,10 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
      */
     public abstract uuid: string;
 
+    public ready(): Promise<void> {
+        return Promise.resolve();
+    }
+
     public abstract getMainWindow(): ContainerWindow;
 
     public abstract getCurrentWindow(): ContainerWindow;

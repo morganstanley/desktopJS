@@ -21,6 +21,7 @@ class MockDesktop {
             }
         }
     }
+    main(callback): any { callback() };
     GlobalHotkey: any = { };
     Window: any = MockWindow;
     Notification(): any { return {}; }
@@ -500,6 +501,13 @@ describe("OpenFinContainer", () => {
 
     it("hostType is OpenFin", () => {
         expect(container.hostType).toEqual("OpenFin");
+    });
+
+    it("ready invokes underlying main", (done) => {
+        spyOn(desktop, "main").and.callThrough();
+        container.ready().then(() => {
+            expect(desktop.main).toHaveBeenCalled();
+        }).then(done);
     });
 
     describe("ctor options", () => {
