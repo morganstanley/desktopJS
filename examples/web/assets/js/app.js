@@ -1,4 +1,4 @@
-﻿var container = desktopJS.resolveContainer();
+﻿var container;
 var snapAssist;
 
 var hostName = document.getElementById('hostName');
@@ -59,38 +59,42 @@ desktopJS.Electron.ElectronContainer.prototype.showNotification = function (titl
 document.addEventListener("DOMContentLoaded", function (event) {
 	updatefps();
 
-	hostName.innerHTML = container.hostType + " &#8226; " + container.uuid + " &#8226; "+ desktopJS.version;
+	container = desktopJS.resolveContainer();
 
-	$("#button-joingroup").prop("disabled", !container.getCurrentWindow().allowGrouping);
-	$("#button-leavegroup").prop("disabled", !container.getCurrentWindow().allowGrouping);
+	container.ready().then(() => {
+		hostName.innerHTML = container.hostType + " &#8226; " + container.uuid + " &#8226; " + desktopJS.version;
 
-	container.addListener("window-created", (e) => container.log("info", "Window created: " + e.window + ", " + e.windowId + ", " + e.windowName));
-	container.addListener("layout-loaded", (e) => container.log("info", "Layout loaded"));
-	container.addListener("layout-saved", (e) => container.log("info", "Layout saved"));
+		$("#button-joingroup").prop("disabled", !container.getCurrentWindow().allowGrouping);
+		$("#button-leavegroup").prop("disabled", !container.getCurrentWindow().allowGrouping);
 
-	desktopJS.Container.addListener("window-created", (e) => container.log("info", "Window created - static (Container): " + e.windowId + ", " + e.windowName));
-	desktopJS.ContainerWindow.addListener("window-created", (e) => container.log("info", "Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
-	desktopJS.Container.addListener("layout-saved", (e) => container.log("info", "Layout saved - static: " + e.layoutName));
-	desktopJS.Container.addListener("layout-loaded", (e) => container.log("info", "Layout loaded - static: " + e.layoutName));
+		container.addListener("window-created", (e) => container.log("info", "Window created: " + e.window + ", " + e.windowId + ", " + e.windowName));
+		container.addListener("layout-loaded", (e) => container.log("info", "Layout loaded"));
+		container.addListener("layout-saved", (e) => container.log("info", "Layout saved"));
 
-	desktopJS.ContainerWindow.addListener("window-joinGroup", (e) => container.log("info", "grouped " + JSON.stringify(e)));
-	desktopJS.ContainerWindow.addListener("window-leaveGroup", (e) => container.log("info", "ungrouped" + JSON.stringify(e)));
+		desktopJS.Container.addListener("window-created", (e) => container.log("info", "Window created - static (Container): " + e.windowId + ", " + e.windowName));
+		desktopJS.ContainerWindow.addListener("window-created", (e) => container.log("info", "Window created - static (ContainerWindow): " + e.windowId + ", " + e.windowName));
+		desktopJS.Container.addListener("layout-saved", (e) => container.log("info", "Layout saved - static: " + e.layoutName));
+		desktopJS.Container.addListener("layout-loaded", (e) => container.log("info", "Layout loaded - static: " + e.layoutName));
 
-	subscribe();
+		desktopJS.ContainerWindow.addListener("window-joinGroup", (e) => container.log("info", "grouped " + JSON.stringify(e)));
+		desktopJS.ContainerWindow.addListener("window-leaveGroup", (e) => container.log("info", "ungrouped" + JSON.stringify(e)));
 
-	// If url is provided a hash, try to navigate to bootstrap tab if exists
-	var activeTab = $('[href="' + location.hash + '"]');
-	activeTab && activeTab.tab('show');
+		subscribe();
 
-	// Enable popovers
-	$('[data-toggle="popover"]').popover();
+		// If url is provided a hash, try to navigate to bootstrap tab if exists
+		var activeTab = $('[href="' + location.hash + '"]');
+		activeTab && activeTab.tab('show');
 
-	if (container.getCurrentWindow().id === "desktopJS") {
-		snapAssist = new desktopJS.SnapAssistWindowManager(container,
-			{
-				windowStateTracking: desktopJS.WindowStateTracking.Main | desktopJS.WindowStateTracking.Group
-			});
-	}
+		// Enable popovers
+		$('[data-toggle="popover"]').popover();
+
+		if (container.getCurrentWindow().id === "desktopJS") {
+			snapAssist = new desktopJS.SnapAssistWindowManager(container,
+				{
+					windowStateTracking: desktopJS.WindowStateTracking.Main | desktopJS.WindowStateTracking.Group
+				});
+		}
+	});
 });
 
 openWindowButton.onclick = function () {
