@@ -4,49 +4,15 @@
     "tasks": [
         {
             "taskName": "build",
-            "command": "${workspaceRoot}/node_modules/.bin/gulp",
+            "command": "${workspaceRoot}/node_modules/.bin/lerna",
+            "args": [
+                "run",
+                "build:lerna"
+            ],
             "showOutput": "always",
             "echoCommand": true,
             "isShellCommand": true,
             "isBuildCommand": true,
-            "problemMatcher": [
-                "$tsc",
-                {
-                    "owner": "tslint",
-                    "pattern": {
-                        "regexp": "^(.+):\\s+\\(.+\\)\\s(\\S+)\\[(\\d+)(.{2})(\\d+)\\]:\\s+(.+)$",
-                        "severity": 0,
-                        "file": 2,
-                        "line": 3,
-                        "column": 5,
-                        "message": 6
-                    },
-                    "fileLocation": "absolute"
-                }
-            ]
-        },
-        {
-            "taskName": "watch",
-            "command": "${workspaceRoot}/node_modules/.bin/gulp",
-            "args": [
-                "watch"
-            ],
-            "showOutput": "never",
-            "echoCommand": true,
-            "isShellCommand": true,
-            "problemMatcher": [
-                "$tsc"
-            ]
-        },
-        {
-            "taskName": "analysis",
-            "command": "${workspaceRoot}/node_modules/.bin/gulp",
-            "args": [
-                "tslint"
-            ],
-            "showOutput": "always",
-            "echoCommand": true,
-            "isShellCommand": true,
             "problemMatcher": [
                 "$tsc",
                 {
