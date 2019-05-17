@@ -6,6 +6,7 @@
   "author": "Morgan Stanley",
   "scripts": {
     "bootstrap": "lerna bootstrap",
+    "postinstall": "npm run bootstrap",
     "tslint": "lerna run tslint",
     "clean": "lerna run clean",
     "build": "lerna run build:lerna",
