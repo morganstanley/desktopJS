@@ -646,7 +646,7 @@ export class OpenFinContainer extends WebContainerBase {
         });
     }
 
-    public saveLayout(name: string): Promise<PersistedWindowLayout> {
+    public buildLayout(): Promise<PersistedWindowLayout> {
         const layout = new PersistedWindowLayout();
 
         return new Promise<PersistedWindowLayout>(async (resolve, reject) => {
@@ -682,7 +682,6 @@ export class OpenFinContainer extends WebContainerBase {
                 });
 
             Promise.all(promises).then(() => {
-                this.saveLayoutToStorage(name, layout);
                 resolve(layout);
             }).catch(reason => reject(reason));
         });

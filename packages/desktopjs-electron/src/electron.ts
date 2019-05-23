@@ -497,7 +497,7 @@ export class ElectronContainer extends WebContainerBase {
         });
     }
 
-    public saveLayout(name: string): Promise<PersistedWindowLayout> {
+    public buildLayout(): Promise<PersistedWindowLayout> {
         const layout = new PersistedWindowLayout();
         const mainWindow = this.getMainWindow().innerWindow;
         const promises: Promise<void>[] = [];
@@ -524,7 +524,6 @@ export class ElectronContainer extends WebContainerBase {
                 });
 
                 Promise.all(promises).then(() => {
-                    this.saveLayoutToStorage(name, layout);
                     resolve(layout);
                 });
             });

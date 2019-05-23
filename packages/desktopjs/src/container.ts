@@ -58,6 +58,8 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
 
     public abstract createWindow(url: string, options?: any): Promise<ContainerWindow>;
 
+    public abstract buildLayout(): Promise<PersistedWindowLayout>;
+
     public abstract saveLayout(name: string): Promise<PersistedWindowLayout>;
 
     public abstract loadLayout(name: string): Promise<PersistedWindowLayout>;
@@ -242,6 +244,17 @@ export abstract class ContainerBase extends Container {
                 } else {
                     reject("Layout does not exist");
                 }
+            });
+        });
+    }
+
+    public abstract buildLayout(): Promise<PersistedWindowLayout>;
+
+    public saveLayout(name: string): Promise<PersistedWindowLayout> {
+        return new Promise<PersistedWindowLayout>(resolve => {
+            this.buildLayout().then(layout => {
+                this.saveLayoutToStorage(name, layout);
+                resolve(layout);
             });
         });
     }
