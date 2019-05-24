@@ -497,7 +497,7 @@ export class ElectronContainer extends WebContainerBase {
         });
     }
 
-    public saveLayout(name: string): Promise<PersistedWindowLayout> {
+    public buildLayout(): Promise<PersistedWindowLayout> {
         const layout = new PersistedWindowLayout();
         const mainWindow = this.getMainWindow().innerWindow;
         const promises: Promise<void>[] = [];
@@ -505,7 +505,7 @@ export class ElectronContainer extends WebContainerBase {
         return new Promise<PersistedWindowLayout>((resolve, reject) => {
             this.getAllWindows().then(windows => {
                 windows.forEach(window => {
-                    promises.push(new Promise<void>((innerResolve, innerReject) => {
+                    promises.push(new Promise<void>(innerResolve => {
                         window.getGroup().then(async group => {
                             layout.windows.push(
                                 {
@@ -524,9 +524,8 @@ export class ElectronContainer extends WebContainerBase {
                 });
 
                 Promise.all(promises).then(() => {
-                    this.saveLayoutToStorage(name, layout);
                     resolve(layout);
-                });
+                }).catch(reject);
             });
         });
     }

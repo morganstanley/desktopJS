@@ -377,7 +377,7 @@ export namespace Default {
             });
         }
 
-        public saveLayout(name: string): Promise<PersistedWindowLayout> {
+        public buildLayout(): Promise<PersistedWindowLayout> {
             const layout = new PersistedWindowLayout();
 
             return new Promise<PersistedWindowLayout>((resolve, reject) => {
@@ -404,9 +404,8 @@ export namespace Default {
                     });
 
                     Promise.all(promises).then(() => {
-                        this.saveLayoutToStorage(name, layout);
                         resolve(layout);
-                    }).catch(reason => reject(reason));
+                    }).catch(reject);
                 });
             });
         }

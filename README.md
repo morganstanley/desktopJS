@@ -48,11 +48,10 @@ Build the project.  This runs static analysis, unit tests and bundles the output
 rollup.
 
 ```
-$ npm run build
+$ npm run build && npm test
 ```
 
-For those using [Visual Studio Code](https://code.visualstudio.com/), tasks.json has a compile task
-configured and can be invoked via ctrl+shift+b by default.
+For those using [Visual Studio Code](https://code.visualstudio.com/), tasks.json has a build task.
 
 Development
 -----------
@@ -63,7 +62,7 @@ To run the examples or to manually test scenarios in each container, there is a 
 a local server with live reload.  This can be run directly via gulp or through npm.
 
 ```
-$ npm run server
+$ npm start
 ```
 
 This is configured to listen at [http://localhost:8000](http://localhost:8000) and will reload upon
@@ -76,7 +75,7 @@ codebase.
 The tests can be run independent of the build.
 
 ```
-$ npm run test
+$ npm test
 ```
 
 A task is provided for [Visual Studio Code](https://code.visualstudio.com/) users that can be launched
