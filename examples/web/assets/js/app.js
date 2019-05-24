@@ -208,12 +208,7 @@ loadlayoutButton.onclick = function () {
 };
 
 savelayoutButton.onclick = function () {
-	//container.saveLayout("Layout");
-	container.buildLayout().then(layout => {
-		window.alert(layout.name);
-	}).catch(reason => {
-		window.alert(reason);
-	})
+	container.saveLayout("Layout");
 };
 
 /** Invoked by window layout saving to maintain state specific to this window */
