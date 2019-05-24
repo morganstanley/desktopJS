@@ -505,7 +505,7 @@ export class ElectronContainer extends WebContainerBase {
         return new Promise<PersistedWindowLayout>((resolve, reject) => {
             this.getAllWindows().then(windows => {
                 windows.forEach(window => {
-                    promises.push(new Promise<void>((innerResolve, innerReject) => {
+                    promises.push(new Promise<void>(innerResolve => {
                         window.getGroup().then(async group => {
                             layout.windows.push(
                                 {
@@ -525,7 +525,7 @@ export class ElectronContainer extends WebContainerBase {
 
                 Promise.all(promises).then(() => {
                     resolve(layout);
-                });
+                }).catch(reject);
             });
         });
     }

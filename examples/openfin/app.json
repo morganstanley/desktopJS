@@ -13,8 +13,8 @@
         "icon": "http://localhost:8000/favicon.ico"
     },
     "runtime": {
-        "arguments": "",
-        "version": "stable"
+        "arguments": "--no-sandbox --enable-crash-reporting",
+        "version": "11.69.42.17"
     },
     "shortcut": {
         "target": []

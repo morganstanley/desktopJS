@@ -251,11 +251,11 @@ export abstract class ContainerBase extends Container {
     public abstract buildLayout(): Promise<PersistedWindowLayout>;
 
     public saveLayout(name: string): Promise<PersistedWindowLayout> {
-        return new Promise<PersistedWindowLayout>(resolve => {
+        return new Promise<PersistedWindowLayout>((resolve, reject) => {
             this.buildLayout().then(layout => {
                 this.saveLayoutToStorage(name, layout);
                 resolve(layout);
-            });
+            }).catch(reject);
         });
     }
 

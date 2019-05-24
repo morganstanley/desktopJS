@@ -683,7 +683,7 @@ export class OpenFinContainer extends WebContainerBase {
 
             Promise.all(promises).then(() => {
                 resolve(layout);
-            }).catch(reason => reject(reason));
+            }).catch(reject);
         });
     }
 }

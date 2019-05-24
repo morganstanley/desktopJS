@@ -405,7 +405,7 @@ export namespace Default {
 
                     Promise.all(promises).then(() => {
                         resolve(layout);
-                    }).catch(reason => reject(reason));
+                    }).catch(reject);
                 });
             });
         }
