@@ -665,6 +665,28 @@ describe("ElectronContainer", () => {
                     done();
                 });
         });
+
+        it("buildLayout skips windows with persist false", (done) => {
+            const win1 = jasmine.createSpyObj(["getOptions", "getGroup", "getState"]);
+            Object.defineProperty(win1, "innerWindow", {
+                value: { name: "win1", "desktopJS-options": { main: true }, "webContents": { getURL() { return "" } }, getBounds() { return undefined } }
+            });
+            win1.getGroup.and.returnValue(Promise.resolve([]));
+            win1.getState.and.returnValue(Promise.resolve(undefined));
+            const win2 = jasmine.createSpyObj(["getOptions", "getGroup", "getState"]);
+            Object.defineProperty(win2, "innerWindow", {
+                value: { name: "win2", "desktopJS-options": { persist: false }, "webContents": { getURL() { return "" } }, getBounds() { return undefined } }
+            });
+            win2.getGroup.and.returnValue(Promise.resolve([]));
+            win2.getState.and.returnValue(Promise.resolve(undefined));
+            spyOn(container, "getMainWindow").and.returnValue(win1);
+            spyOn(container, "getAllWindows").and.returnValue(Promise.resolve([win1, win2]));
+            container.buildLayout().then(layout => {
+                expect(layout).toBeDefined();
+                expect(layout.windows.length).toEqual(1);
+                expect(layout.windows[0].name === "win1")
+            }).then(done);
+        });
     });
 });
 
