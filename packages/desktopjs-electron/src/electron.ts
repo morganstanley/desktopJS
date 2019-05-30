@@ -505,6 +505,11 @@ export class ElectronContainer extends WebContainerBase {
         return new Promise<PersistedWindowLayout>((resolve, reject) => {
             this.getAllWindows().then(windows => {
                 windows.forEach(window => {
+                    const options = window.innerWindow[Container.windowOptionsPropertyKey];
+                    if (options && "persist" in options && !options.persist) {
+                        return;
+                    }
+
                     promises.push(new Promise<void>(innerResolve => {
                         window.getGroup().then(async group => {
                             layout.windows.push(
@@ -514,7 +519,7 @@ export class ElectronContainer extends WebContainerBase {
                                     url: window.innerWindow.webContents.getURL(),
                                     main: (mainWindow === window.innerWindow),
                                     state: await window.getState(),
-                                    options: window.innerWindow[Container.windowOptionsPropertyKey],
+                                    options: options,
                                     bounds: window.innerWindow.getBounds(),
                                     group: group.map(win => win.id)
                                 });

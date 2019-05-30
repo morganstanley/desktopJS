@@ -661,21 +661,27 @@ export class OpenFinContainer extends WebContainerBase {
                         const window = djsWindow.innerWindow;
                         window.getBounds(bounds => {
                             window.getOptions(options => {
-                                delete (<any>options).show; // show is an undocumented option that interferes with the createWindow mapping of show -> autoShow
-                                window.getGroup(group => {
-                                    layout.windows.push(
-                                        {
-                                            name: window.name,
-                                            id: window.name,
-                                            url: window.getNativeWindow() ? window.getNativeWindow().location.toString() : options.url,
-                                            main: (mainWindow && (mainWindow.name === window.name)),
-                                            options: options,
-                                            state: state,
-                                            bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
-                                            group: group.map(win => win.name)
-                                        });
+                                // If window was created with persist: false, skip from layout
+                                const customData: any = (options.customData ? JSON.parse(options.customData) : undefined);
+                                if (customData && "persist" in customData && !customData.persist) {
                                     innerResolve();
-                                }, innerReject);
+                                } else {
+                                    delete (<any>options).show; // show is an undocumented option that interferes with the createWindow mapping of show -> autoShow
+                                    window.getGroup(group => {
+                                        layout.windows.push(
+                                            {
+                                                name: window.name,
+                                                id: window.name,
+                                                url: window.getNativeWindow() ? window.getNativeWindow().location.toString() : options.url,
+                                                main: (mainWindow && (mainWindow.name === window.name)),
+                                                options: options,
+                                                state: state,
+                                                bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
+                                                group: group.map(win => win.name)
+                                            });
+                                        innerResolve();
+                                    }, innerReject);
+                                }
                             }, innerReject);
                         }, innerReject);
                     }));

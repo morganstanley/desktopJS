@@ -385,8 +385,14 @@ export namespace Default {
 
                 this.getAllWindows().then(windows => {
                     windows.forEach(window => {
+                        const nativeWin = window.nativeWindow;
+
+                        const options = nativeWin[Container.windowOptionsPropertyKey];
+                        if (options && "persist" in options && !options.persist) {
+                            return;
+                        }
+
                         promises.push(new Promise<void>(async (innerResolve) => {
-                            const nativeWin = window.nativeWindow;
                             if (this.globalWindow !== nativeWin) {
                                 layout.windows.push(
                                     {
@@ -394,7 +400,7 @@ export namespace Default {
                                         url: nativeWin.location.toString(),
                                         id: window.id,
                                         bounds: { x: nativeWin.screenX, y: nativeWin.screenY, width: nativeWin.outerWidth, height: nativeWin.outerHeight },
-                                        options: nativeWin[Container.windowOptionsPropertyKey],
+                                        options: options,
                                         state: await window.getState()
                                     }
                                 );

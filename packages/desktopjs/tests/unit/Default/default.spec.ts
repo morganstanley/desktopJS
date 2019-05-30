@@ -1,6 +1,7 @@
 import {} from "jasmine";
 import { Default } from "../../../src/Default/default";
 import { ContainerWindow } from "../../../src/window";
+import { Container } from "../../../src/container";
 
 class MockWindow {
     public listener: any;
@@ -459,6 +460,24 @@ describe("DefaultContainer", () => {
                     fail(error);
                     done();
                 });
+        });
+
+        it("buildLayout skips windows with persist false", (done) => {
+            window[Default.DefaultContainer.windowsPropertyKey] = {
+                "1": new MockWindow(),
+                "2": new MockWindow()
+            };
+
+            window[Default.DefaultContainer.windowsPropertyKey]["1"][Default.DefaultContainer.windowNamePropertyKey] = "win1";
+            window[Default.DefaultContainer.windowsPropertyKey]["1"][Container.windowOptionsPropertyKey] = { persist: false };
+            window[Default.DefaultContainer.windowsPropertyKey]["2"][Default.DefaultContainer.windowNamePropertyKey] = "win2";
+
+            let container: Default.DefaultContainer = new Default.DefaultContainer(window);
+            container.buildLayout().then(layout => {
+                expect(layout).toBeDefined();
+                expect(layout.windows.length).toEqual(1);
+                expect(layout.windows[0].name).toEqual("win2");
+            }).then(done);
         });
     });
 });
