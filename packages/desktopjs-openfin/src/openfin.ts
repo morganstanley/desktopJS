@@ -17,7 +17,7 @@ registerContainer("OpenFin", {
 const windowEventMap = {
     move: "bounds-changing",
     resize: "bounds-changing",
-    close: "close-requested",
+    close: "closing",
     focus: "focused",
     blur: "blurred",
     maximize: "maximized",
