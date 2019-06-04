@@ -203,11 +203,14 @@ export class ElectronContainerWindow extends ContainerWindow {
     }
 
     public setState(state: any): Promise<void> {
-        if (this.innerWindow && this.innerWindow.webContents) {
-            return this.innerWindow.webContents.executeJavaScript(`if (window.setState) { window.setState(JSON.parse(\`${JSON.stringify(state)}\`)); }`);
-        } else {
-            return Promise.resolve();
-        }
+        const promise = (this.innerWindow && this.innerWindow.webContents)
+            ? this.innerWindow.webContents.executeJavaScript(`if (window.setState) { window.setState(JSON.parse(\`${JSON.stringify(state)}\`)); }`)
+            : Promise.resolve();
+
+        return promise.then(() => {
+            this.emit("state-changed", { name: "state-changed", sender: this });
+            ContainerWindow.emit("state-changed", { name: "state-changed", windowId: this.id } );
+        });
     }
 
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
