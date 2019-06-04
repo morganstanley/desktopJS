@@ -64,7 +64,8 @@ export type WindowEventType =
     "maximize" |
     "minimize" |
     "restore" |
-    "beforeunload";
+    "beforeunload" |
+    "state-changed";
 
 export class WindowEventArgs extends EventArgs {
     public readonly window?: ContainerWindow;

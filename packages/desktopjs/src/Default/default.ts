@@ -125,6 +125,9 @@ export namespace Default {
                 }
 
                 resolve();
+            }).then(() => {
+                this.emit("state-changed", { name: "state-changed", sender: this });
+                ContainerWindow.emit("state-changed", { name: "state-changed", windowId: this.id } );
             });
         }
 
