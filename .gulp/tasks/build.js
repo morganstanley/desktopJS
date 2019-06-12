@@ -8,22 +8,13 @@ var rollup = require('rollup'),
     commonjs = require('rollup-plugin-commonjs'),
     typescript = require('typescript');
 
-module.exports = function (gulp, pkg, config, name, input, iffe, preventReload) {
+module.exports = function (gulp, pkg, config, name, input, iffe) {
     return function () {
         // Main bundle is umd
         return createBundle('umd', pkg.main)
             .then(function () {
                 // Generate iife for use as a V8 extension if necessary since umd isn't supported
                 createBundle('iife', config.dest + iffe);
-            }).then(function () {
-                if (preventReload) {
-                    // Wrap umd with a condition checking if desktopJS is already defined to not overwrite it.  This will allow
-                    // preload registration of desktopJS without hosted web script includes redefining.
-                    gulp.src(pkg.main)
-                        .pipe(replace(/(\(function \(global, factory\)[\s\S]*}\)\);)([\s\S]*)/, "if (typeof desktopJS === \"undefined\") {$1}$2"))
-                        .pipe(clean())
-                        .pipe(gulp.dest(config.dest));
-                }
             });
 
         function createBundle(format, destination) {
