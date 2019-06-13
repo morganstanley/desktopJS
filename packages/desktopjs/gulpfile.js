@@ -7,7 +7,7 @@ var gulp = require('gulp'),
 gulp.task('tslint', require('../../.gulp/tasks/tslint')(gulp, gulpConfig));
 gulp.task('clean:staging', require('../../.gulp/tasks/clean')(gulp, gulpConfig.staging.dest));
 gulp.task('clean', gulp.series(['clean:staging'], require('../../.gulp/tasks/clean')(gulp, gulpConfig.dest)));
-gulp.task('build:main', require('../../.gulp/tasks/build')(gulp, pkg, gulpConfig, 'desktopJS', 'src/desktop.ts', '/iffe/desktop.js', true));
+gulp.task('build:main', require('../../.gulp/tasks/build')(gulp, pkg, gulpConfig, 'desktopJS', 'src/desktop.ts', '/iffe/desktop.js'));
 gulp.task('build:staging', require('../../.gulp/tasks/stage')(gulp, gulpConfig));
 gulp.task('test', gulp.series(['build:staging'], require('../../.gulp/tasks/tests')(gulp, gulpConfig)));
 gulp.task('dts', require('../../.gulp/tasks/dts')(gulp, pkg.name, gulpConfig.staging.dest + "/src/desktop.d.ts", "../../" + pkg.types));
