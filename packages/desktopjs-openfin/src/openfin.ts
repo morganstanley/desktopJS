@@ -6,7 +6,7 @@ import {
     registerContainer, ContainerWindow, PersistedWindowLayout, Rectangle, Container, WebContainerBase,
     ScreenManager, Display, Point, ObjectTransform, PropertyMap, NotificationOptions, ContainerNotification,
     TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions, EventArgs,
-    GlobalShortcutManager
+    GlobalShortcutManager, WindowEventArgs
 } from "@morgan-stanley/desktopjs";
 
 registerContainer("OpenFin", {
@@ -188,8 +188,8 @@ export class OpenFinContainerWindow extends ContainerWindow {
 
             resolve();
         }).then(() => {
-            this.emit("state-changed", { name: "state-changed", sender: this });
-            ContainerWindow.emit("state-changed", { name: "state-changed", windowId: this.id } );
+            this.emit("state-changed", <EventArgs> { name: "state-changed", sender: this, state: state });
+            ContainerWindow.emit("state-changed", <WindowEventArgs> { name: "state-changed", windowId: this.id, state: state } );
         });
     }
 

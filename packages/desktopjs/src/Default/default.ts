@@ -3,12 +3,13 @@
  */
 
 import { Container, WebContainerBase } from "../container";
-import { ContainerWindow, PersistedWindowLayout, Rectangle } from "../window";
+import { ContainerWindow, PersistedWindowLayout, Rectangle, WindowEventArgs } from "../window";
 import { ScreenManager, Display, Point } from "../screen";
 import { NotificationOptions } from "../notification";
 import { ObjectTransform, PropertyMap } from "../propertymapping";
 import { Guid } from "../guid";
 import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../ipc";
+import { EventArgs } from "../events";
 
 declare var Notification: any;
 
@@ -126,8 +127,8 @@ export namespace Default {
 
                 resolve();
             }).then(() => {
-                this.emit("state-changed", { name: "state-changed", sender: this });
-                ContainerWindow.emit("state-changed", { name: "state-changed", windowId: this.id } );
+                this.emit("state-changed", <EventArgs> { name: "state-changed", sender: this, state: state });
+                ContainerWindow.emit("state-changed", <WindowEventArgs> { name: "state-changed", windowId: this.id, state: state } );
             });
         }
 

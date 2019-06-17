@@ -5,7 +5,8 @@
 import {
     registerContainer, ContainerWindow, PersistedWindowLayout, Rectangle, Container, WebContainerBase,
     ScreenManager, Display, Point, ObjectTransform, PropertyMap, NotificationOptions, ContainerNotification,
-    TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions, GlobalShortcutManager
+    TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions, GlobalShortcutManager,
+    EventArgs, WindowEventArgs
 } from "@morgan-stanley/desktopjs";
 
 registerContainer("Electron", {
@@ -208,8 +209,8 @@ export class ElectronContainerWindow extends ContainerWindow {
             : Promise.resolve();
 
         return promise.then(() => {
-            this.emit("state-changed", { name: "state-changed", sender: this });
-            ContainerWindow.emit("state-changed", { name: "state-changed", windowId: this.id } );
+            this.emit("state-changed", <EventArgs> { name: "state-changed", sender: this, state: state });
+            ContainerWindow.emit("state-changed", <WindowEventArgs> { name: "state-changed", windowId: this.id, state: state } );
         });
     }
 
