@@ -17,7 +17,7 @@ module.exports = function (gulp, config) {
                         dir: config.test.coverage.dest,
                         reporters: ['json']
                     }))
-                    .on('end', remapCoverageFiles)
+                    //.on('end', remapCoverageFiles)
                     .on('finish', function () {
                         gulp.src('.')
                             .pipe(instanbulEnforcer({
