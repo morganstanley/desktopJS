@@ -46,6 +46,8 @@ desktopJS.Default.DefaultContainerWindow.prototype.getSnapshot = function () {
 };
 */
 
+/*
+// Provide polyfill for electron notifications.  here is an example using electron-notify
 desktopJS.Electron.ElectronContainer.prototype.showNotification = function (title, options) {
 	notifier = (this.isRemote) ? this.electron.require("electron-notify") : require("electron-notify");
 
@@ -55,6 +57,7 @@ desktopJS.Electron.ElectronContainer.prototype.showNotification = function (titl
 		onClickFunc: function () { options["notification"].onclick(); }
 	});
 };
+*/
 
 document.addEventListener("DOMContentLoaded", function (event) {
 	updatefps();
