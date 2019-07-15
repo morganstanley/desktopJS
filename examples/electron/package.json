@@ -6,7 +6,6 @@
   "private": true,
   "dependencies": {
     "@morgan-stanley/desktopjs": "^3.4.0",
-    "@morgan-stanley/desktopjs-electron": "^3.4.0",
-    "electron-notify": "^0.1.0"
+    "@morgan-stanley/desktopjs-electron": "^3.4.0"
   }
 }
