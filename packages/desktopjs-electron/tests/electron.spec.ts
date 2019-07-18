@@ -523,8 +523,8 @@ describe("ElectronContainer", () => {
 
     it("createWindow", (done) => {
         spyOn<any>(container, "browserWindow").and.callThrough();
-        container.createWindow("url", { x: "x", taskbar: false }).then(done);
-        expect((<any>container).browserWindow).toHaveBeenCalledWith({ x: "x", skipTaskbar: true });
+        container.createWindow("url", { x: "x", taskbar: false, node: true }).then(done);
+        expect((<any>container).browserWindow).toHaveBeenCalledWith({ x: "x", skipTaskbar: true, webPreferences: { nodeIntegration: true } });
     });
 
     it("createWindow fires window-created", (done) => {
@@ -545,6 +545,22 @@ describe("ElectronContainer", () => {
         const options = { name: "name" };
         container.createWindow("url", options).then(done);
         expect((<any>container).windowManager.initializeWindow).toHaveBeenCalledWith(jasmine.any(Object), "name", options);
+    });
+
+    it("createWindow pulls nodeIntegration default from container", (done) => {
+        const container = new ElectronContainer(electron, new MockIpc(), globalWindow, { node: true });
+        spyOn<any>(container, "browserWindow").and.callThrough();
+        container.createWindow("url", { }).then(() => {
+            expect(container.browserWindow).toHaveBeenCalledWith({ webPreferences: { nodeIntegration: true }});
+        }).then(done);
+    });
+
+    it("createWindow with node specified ignores container default", (done) => {
+        const container = new ElectronContainer(electron, new MockIpc(), globalWindow, { node: true });
+        spyOn<any>(container, "browserWindow").and.callThrough();
+        container.createWindow("url", { node: false }).then(() => {
+            expect(container.browserWindow).toHaveBeenCalledWith({ webPreferences: { nodeIntegration: false }});
+        }).then(done);
     });
 
     it("addTrayIcon", () => {

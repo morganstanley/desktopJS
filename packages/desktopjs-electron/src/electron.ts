@@ -305,6 +305,7 @@ export class ElectronContainer extends WebContainerBase {
     protected menu: any;
     public internalIpc: any;
     private windowManager: ElectronWindowManager;
+    private nodeIntegration: boolean;
 
     /**
      * Gets or sets whether to replace the native web Notification API with a wrapper around showNotification.
@@ -314,7 +315,12 @@ export class ElectronContainer extends WebContainerBase {
     public static replaceNotificationApi: boolean = true;
 
     public static readonly windowOptionsMap: PropertyMap = {
-        taskbar: { target: "skipTaskbar", convert: (value: any, from: any, to: any) => { return !value; } }
+        taskbar: { target: "skipTaskbar", convert: (value: any, from: any, to: any) => { return !value; } },
+        node: {
+            target: "webPreferences", convert: (value: any, from: any, to: any) => {
+                return Object.assign(to.webPreferences || {}, { nodeIntegration: value });
+            }
+        }
     };
 
     public windowOptionsMap: PropertyMap = ElectronContainer.windowOptionsMap;
@@ -366,6 +372,8 @@ export class ElectronContainer extends WebContainerBase {
             this.registerNotificationsApi();
         }
 
+        this.nodeIntegration = (options && options.node != null) ? options.node : null;
+
         this.screen = new ElectronDisplayManager(this.electron);
 
         this.globalShortcut = new ElectronGlobalShortcutManager(this.electron);
@@ -407,6 +415,11 @@ export class ElectronContainer extends WebContainerBase {
     }
 
     protected getWindowOptions(options?: any): any {
+        // If we have any container level node default, apply it here if no preference is specified in the options
+        if (this.nodeIntegration != null && !("node" in options)) {
+            options.node = this.nodeIntegration;
+        }
+
         return ObjectTransform.transformProperties(options, this.windowOptionsMap);
     }
 
