@@ -24,23 +24,12 @@ steps:
 - script: |
     npm run docs
   displayName: 'Generate docs'
+  condiion: ne(variables['Build.Reason'], 'PullRequest')
 
 - script: |
     npm pack
   displayName: 'Package for npm release'
-
-- task: CopyFiles@2
-  inputs:
-    sourceFolder: '$(Build.SourcesDirectory)/dist'
-    contents: '**' 
-    targetFolder: $(Build.ArtifactStagingDirectory)/dist
-  displayName: 'Copy dist output'  
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)/dist'
-    artifactName: dist
-  displayName: 'Publish dist files as artifacts'
+  condiion: ne(variables['Build.Reason'], 'PullRequest')
 
 - task: CopyFiles@2
   inputs:
@@ -48,6 +37,7 @@ steps:
     contents: '*.tgz' 
     targetFolder: $(Build.ArtifactStagingDirectory)/npm
   displayName: 'Copy npm package'
+  condiion: ne(variables['Build.Reason'], 'PullRequest')
 
 - task: CopyFiles@2
   inputs:
@@ -55,9 +45,11 @@ steps:
     contents: 'package.json' 
     targetFolder: $(Build.ArtifactStagingDirectory)/npm
   displayName: 'Copy package.json'
+  condiion: ne(variables['Build.Reason'], 'PullRequest')
 
 - task: PublishBuildArtifacts@1
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)/npm'
     artifactName: npm
-  displayName: 'Publish npm artifact'  
+  displayName: 'Publish npm artifact'
+  condiion: ne(variables['Build.Reason'], 'PullRequest')
