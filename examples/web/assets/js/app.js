@@ -62,7 +62,7 @@ desktopJS.Electron.ElectronContainer.prototype.showNotification = function (titl
 document.addEventListener("DOMContentLoaded", function (event) {
 	updatefps();
 
-	container = desktopJS.resolveContainer();
+	container = desktopJS.resolveContainer({node: true});
 
 	container.ready().then(() => {
 		hostName.innerHTML = container.hostType + " &#8226; " + container.uuid + " &#8226; " + desktopJS.version;
