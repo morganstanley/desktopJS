@@ -401,7 +401,7 @@ export namespace Default {
                                 layout.windows.push(
                                     {
                                         name: window.name,
-                                        url: nativeWin.location.toString(),
+                                        url: (nativeWin && nativeWin.location) ? nativeWin.location.toString() : undefined,
                                         id: window.id,
                                         bounds: { x: nativeWin.screenX, y: nativeWin.screenY, width: nativeWin.outerWidth, height: nativeWin.outerHeight },
                                         options: options,
