@@ -62,7 +62,7 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
 
     public abstract saveLayout(name: string): Promise<PersistedWindowLayout>;
 
-    public abstract loadLayout(name: string): Promise<PersistedWindowLayout>;
+    public abstract loadLayout(layout: string | PersistedWindowLayout): Promise<PersistedWindowLayout>;
 
     public abstract getLayouts(): Promise<PersistedWindowLayout[]>;
 
@@ -187,13 +187,13 @@ export abstract class ContainerBase extends Container {
 
     protected abstract closeAllWindows(excludeSelf?: Boolean): Promise<void>;
 
-    public loadLayout(name: string): Promise<PersistedWindowLayout> {
+    public loadLayout(layout: string | PersistedWindowLayout): Promise<PersistedWindowLayout> {
         return new Promise<PersistedWindowLayout>((resolve, reject) => {
             this.closeAllWindows(true).then(() => {
-                const layout = <PersistedWindowLayout>this.getLayoutFromStorage(name);
-                if (layout && layout.windows) {
+                const layoutToLoad = (typeof layout === "string") ? <PersistedWindowLayout>this.getLayoutFromStorage(layout) : layout;
+                if (layoutToLoad && layoutToLoad.windows) {
                     const promises: Promise<ContainerWindow>[] = [];
-                    for (const window of layout.windows) {
+                    for (const window of layoutToLoad.windows) {
                         const options: any = Object.assign(window.options || {}, window.bounds);
                         options.name = window.name;
                         if (window.main) {
@@ -209,7 +209,7 @@ export abstract class ContainerBase extends Container {
 
                         // de-dupe window grouping
                         windows.forEach(window => {
-                            const matchingWindow = layout.windows.find(win => win.name === window.name);
+                            const matchingWindow = layoutToLoad.windows.find(win => win.name === window.name);
                             if (matchingWindow && matchingWindow.state && window.setState) {
                                 window.setState(matchingWindow.state).catch(e => this.log("error", "Error invoking setState: " + e));
                             }
@@ -231,18 +231,18 @@ export abstract class ContainerBase extends Container {
 
                         groupMap.forEach((targets, window) => {
                             targets.forEach(target => {
-                                this.getWindowByName(layout.windows.find(win => win.id === target).name).then(targetWin => {
+                                this.getWindowByName(layoutToLoad.windows.find(win => win.id === target).name).then(targetWin => {
                                     targetWin.joinGroup(window);
                                 });
                             });
                         });
                     });
 
-                    this.emit("layout-loaded", { sender: this, name: "layout-loaded", layout: layout, layoutName: layout.name });
-                    Container.emit("layout-loaded", { name: "layout-loaded", layout: layout, layoutName: layout.name });
-                    resolve(layout);
+                    this.emit("layout-loaded", { sender: this, name: "layout-loaded", layout: layoutToLoad, layoutName: layoutToLoad.name });
+                    Container.emit("layout-loaded", { name: "layout-loaded", layout: layoutToLoad, layoutName: layoutToLoad.name });
+                    resolve(layoutToLoad);
                 } else {
-                    reject("Layout does not exist");
+                    reject("Layout does not exist or is invalid");
                 }
             });
         });
