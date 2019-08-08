@@ -263,10 +263,11 @@ export interface ContainerWindowManager {
     createWindow(url: string, options?: any): Promise<ContainerWindow>;
 
     /**
-     * Loads a window layout from persistence
-     * @param {string} name - Name of the window layout to load
+     * Loads a window layout
+     * @param {string | PersistedWindowLayout} name - Name of the window layout to load or the layout itself
+     * @returns {Promise<PersistedWindowLayout>} - A promise that returns {@link PersistedWindowLayout} that is loaded
      */
-    loadLayout(name: string): Promise<PersistedWindowLayout>;
+    loadLayout(layout: string | PersistedWindowLayout): Promise<PersistedWindowLayout>;
 
     /**
      * Builds the current window layout
