@@ -218,11 +218,12 @@ export namespace Default {
      */
     export class DefaultContainer extends WebContainerBase {
         private mainWindow: ContainerWindow;
-        private windows: ContainerWindow[];
 
         public static readonly windowsPropertyKey: string = "desktopJS-windows";
         public static readonly windowUuidPropertyKey: string = "desktopJS-uuid";
         public static readonly windowNamePropertyKey: string = "desktopJS-name";
+
+        private static readonly rootWindowUuid: string = "root";
 
         public static readonly defaultWindowOptionsMap: PropertyMap = {
             x: { target: "left" },
@@ -240,6 +241,7 @@ export namespace Default {
             // Create a global windows object for tracking all windows and add the current global window for current
             if (this.globalWindow && !(DefaultContainer.windowsPropertyKey in this.globalWindow)) {
                 this.globalWindow[DefaultContainer.windowsPropertyKey] = { root: this.globalWindow };
+                this.globalWindow[DefaultContainer.windowNamePropertyKey] = this.globalWindow[DefaultContainer.windowUuidPropertyKey] = DefaultContainer.rootWindowUuid;
             }
 
             this.screen = new DefaultDisplayManager(this.globalWindow);
@@ -251,7 +253,8 @@ export namespace Default {
 
         public getMainWindow(): ContainerWindow {
             if (!this.mainWindow) {
-                this.mainWindow = new DefaultContainerWindow(this.globalWindow);
+                const win = this.globalWindow[DefaultContainer.windowsPropertyKey].root;
+                this.mainWindow = win ? this.wrapWindow(win) : null;
             }
 
             return this.mainWindow;

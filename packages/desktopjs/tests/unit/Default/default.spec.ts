@@ -336,6 +336,7 @@ describe("DefaultContainer", () => {
         let container: Default.DefaultContainer = new Default.DefaultContainer(window);
         let win: ContainerWindow = container.getMainWindow();
         expect(win).toBeDefined();
+        expect(win.id).toEqual("root");
         expect(win.innerWindow).toEqual(window);
     });
 
