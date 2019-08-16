@@ -22,7 +22,7 @@ const registeredContainers: {id: string, registration: ContainerRegistration}[] 
 
 /** Clears all container registrations. */
 export function clearRegistry() {
-    registeredContainers.splice(0, registeredContainers.length - 1);
+    registeredContainers.splice(0, registeredContainers.length);
     container = undefined;
 }
 

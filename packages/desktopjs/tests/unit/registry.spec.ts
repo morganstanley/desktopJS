@@ -38,7 +38,7 @@ describe("registry", () => {
             registry.registerContainer("Test", { condition: () => false, create: () => mockContainer });
             const container: Container = registry.resolveContainer(true);
             expect(container).toBeDefined();
-            expect(container.hostType).toEqual("Test");
+            expect(container.hostType).toEqual("Default");
         });
 
         // tslint:disable-next-line: mocha-no-side-effect-code
