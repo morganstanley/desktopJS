@@ -68,15 +68,16 @@ export function resolveContainer(param1?: boolean | any, param2?: any): Containe
     if (!force && container) {
         return container;
     }
-    let registration: ContainerRegistration;
+    let registration: ContainerRegistration, containerId: string;
     try {
         for (let i: number =0; i< registeredContainers.length; i++) { // tslint:disable-line
+            containerId = registeredContainers[i].id;
             const testReg: ContainerRegistration = registeredContainers[i].registration;
             registration = testReg.condition(options) ? testReg : registration;
         }
         container = registration.create(options);
     } catch (e) {
-        console.error(`Error resolving container : ${e.toString()}`);
+        console.error(`Error resolving container '${containerId}' : ${e.toString()}`);
     } finally {
         container = container || new Default.DefaultContainer();
     }

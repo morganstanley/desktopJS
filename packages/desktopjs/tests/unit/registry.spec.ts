@@ -60,7 +60,7 @@ describe("registry", () => {
             spyOn(console, "error");
             setUpContainer({ condition: () => { throw new Error("Forced Error"); }, create: () => mockContainer });
             const container: Container = registry.resolveContainer(true);
-            expect(console.error).toHaveBeenCalledWith("Error resolving container : Error: Forced Error");
+            expect(console.error).toHaveBeenCalledWith("Error resolving container 'Test' : Error: Forced Error" );
         });
 
         it ("resolveContainer passes options", () => {
