@@ -18,11 +18,11 @@ export class ContainerRegistration {
     create: (options?: any) => Container;
 }
 
-const registeredContainers: Map<string, ContainerRegistration> = new Map();
+const registeredContainers: {id: string, registration: ContainerRegistration}[] = [];
 
 /** Clears all container registrations. */
 export function clearRegistry() {
-    registeredContainers.clear();
+    registeredContainers.splice(0, registeredContainers.length);
     container = undefined;
 }
 
@@ -31,7 +31,7 @@ export function clearRegistry() {
  * @param {ContainerRegistration} registration Registration details.
  */
 export function registerContainer(id: string, registration: ContainerRegistration) {
-    registeredContainers[id] = registration;
+    registeredContainers.push( { id: id, registration: registration } );
 }
 
 export let container: Container;
@@ -68,16 +68,19 @@ export function resolveContainer(param1?: boolean | any, param2?: any): Containe
     if (!force && container) {
         return container;
     }
-
-    for (const entry in registeredContainers) {
-        try {
-            if (registeredContainers[entry].condition(options)) {
-                return container = registeredContainers[entry].create(options);
-            }
-        } catch (e) {
-            console.error("Error resolving container '" + entry + "': " + e.toString());
+    let registration: ContainerRegistration, containerId: string;
+    try {
+        for (let i: number =0; i< registeredContainers.length; i++) { // tslint:disable-line
+            containerId = registeredContainers[i].id;
+            const testReg: ContainerRegistration = registeredContainers[i].registration;
+            registration = testReg.condition(options) ? testReg : registration;
         }
+        container = registration.create(options);
+    } catch (e) {
+        console.error(`Error resolving container '${containerId}' : ${e.toString()}`);
+    } finally {
+        container = container || new Default.DefaultContainer();
     }
 
-    return container = new Default.DefaultContainer();
+    return container;
 }
