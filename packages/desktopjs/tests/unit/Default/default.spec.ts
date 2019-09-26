@@ -95,7 +95,7 @@ describe("DefaultContainerWindow", () => {
         });
     });        
 
-    describe("setState", () => {
+    xdescribe("setState", () => {
         it("setState undefined", (done) => {
             let mockWindow = new MockWindow();
             delete mockWindow.setState;            
