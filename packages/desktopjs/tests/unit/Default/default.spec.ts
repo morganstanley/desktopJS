@@ -267,6 +267,15 @@ describe("DefaultContainer", () => {
         expect(container.hostType).toEqual("Default");
     });
 
+    it ("getInfo returns underlying navigator appversion", (done) => {
+        const window = new MockWindow();
+        window["navigator"] = { appVersion: "useragent" };
+        const container: Default.DefaultContainer = new Default.DefaultContainer(<any>window);
+        container.getInfo().then(info => {
+            expect(info).toEqual("useragent");
+        }).then(done);
+    });
+
     describe("createWindow", () => {
         let container: Default.DefaultContainer;
 

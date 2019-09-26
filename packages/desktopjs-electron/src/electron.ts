@@ -398,6 +398,10 @@ export class ElectronContainer extends WebContainerBase {
         }
     }
 
+    public getInfo(): Promise<string | undefined> {
+        return Promise.resolve(`Electron/${this.electron.process.versions.electron} Chrome/${this.electron.process.versions.chrome}`);
+    }
+
     public getMainWindow(): ContainerWindow {
         for (const window of this.browserWindow.getAllWindows()) {
             if (window[Container.windowOptionsPropertyKey] && window[Container.windowOptionsPropertyKey].main) {

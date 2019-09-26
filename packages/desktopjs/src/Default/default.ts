@@ -251,6 +251,10 @@ export namespace Default {
             return new DefaultMessageBus(this);
         }
 
+        public getInfo(): Promise<string | undefined> {
+            return Promise.resolve(this.globalWindow.navigator.appVersion);
+        }
+
         public getMainWindow(): ContainerWindow {
             if (!this.mainWindow) {
                 const win = this.globalWindow[DefaultContainer.windowsPropertyKey].root;

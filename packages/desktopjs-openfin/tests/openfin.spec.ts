@@ -505,6 +505,18 @@ describe("OpenFinContainer", () => {
         expect(container.hostType).toEqual("OpenFin");
     });
 
+    it ("getInfo invokes underlying getRvmInfo and getRuntimeInfo", (done) => {
+        const system = jasmine.createSpyObj("system", ["getRvmInfo", "getRuntimeInfo"]);
+        system.getRvmInfo.and.callFake(f => f({ version: "1" }));
+        system.getRuntimeInfo.and.callFake(f => f({ version: "2" }));
+        Object.defineProperty(desktop, "System", { value: system });
+        container.getInfo().then(info => {
+            expect(system.getRvmInfo).toHaveBeenCalledTimes(1);
+            expect(system.getRuntimeInfo).toHaveBeenCalledTimes(1);
+            expect(info).toEqual("RVM/1 Runtime/2");
+        }).then(done);
+    });
+
     it("ready invokes underlying main", (done) => {
         spyOn(desktop, "main").and.callThrough();
         container.ready().then(() => {
