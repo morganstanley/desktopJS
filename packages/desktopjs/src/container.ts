@@ -42,6 +42,10 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
      */
     public abstract hostType: string;
 
+    public getInfo(): Promise<string> {
+        return Promise.resolve(undefined);
+    }
+
     /**
      * Unique v4 GUID for this Container instance
      * @type {string}

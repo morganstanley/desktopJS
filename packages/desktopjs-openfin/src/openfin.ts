@@ -453,6 +453,17 @@ export class OpenFinContainer extends WebContainerBase {
         }
     }
 
+    public getInfo(): Promise<string | undefined> {
+        return new Promise<string | undefined>((resolve, reject) => {
+            this.desktop.System.getRvmInfo(rvmInfo => {
+                this.desktop.System.getRuntimeInfo(runtimeInfo => {
+                    console.log(runtimeInfo); // tslint:disable-line
+                    resolve(`RVM/${rvmInfo.version} Runtime/${runtimeInfo.version}`);
+                }, reject);
+            }, reject);
+        });
+    }
+
     public log(level: "debug" | "info" | "warn" | "error", message: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.desktop.System.log(level, message, resolve, reject);

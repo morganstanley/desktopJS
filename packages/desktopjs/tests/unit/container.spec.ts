@@ -103,6 +103,12 @@ describe("container", () => {
         container.ready().then(done);
     });
 
+    it ("getInfo returns undefined", (done) => {
+        container.getInfo().then(info => {
+            expect(info).toBeUndefined();
+        }).then(done);
+    });
+
     describe("Static events", () => {
         it("addListener adds callback to listeners", () => {
             expect(Container.listeners("TestEvent").length).toEqual(0);

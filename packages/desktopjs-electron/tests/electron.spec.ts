@@ -453,7 +453,8 @@ describe("ElectronContainer", () => {
                 }
             },
             require: (type: string) => { return {} },
-            getCurrentWindow: () => { return windows[0]; }
+            getCurrentWindow: () => { return windows[0]; },
+            process: { versions: { electron: "1", chrome: "2" } }
         };
         container = new ElectronContainer(electron, new MockIpc(), globalWindow);
     });
@@ -461,6 +462,13 @@ describe("ElectronContainer", () => {
     it("hostType is Electron", () => {
         expect(container.hostType).toEqual("Electron");
     });
+
+    it ("getInfo invokes underlying version info", (done) => {
+        container.getInfo().then(info => {
+            expect(info).toEqual("Electron/1 Chrome/2");
+        }).then(done);
+    });
+
 
     it("error during creation", () => {
         spyOn(console, "error");
