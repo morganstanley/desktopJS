@@ -253,6 +253,13 @@ describe("container", () => {
                 (<any>container).saveLayoutToStorage("Test", layout);
             });
 
+            it("deleteLayout fires layout-deleted", async (done) => {
+                container.addListener("layout-deleted", async (e) => {
+                    done();
+                });
+                container.deleteLayout("Test");
+            });
+
             it("getLayouts", (done) => {
                 container.getLayouts().then(layouts => {
                     expect(layouts).toBeDefined();

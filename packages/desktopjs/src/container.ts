@@ -15,7 +15,8 @@ import { GlobalShortcutManager } from "./shortcut";
 export type ContainerEventType =
     "window-created" |
     "layout-loaded" |
-    "layout-saved";
+    "layout-saved" |
+    "layout-deleted";
 
 export class LayoutEventArgs extends EventArgs {
     public readonly layout?: PersistedWindowLayout;
@@ -67,6 +68,8 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
     public abstract saveLayout(name: string): Promise<PersistedWindowLayout>;
 
     public abstract loadLayout(layout: string | PersistedWindowLayout): Promise<PersistedWindowLayout>;
+
+    public abstract deleteLayout(layout: string): Promise<void>;
 
     public abstract getLayouts(): Promise<PersistedWindowLayout[]>;
 
@@ -189,6 +192,19 @@ export abstract class ContainerBase extends Container {
         Container.emit("layout-saved", { name: "layout-saved", layout: layout, layoutName: layout.name });
     }
 
+    protected deleteLayoutFromStorage(name: string) {
+        const layouts: any = JSON.parse(this.storage.getItem(ContainerBase.layoutsPropertyKey)) || {};
+        const layout = layouts[name];
+
+        if (layout) {
+            delete layouts[name];
+
+            this.storage.setItem(ContainerBase.layoutsPropertyKey, JSON.stringify(layouts));
+            this.emit("layout-deleted", { sender: this, name: "layout-deleted", layoutName: layout.name });
+            Container.emit("layout-deleted", { name: "layout-deleted", layoutName: layout.name });
+        }
+    }
+
     protected abstract closeAllWindows(excludeSelf?: Boolean): Promise<void>;
 
     public loadLayout(layout: string | PersistedWindowLayout): Promise<PersistedWindowLayout> {
@@ -260,6 +276,12 @@ export abstract class ContainerBase extends Container {
                 this.saveLayoutToStorage(name, layout);
                 resolve(layout);
             }).catch(reject);
+        });
+    }
+
+    public deleteLayout(name: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            resolve(this.deleteLayoutFromStorage(name));
         });
     }
 
