@@ -285,6 +285,11 @@ export interface ContainerWindowManager {
      *  @returns {Promise<PersistedWindowLayout[]>} - A promise that returns an array of {@link PersistedWindowLayout} if resolved
      */
     getLayouts(): Promise<PersistedWindowLayout[]>;
+
+    /** Persists a window layout
+     * @param {string} name - Name of the window layout to delete
+     */
+    deleteLayout(name: string): Promise<void>;
 }
 
 /** Represents a persisted window in a layout */
