@@ -1,7 +1,7 @@
 ![desktopJS](https://raw.githubusercontent.com/wiki/morgan-stanley/desktopJS/images/logo.png)
 ==========
 [![npm version](https://badge.fury.io/js/%40morgan-stanley%2Fdesktopjs.svg)](https://www.npmjs.com/package/@morgan-stanley/desktopjs)
-[![Build Status](https://travis-ci.org/Morgan-Stanley/desktopJS.svg?branch=master)](https://travis-ci.org/Morgan-Stanley/desktopJS)
+[![Build Status](https://travis-ci.com/Morgan-Stanley/desktopJS.svg?branch=master)](https://travis-ci.com/Morgan-Stanley/desktopJS?branch=master)
 [![codecov](https://codecov.io/gh/Morgan-Stanley/desktopJS/branch/master/graph/badge.svg)](https://codecov.io/gh/Morgan-Stanley/desktopJS)
 [![Greenkeeper badge](https://badges.greenkeeper.io/Morgan-Stanley/desktopJS.svg)](https://greenkeeper.io/)
 [![devDependencies Status](https://david-dm.org/Morgan-Stanley/desktopJS/dev-status.svg)](https://david-dm.org/Morgan-Stanley/desktopJS?type=dev)
