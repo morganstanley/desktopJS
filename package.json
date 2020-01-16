@@ -45,7 +45,7 @@
     "tslint": "^5.18.0",
     "tslint-microsoft-contrib": "^6.2.0",
     "typedoc": "^0.15.6",
-    "typedoc-plugin-external-module-name": "^2.1.0",
+    "typedoc-plugin-external-module-name": "^3.0.0",
     "typescript": "^3.5.3"
   }
 }
