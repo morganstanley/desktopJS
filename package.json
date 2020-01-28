@@ -18,6 +18,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@types/node": "^13.5.0",
     "codecov": "^3.5.0",
     "dts-bundle": "^0.7.3",
     "gulp": "^4.0.2",
@@ -30,7 +31,7 @@
     "gulp-replace": "^1.0.0",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-tslint": "^8.1.4",
-    "gulp-typedoc": "^2.0.2",
+    "gulp-typedoc": "^2.2.4",
     "gulp-typescript": "^5.0.1",
     "gulp-uglify": "^3.0.2",
     "lerna": "^3.15.0",
@@ -44,8 +45,8 @@
     "run-sequence": "^2.2.1",
     "tslint": "^5.18.0",
     "tslint-microsoft-contrib": "^6.2.0",
-    "typedoc": "^0.15.6",
+    "typedoc": "^0.16.9",
     "typedoc-plugin-external-module-name": "^3.0.0",
-    "typescript": "^3.5.3"
+    "typescript": "^3.7.5"
   }
 }
