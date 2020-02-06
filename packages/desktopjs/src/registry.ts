@@ -18,7 +18,7 @@ export class ContainerRegistration {
     create: (options?: any) => Container;
 }
 
-const registeredContainers: {id: string, registration: ContainerRegistration}[] = [];
+const registeredContainers: { id: string, registration: ContainerRegistration }[] = [];
 
 /** Clears all container registrations. */
 export function clearRegistry() {
@@ -31,7 +31,7 @@ export function clearRegistry() {
  * @param {ContainerRegistration} registration Registration details.
  */
 export function registerContainer(id: string, registration: ContainerRegistration) {
-    registeredContainers.push( { id: id, registration: registration } );
+    registeredContainers.push({ id: id, registration: registration });
 }
 
 export let container: Container;
@@ -53,7 +53,7 @@ export function resolveContainer(options?: any): Container; // tslint:disable-li
  * @param {any} options (Optional) Options to pass through to condition and create factory method.
  * @returns {Container} Current concrete container.  If no match is found, a DefaultContainer.
  */
-export function resolveContainer(force: boolean, options? :any): Container; // tslint:disable-line
+export function resolveContainer(force: boolean, options?: any): Container; // tslint:disable-line
 
 export function resolveContainer(param1?: boolean | any, param2?: any): Container {
     let force = false;
@@ -70,12 +70,12 @@ export function resolveContainer(param1?: boolean | any, param2?: any): Containe
     }
     let registration: ContainerRegistration, containerId: string;
     try {
-        for (let i: number =0; i< registeredContainers.length; i++) { // tslint:disable-line
+        for (let i: number = 0; i < registeredContainers.length; i++) { // tslint:disable-line
             containerId = registeredContainers[i].id;
             const testReg: ContainerRegistration = registeredContainers[i].registration;
             registration = testReg.condition(options) ? testReg : registration;
         }
-        container = registration.create(options);
+        container = registration ? registration.create(options) : undefined;
     } catch (e) {
         console.error(`Error resolving container '${containerId}' : ${e.toString()}`);
     } finally {
