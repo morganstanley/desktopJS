@@ -2,7 +2,7 @@
   "name": "@morgan-stanley/desktopjs-electron",
   "title": "desktopJS-electron",
   "description": "desktopJS container implementation for Electron",
-  "version": "3.7.0",
+  "version": "3.7.1",
   "publishConfig": {
     "access": "public"
   },
@@ -33,7 +33,7 @@
     "deploy": "npm publish"
   },
   "devDependencies": {
-    "@morgan-stanley/desktopjs": "^3.7.0",
+    "@morgan-stanley/desktopjs": "^3.7.1",
     "@types/jasmine": "^2.8.16",
     "gulp": "^4.0.2"
   }
