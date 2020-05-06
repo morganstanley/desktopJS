@@ -128,6 +128,12 @@ export abstract class ContainerWindow extends EventEmitter {
 
     public abstract flash(enable: boolean, options?: any): Promise<void>;
 
+    /** Returns the parent window of this window. */
+    public abstract getParent(): Promise<ContainerWindow>;
+
+    /** Sets the parent window of this window. */
+    public abstract setParent(parent: ContainerWindow): Promise<void>;
+
     /** Set the current bounds of the window.
      * @param {Rectangle} bounds
      */

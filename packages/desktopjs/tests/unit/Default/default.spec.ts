@@ -93,7 +93,7 @@ describe("DefaultContainerWindow", () => {
                 expect(state).toEqual(mockState);
             }).then(done);
         });
-    });        
+    });
 
     xdescribe("setState", () => {
         it("setState undefined", (done) => {
@@ -184,13 +184,21 @@ describe("DefaultContainerWindow", () => {
         });
     });
 
+    it("getParent throws no errors", (done) => {
+        expect(() => win.getParent().then(done)).not.toThrow();
+    });
+
+    it("setParent throws no errors", (done) => {
+        expect(() => win.setParent(null).then(done)).not.toThrow();
+    });
+
     it("getOptions", async (done) => {
         const win = await new Default.DefaultContainer(<any>new MockWindow()).createWindow("url", { a: "foo" });
         win.getOptions().then(options => {
             expect(options).toBeDefined();
             expect(options).toEqual({ a: "foo"});
         }).then(done);
-    });    
+    });
 
     describe("addListener", () => {
         it("addListener calls underlying window addEventListener with mapped event name", () => {

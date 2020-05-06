@@ -369,6 +369,18 @@ describe("OpenFinContainerWindow", () => {
             });
         });
 
+        it("getParent calls underlying getParentWindow", (done) => {
+            spyOn(win.innerWindow, "getParentWindow");
+            win.getParent().then(() => {
+                expect(win.innerWindow.getParentWindow).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it("setParent does not throw", (done) => {
+            expect(() => win.setParent(null).then(done)).not.toThrow();
+        });
+
         describe("getOptions", () => {
             it("getOptions invokes underlying getOptions and returns undefined customData", (done) => {
                 spyOn(win.innerWindow, "getOptions").and.callFake(callback => callback({ }));
