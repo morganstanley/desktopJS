@@ -123,12 +123,11 @@ export class OpenFinContainerWindow extends ContainerWindow {
     }
 
     public getParent(): Promise<ContainerWindow> {
-        return Promise.resolve(this.innerWindow.getParentWindow());
+        return Promise.resolve(null);
     }
 
     public setParent(parent: ContainerWindow): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            // add call when OpenFin implements this
             resolve();
         });
     }

@@ -369,12 +369,8 @@ describe("OpenFinContainerWindow", () => {
             });
         });
 
-        it("getParent calls underlying getParentWindow", (done) => {
-            spyOn(win.innerWindow, "getParentWindow");
-            win.getParent().then(() => {
-                expect(win.innerWindow.getParentWindow).toHaveBeenCalled();
-                done();
-            });
+        it("getParent does not throw", (done) => {
+            expect(() => win.getParent().then(done)).not.toThrow();
         });
 
         it("setParent does not throw", (done) => {
