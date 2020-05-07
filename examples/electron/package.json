@@ -5,7 +5,7 @@
   "main": "electron.js",
   "private": true,
   "dependencies": {
-    "@morgan-stanley/desktopjs": "^3.7.1",
-    "@morgan-stanley/desktopjs-electron": "^3.7.1"
+    "@morgan-stanley/desktopjs": "^3.8.0",
+    "@morgan-stanley/desktopjs-electron": "^3.8.0"
   }
 }
