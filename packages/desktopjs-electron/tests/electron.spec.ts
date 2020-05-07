@@ -49,6 +49,7 @@ class MockWindow extends MockEventEmitter {
     }
 
     public getParentWindow(): any { return undefined; }
+    public setParentWindow(parent: any) { }
 
     public getAllWindows(): any { return [new MockWindow(), new MockWindow("target")]; }
 
@@ -279,6 +280,23 @@ describe("ElectronContainerWindow", () => {
             spyOn(win.innerWindow, "flashFrame").and.callThrough();
             win.flash(false).then(() => {
                 expect(win.innerWindow.flashFrame).toHaveBeenCalledWith(false);
+                done();
+            });
+        });
+
+        it("getParent calls underlying getParentWindow", (done) => {
+            spyOn(win.innerWindow, "getParentWindow");
+            win.getParent().then(() => {
+                expect(win.innerWindow.getParentWindow).toHaveBeenCalled();
+                done();
+            });
+        });
+
+        it("setParent calls underlying setParentWindow", (done) => {
+            const mockParent = { innerWindow: new MockWindow() };
+            spyOn(win.innerWindow, "setParentWindow");
+            win.setParent(<any>mockParent).then(() => {
+                expect(win.innerWindow.setParentWindow).toHaveBeenCalledWith(mockParent.innerWindow);
                 done();
             });
         });

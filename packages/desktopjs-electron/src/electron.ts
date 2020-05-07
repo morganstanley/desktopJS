@@ -126,6 +126,17 @@ export class ElectronContainerWindow extends ContainerWindow {
         return Promise.resolve();
     }
 
+    public getParent(): Promise<ContainerWindow> {
+        return Promise.resolve(this.innerWindow.getParentWindow());
+    }
+
+    public setParent(parent: ContainerWindow): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.innerWindow.setParentWindow(parent.innerWindow);
+            resolve();
+        });
+    }
+
     public getBounds(): Promise<Rectangle> {
         return new Promise<Rectangle>(resolve => {
             const { x, y, width, height } = this.innerWindow.getBounds();

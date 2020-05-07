@@ -93,6 +93,15 @@ export namespace Default {
             return Promise.reject("Not supported");
         }
 
+        public getParent(): Promise<ContainerWindow> {
+            // on the web, there's no parent
+            return Promise.resolve(null);
+        }
+
+        public setParent(parent: ContainerWindow): Promise<void> {
+            return Promise.resolve();
+        }
+
         public getBounds(): Promise<Rectangle> {
             return new Promise<Rectangle>(resolve => {
                 resolve(new Rectangle(this.innerWindow.screenX, this.innerWindow.screenY, this.innerWindow.outerWidth, this.innerWindow.outerHeight));
