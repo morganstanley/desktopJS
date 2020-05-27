@@ -419,7 +419,7 @@ export namespace Default {
                                         name: window.name,
                                         url: (nativeWin && nativeWin.location) ? nativeWin.location.toString() : undefined,
                                         id: window.id,
-                                        bounds: { x: nativeWin.screenX, y: nativeWin.screenY, width: nativeWin.outerWidth, height: nativeWin.outerHeight },
+                                        bounds: { x: nativeWin.screenX, y: nativeWin.screenY, width: nativeWin.innerWidth, height: nativeWin.innerHeight },
                                         options: options,
                                         state: await window.getState()
                                     }
