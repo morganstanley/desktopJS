@@ -4,8 +4,8 @@ var rollup = require('rollup'),
     clean = require('gulp-clean'),
     tsrollup = require('rollup-plugin-typescript'),
     replace = require('gulp-replace'),
-    rollupReplace = require('rollup-plugin-replace'),
-    commonjs = require('rollup-plugin-commonjs'),
+    rollupReplace = require('@rollup/plugin-replace'),
+    commonjs = require('@rollup/plugin-commonjs'),
     typescript = require('typescript');
 
 module.exports = function (gulp, pkg, config, name, input, iffe) {
