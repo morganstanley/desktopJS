@@ -50,7 +50,7 @@
     "tslint-microsoft-contrib": "^6.2.0",
     "typedoc": "^0.16.9",
     "typedoc-plugin-external-module-name": "^3.0.0",
-    "typescript": "^3.7.5"
+    "typescript": "^3.9.3"
   },
   "snyk": true
 }
