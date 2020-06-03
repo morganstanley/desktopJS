@@ -18,7 +18,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "^13.5.0",
+    "@types/node": "^14.0.0",
     "codecov": "^3.5.0",
     "dts-bundle": "^0.7.3",
     "gulp": "^4.0.2",
