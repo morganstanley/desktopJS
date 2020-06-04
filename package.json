@@ -38,7 +38,7 @@
     "gulp-typedoc": "^2.2.5",
     "gulp-typescript": "^5.0.1",
     "gulp-uglify": "^3.0.2",
-    "lerna": "^3.18.0",
+    "lerna": "^3.22.0",
     "merge2": "^1.2.3",
     "remap-istanbul": "^0.13.0",
     "rollup": "^2.12.1",
