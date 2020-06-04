@@ -35,7 +35,7 @@
     "gulp-replace": "^1.0.0",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-tslint": "^8.1.4",
-    "gulp-typedoc": "^2.2.4",
+    "gulp-typedoc": "^2.2.5",
     "gulp-typescript": "^5.0.1",
     "gulp-uglify": "^3.0.2",
     "lerna": "^3.18.0",
@@ -48,8 +48,7 @@
     "snyk": "^1.334.0",
     "tslint": "^5.18.0",
     "tslint-microsoft-contrib": "^6.2.0",
-    "typedoc": "^0.16.9",
-    "typedoc-plugin-external-module-name": "^3.0.0",
+    "typedoc": "^0.16.11",
     "typescript": "^3.9.3"
   },
   "snyk": true
