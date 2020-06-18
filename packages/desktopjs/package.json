@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@types/jasmine": "^2.8.16",
-    "copyfiles": "^2.2.0",
+    "copyfiles": "^2.3.0",
     "gulp": "^4.0.2"
   }
 }
