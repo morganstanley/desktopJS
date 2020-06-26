@@ -39,7 +39,7 @@
     "prepublishOnly": "copyfiles ../../README.md . -u 2"
   },
   "devDependencies": {
-    "@types/jasmine": "^2.8.16",
+    "@types/jasmine": "^3.5.11",
     "copyfiles": "^2.3.0",
     "gulp": "^4.0.2"
   }
