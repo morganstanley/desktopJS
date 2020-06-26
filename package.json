@@ -14,9 +14,7 @@
     "start": "gulp server",
     "docs": "gulp docs",
     "watch": "lerna run --parallel watch",
-    "deploy": "lerna run deploy",
-    "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
+    "deploy": "lerna run deploy"
   },
   "dependencies": {},
   "devDependencies": {
@@ -45,11 +43,9 @@
     "rollup-plugin-sourcemaps": "^0.6.2",
     "rollup-plugin-typescript": "^1.0.1",
     "run-sequence": "^2.2.1",
-    "snyk": "^1.335.0",
     "tslint": "^5.20.1",
     "tslint-microsoft-contrib": "^6.2.0",
     "typedoc": "^0.17.7",
     "typescript": "^3.9.4"
-  },
-  "snyk": true
+  }
 }
