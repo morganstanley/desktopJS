@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@morgan-stanley/desktopjs": "^3.8.0",
-    "@types/jasmine": "^2.8.16",
+    "@types/jasmine": "^3.5.11",
     "gulp": "^4.0.2"
   }
 }
