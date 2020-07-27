@@ -472,7 +472,8 @@ describe("ElectronContainer", () => {
             },
             require: (type: string) => { return {} },
             getCurrentWindow: () => { return windows[0]; },
-            process: { versions: { electron: "1", chrome: "2" } }
+            process: { versions: { electron: "1", chrome: "2" } },
+            setLoginItemSettings: (config) => { }
         };
         container = new ElectronContainer(electron, new MockIpc(), globalWindow);
     });
@@ -727,6 +728,13 @@ describe("ElectronContainer", () => {
                 expect(layout).toBeDefined();
                 expect(layout.windows.length).toEqual(1);
                 expect(layout.windows[0].name === "win1")
+            }).then(done);
+        });
+
+        it("openAppOnSystemStartup allows the auto startup settings to be turned on", (done) => {
+            spyOn(electron, "setLoginItemSettings").and.callThrough();
+            container.openAppOnSystemStartup(true).then(() => {
+                expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
             }).then(done);
         });
     });

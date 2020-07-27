@@ -716,6 +716,12 @@ export class OpenFinContainer extends WebContainerBase {
             }).catch(reject);
         });
     }
+
+    public openAppOnSystemStartup(shouldOpenApp: boolean): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.desktop.Application.getCurrent().setShortcuts({ systemStartup: shouldOpenApp }, resolve, reject);
+        });
+    }
 }
 
 /** @private */

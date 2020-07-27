@@ -566,6 +566,20 @@ export class ElectronContainer extends WebContainerBase {
             });
         });
     }
+
+    public openAppOnSystemStartup(shouldOpenApp: boolean): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            try {
+                this.electron.setLoginItemSettings({
+                    openAtLogin: shouldOpenApp
+                });
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
 }
 
 export class ElectronWindowManager {

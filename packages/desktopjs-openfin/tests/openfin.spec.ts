@@ -8,6 +8,7 @@ class MockDesktop {
         uuid: "uuid",
         getChildWindows(callback) { callback([MockWindow.singleton, new MockWindow("Window2", JSON.stringify({ persist: false }))]); },
         setTrayIcon() { },
+        setShortcuts(config, callback) { callback(); },
         getWindow() { return MockWindow.singleton; },
         addEventListener(eventName, listener) {
             (this.eventListeners[eventName] = this.eventListeners[eventName] || []).push(listener);
@@ -21,7 +22,7 @@ class MockDesktop {
             }
         }
     }
-    main(callback): any { callback() };
+    main(callback): any { callback(); }
     GlobalHotkey: any = { };
     Window: any = MockWindow;
     Notification(): any { return {}; }
@@ -30,7 +31,7 @@ class MockDesktop {
         getCurrent() {
             return MockDesktop.application;
         }
-    }
+    };
 
 }
 
@@ -449,7 +450,7 @@ describe("OpenFinContainerWindow", () => {
             win.removeListener(unmappedEvent, () => { });
             expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
         });
-    });    
+    });
 
     describe("window grouping", () => {
         it("allowGrouping is true", () => {
@@ -502,7 +503,7 @@ describe("OpenFinContainerWindow", () => {
 describe("OpenFinContainer", () => {
     let desktop: any;
     let container: OpenFinContainer;
-    let globalWindow: any = {};
+    const globalWindow: any = {};
 
     beforeEach(() => {
         desktop = new MockDesktop();
@@ -718,7 +719,7 @@ describe("OpenFinContainer", () => {
             (<any>container).closeAllWindows().then(done).catch(error => {
                 fail(error);
                 done();
-            });;
+            });
             expect(MockWindow.singleton.close).toHaveBeenCalled();
         });
 
@@ -739,10 +740,21 @@ describe("OpenFinContainer", () => {
             container.buildLayout().then(layout => {
                 expect(layout).toBeDefined();
                 expect(layout.windows.length).toEqual(2);
-                expect(layout.windows[0].name === "Singleton")
+                expect(layout.windows[0].name === "Singleton");
             }).then(done);
         });
-    });    
+
+        it("openAppOnSystemStartup allows the auto startup settings to be turned on", (done) => {
+            const app = desktop.Application;
+            const current = app.getCurrent();
+            spyOn(app, "getCurrent").and.callThrough();
+            spyOn(current, "setShortcuts").and.callThrough();
+            container.openAppOnSystemStartup(true).then(() => {
+                expect(app.getCurrent).toHaveBeenCalled();
+                expect(current.setShortcuts).toHaveBeenCalled();
+            }).then(done);
+        });
+    });
 
     describe("notifications", () => {
         it("showNotification passes message and invokes underlying notification api", () => {
