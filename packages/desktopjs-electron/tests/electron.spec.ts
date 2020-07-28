@@ -748,6 +748,16 @@ describe("ElectronContainer", () => {
             container.setOptions({ autoStartOnLogin: true });
             expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
         });
+
+        it("setOptions errors out on setLoginItemSettings", () => {
+            spyOn(electron, "setLoginItemSettings").and.callFake(() => {
+                throw new Error("something went wrong");
+            });
+            spyOn(console, "error").and.callThrough();
+            container.setOptions({ autoStartOnLogin: true });
+            expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
+            expect(console.error).toHaveBeenCalled();
+        });
     });
 });
 
