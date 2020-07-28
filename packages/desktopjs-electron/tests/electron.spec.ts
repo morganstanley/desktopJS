@@ -756,7 +756,7 @@ describe("ElectronContainer", () => {
             spyOn(console, "error");
             container.setOptions({ autoStartOnLogin: true });
             expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
-            expect(console.error).toHaveBeenCalled();
+            expect(console.error).toHaveBeenCalledTimes(1);
         });
     });
 });
