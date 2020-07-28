@@ -753,10 +753,9 @@ describe("ElectronContainer", () => {
             spyOn(electron, "setLoginItemSettings").and.callFake(() => {
                 throw new Error("something went wrong");
             });
-            spyOn(console, "error").and.callThrough();
+            spyOn(console, "error");
             container.setOptions({ autoStartOnLogin: true });
             expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
-            /* eslint no-console: ["error", { allow: [error"] }] */
             expect(console.error).toHaveBeenCalled();
         });
     });
