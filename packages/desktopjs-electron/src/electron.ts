@@ -359,7 +359,7 @@ export class ElectronContainer extends WebContainerBase {
 
             this.internalIpc = ipc || ((this.isRemote) ? require("electron").ipcRenderer : this.electron.ipcMain);
             this.ipc = this.createMessageBus();
-
+            this.nodeIntegration = null;
             this.setOptions(options);
         } catch (e) {
             console.error(e);
@@ -372,7 +372,7 @@ export class ElectronContainer extends WebContainerBase {
 
     public setOptions(options: any) {
         try {
-            if (!this.isRemote || (options && typeof options.isRemote !== "undefined" && !options.isRemote)) {
+            if ((!this.isRemote || (options && typeof options.isRemote !== "undefined" && !options.isRemote)) && !this.windowManager) {
                 this.windowManager = new ElectronWindowManager(this.app, this.internalIpc, this.browserWindow);
 
                 this.app.on("browser-window-created", (event, window) => {
@@ -398,7 +398,9 @@ export class ElectronContainer extends WebContainerBase {
                 this.registerNotificationsApi();
             }
 
-            this.nodeIntegration = (options && options.node != null) ? options.node : null;
+            if (options && options.node) {
+                this.nodeIntegration = options.node;
+            }
         } catch (e) {
             console.error(e);
         }
