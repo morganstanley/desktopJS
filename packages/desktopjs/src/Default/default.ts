@@ -261,7 +261,7 @@ export namespace Default {
         }
 
         public setOptions(options: any) {
-            throw new TypeError("SetOptions not supported by this container");
+            throw new TypeError("SetOptions not implemented by this container");
         }
 
         public getInfo(): Promise<string | undefined> {

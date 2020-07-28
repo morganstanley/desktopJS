@@ -284,6 +284,12 @@ describe("DefaultContainer", () => {
         }).then(done);
     });
 
+    it("setOptions Throws Not implemented", () => {
+        const window = new MockWindow();
+        const container: Default.DefaultContainer = new Default.DefaultContainer(<any>window);
+        expect(() => container.setOptions({})).toThrowError(TypeError);
+    });
+
     describe("createWindow", () => {
         let container: Default.DefaultContainer;
 
