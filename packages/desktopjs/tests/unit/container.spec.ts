@@ -85,6 +85,8 @@ export class TestContainer extends ContainerBase {
     public buildLayout(): Promise<PersistedWindowLayout> { return Promise.resolve(undefined); }
 
     public saveLayout(): Promise<PersistedWindowLayout> { return Promise.resolve(undefined); }
+
+    public setOptions(options: any) { }
 }
 
 describe("container", () => {

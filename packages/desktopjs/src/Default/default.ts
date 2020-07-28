@@ -260,6 +260,10 @@ export namespace Default {
             return new DefaultMessageBus(this);
         }
 
+        public setOptions(options: any) {
+            throw new TypeError("SetOptions not supported by this container");
+        }
+
         public getInfo(): Promise<string | undefined> {
             return Promise.resolve(this.globalWindow.navigator.appVersion);
         }

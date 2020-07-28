@@ -408,20 +408,9 @@ export class OpenFinContainer extends WebContainerBase {
         this.desktop = desktop || (<any>window).fin.desktop;
         this.hostType = "OpenFin";
 
-        if (options && options.userName && options.appName) {
-            this.desktop.Application.getCurrent().registerUser(options.userName, options.appName);
-        }
+        this.setOptions(options);
 
         this.ipc = this.createMessageBus();
-
-        let replaceNotificationApi = OpenFinContainer.replaceNotificationApi;
-        if (options && typeof options.replaceNotificationApi !== "undefined") {
-            replaceNotificationApi = options.replaceNotificationApi;
-        }
-
-        if (replaceNotificationApi) {
-            this.registerNotificationsApi();
-        }
 
         this.desktop.Application.getCurrent().addEventListener("window-created", (event: any) => {
             this.emit("window-created", { sender: this, name: "window-created", windowId: event.name, windowName: event.name });
@@ -435,6 +424,25 @@ export class OpenFinContainer extends WebContainerBase {
             this.globalShortcut = new OpenFinGlobalShortcutManager(this.desktop);
         } else {
             console.warn("Global shortcuts require minimum OpenFin runtime of 9.61.32.34");
+        }
+    }
+
+    public setOptions(options: any) {
+        if (options && options.userName && options.appName) {
+            this.desktop.Application.getCurrent().registerUser(options.userName, options.appName);
+        }
+
+        if (options && options.autoStartOnLogin) {
+            this.desktop.Application.getCurrent().setShortcuts({ systemStartup: options.autoStartOnLogin });
+        }
+
+        let replaceNotificationApi = OpenFinContainer.replaceNotificationApi;
+        if (options && typeof options.replaceNotificationApi !== "undefined") {
+            replaceNotificationApi = options.replaceNotificationApi;
+        }
+
+        if (replaceNotificationApi) {
+            this.registerNotificationsApi();
         }
     }
 
@@ -714,12 +722,6 @@ export class OpenFinContainer extends WebContainerBase {
             Promise.all(promises).then(() => {
                 resolve(layout);
             }).catch(reject);
-        });
-    }
-
-    public openAppOnSystemStartup(shouldOpenApp: boolean): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            this.desktop.Application.getCurrent().setShortcuts({ systemStartup: shouldOpenApp }, resolve, reject);
         });
     }
 }

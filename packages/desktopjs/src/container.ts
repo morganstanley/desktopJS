@@ -90,9 +90,9 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
     public abstract getWindowByName(name: string): Promise<ContainerWindow | null>;
 
     /**
-     * Allows app to be configured to open at system startup
+     * Set information on the container based on the options
      */
-    public abstract openAppOnSystemStartup(shouldOpenApp: boolean): Promise<void>;
+    public abstract setOptions(options: any);
 
     public static get ipc(): MessageBus {
         return Container._ipc;
@@ -332,12 +332,6 @@ export abstract class ContainerBase extends Container {
                 logger(message);
             }
             resolve();
-        });
-    }
-
-    public openAppOnSystemStartup(shouldOpenApp: boolean): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            reject("Auto open feature are not supported by this container.");
         });
     }
 }

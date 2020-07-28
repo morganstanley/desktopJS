@@ -495,6 +495,18 @@ describe("ElectronContainer", () => {
         expect(console.error).toHaveBeenCalledTimes(1);
     });
 
+    it("options autoStartOnLogin to setLoginItemSettings", () => {
+        spyOn(electron, "setLoginItemSettings").and.callThrough();
+        const container = new ElectronContainer(electron, new MockMainIpc(), globalWindow, { autoStartOnLogin: true });
+        expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
+    });
+
+    it("options missing autoStartOnLogin does not invoke setLoginItemSettings", () => {
+        spyOn(electron, "setLoginItemSettings").and.callThrough();
+        const container = new ElectronContainer(electron, new MockMainIpc(), globalWindow, { });
+        expect(electron.setLoginItemSettings).toHaveBeenCalledTimes(0);
+    });
+
     it("electron members are copied", () => {
         expect((<any>container).app).toEqual(electron.app);
         expect((<any>container).browserWindow).toEqual(electron.BrowserWindow);
@@ -731,11 +743,10 @@ describe("ElectronContainer", () => {
             }).then(done);
         });
 
-        it("openAppOnSystemStartup allows the auto startup settings to be turned on", (done) => {
+        it("setOptions allows the auto startup settings to be turned on", () => {
             spyOn(electron, "setLoginItemSettings").and.callThrough();
-            container.openAppOnSystemStartup(true).then(() => {
-                expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
-            }).then(done);
+            container.setOptions({ autoStartOnLogin: true });
+            expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
         });
     });
 });

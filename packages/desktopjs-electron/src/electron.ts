@@ -360,6 +360,18 @@ export class ElectronContainer extends WebContainerBase {
             this.internalIpc = ipc || ((this.isRemote) ? require("electron").ipcRenderer : this.electron.ipcMain);
             this.ipc = this.createMessageBus();
 
+            this.setOptions(options);
+        } catch (e) {
+            console.error(e);
+        }
+
+        this.screen = new ElectronDisplayManager(this.electron);
+
+        this.globalShortcut = new ElectronGlobalShortcutManager(this.electron);
+    }
+
+    public setOptions(options: any) {
+        try {
             if (!this.isRemote || (options && typeof options.isRemote !== "undefined" && !options.isRemote)) {
                 this.windowManager = new ElectronWindowManager(this.app, this.internalIpc, this.browserWindow);
 
@@ -370,24 +382,26 @@ export class ElectronContainer extends WebContainerBase {
                     });
                 });
             }
+
+            if (options && options.autoStartOnLogin) {
+                this.electron.setLoginItemSettings({
+                    openAtLogin: options.autoStartOnLogin
+                });
+            }
+
+            let replaceNotificationApi = ElectronContainer.replaceNotificationApi;
+            if (options && typeof options.replaceNotificationApi !== "undefined") {
+                replaceNotificationApi = options.replaceNotificationApi;
+            }
+
+            if (replaceNotificationApi) {
+                this.registerNotificationsApi();
+            }
+
+            this.nodeIntegration = (options && options.node != null) ? options.node : null;
         } catch (e) {
             console.error(e);
         }
-
-        let replaceNotificationApi = ElectronContainer.replaceNotificationApi;
-        if (options && typeof options.replaceNotificationApi !== "undefined") {
-            replaceNotificationApi = options.replaceNotificationApi;
-        }
-
-        if (replaceNotificationApi) {
-            this.registerNotificationsApi();
-        }
-
-        this.nodeIntegration = (options && options.node != null) ? options.node : null;
-
-        this.screen = new ElectronDisplayManager(this.electron);
-
-        this.globalShortcut = new ElectronGlobalShortcutManager(this.electron);
     }
 
     protected createMessageBus() : MessageBus {
@@ -564,19 +578,6 @@ export class ElectronContainer extends WebContainerBase {
                     resolve(layout);
                 }).catch(reject);
             });
-        });
-    }
-
-    public openAppOnSystemStartup(shouldOpenApp: boolean): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            try {
-                this.electron.setLoginItemSettings({
-                    openAtLogin: shouldOpenApp
-                });
-                resolve();
-            } catch (err) {
-                reject(err);
-            }
         });
     }
 
