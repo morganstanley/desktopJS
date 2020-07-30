@@ -766,17 +766,11 @@ describe("OpenFinContainer", () => {
         });
 
         it("isAutoStartEnabledAtLogin returns the status", (done) => {
-
-            /* spyOn(win.innerWindow, "getOptions").and.callFake(callback => callback({ customData: '{ "a": "foo"}' }));
-                win.getOptions().then(options => {
-                    expect(options).toBeDefined();
-                    expect(options.a).toEqual("foo");
-                }).then(done); */
             const app = desktop.Application;
             const current = app.getCurrent();
             spyOn(app, "getCurrent").and.callThrough();
-            spyOn(current, "getShortcuts").and.callFake(callback => callback({ systemStartup: true }));
-            container.isAutoStartEnabledAtLogin().then(isEnabled => {
+            spyOn(current, "getShortcuts").and.callFake((callback) => callback({ systemStartup: true }));
+            container.isAutoStartEnabledAtLogin().then((isEnabled: boolean) => {
                 expect(app.getCurrent).toHaveBeenCalled();
                 expect(current.getShortcuts).toHaveBeenCalled();
                 expect(isEnabled).toEqual(true);

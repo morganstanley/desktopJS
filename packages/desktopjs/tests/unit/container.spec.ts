@@ -76,7 +76,7 @@ export class TestContainer extends ContainerBase {
         return Promise.resolve();
     }
 
-    public getAllWindows(): Promise<ContainerWindow[]> { return Promise.resolve(undefined) }
+    public getAllWindows(): Promise<ContainerWindow[]> { return Promise.resolve(undefined); }
 
     public getCurrentWindow(): ContainerWindow { return undefined; }
 
@@ -88,7 +88,7 @@ export class TestContainer extends ContainerBase {
 
     public setOptions(options: any) { }
 
-    public isAutoStartEnabledAtLogin(): Promise<boolean> { return Promise.resolve(undefined); }
+    public isAutoStartEnabledAtLogin(): Promise<boolean> { return Promise.resolve(false); }
 }
 
 describe("container", () => {

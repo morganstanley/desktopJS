@@ -448,7 +448,7 @@ export class OpenFinContainer extends WebContainerBase {
 
     public isAutoStartEnabledAtLogin(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            this.desktop.Application.getCurrent().getShortcuts(config => resolve(config.systemStartup), reject);
+            this.desktop.Application.getCurrent().getShortcuts((config: any) => resolve(config.systemStartup), reject);
         });
     }
 
