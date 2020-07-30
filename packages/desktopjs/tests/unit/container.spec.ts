@@ -87,6 +87,8 @@ export class TestContainer extends ContainerBase {
     public saveLayout(): Promise<PersistedWindowLayout> { return Promise.resolve(undefined); }
 
     public setOptions(options: any) { }
+
+    public isAutoStartEnabledAtLogin(): Promise<boolean> { return Promise.resolve(undefined); }
 }
 
 describe("container", () => {

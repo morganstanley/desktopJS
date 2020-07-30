@@ -446,6 +446,12 @@ export class OpenFinContainer extends WebContainerBase {
         }
     }
 
+    public isAutoStartEnabledAtLogin(): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            this.desktop.Application.getCurrent().getShortcuts(config => resolve(config.systemStartup), reject);
+        });
+    }
+
     protected createMessageBus(): MessageBus {
         return new OpenFinMessageBus(this.desktop.InterApplicationBus, (<any>this.desktop.Application.getCurrent()).uuid);
     }

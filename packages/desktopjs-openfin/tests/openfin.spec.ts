@@ -9,6 +9,7 @@ class MockDesktop {
         getChildWindows(callback) { callback([MockWindow.singleton, new MockWindow("Window2", JSON.stringify({ persist: false }))]); },
         setTrayIcon() { },
         setShortcuts(config) { },
+        getShortcuts(callback) { callback(); },
         getWindow() { return MockWindow.singleton; },
         addEventListener(eventName, listener) {
             (this.eventListeners[eventName] = this.eventListeners[eventName] || []).push(listener);
@@ -762,6 +763,38 @@ describe("OpenFinContainer", () => {
             container.setOptions({ autoStartOnLogin: true });
             expect(app.getCurrent).toHaveBeenCalled();
             expect(current.setShortcuts).toHaveBeenCalled();
+        });
+
+        it("isAutoStartEnabledAtLogin returns the status", (done) => {
+
+            /* spyOn(win.innerWindow, "getOptions").and.callFake(callback => callback({ customData: '{ "a": "foo"}' }));
+                win.getOptions().then(options => {
+                    expect(options).toBeDefined();
+                    expect(options.a).toEqual("foo");
+                }).then(done); */
+            const app = desktop.Application;
+            const current = app.getCurrent();
+            spyOn(app, "getCurrent").and.callThrough();
+            spyOn(current, "getShortcuts").and.callFake(callback => callback({ systemStartup: true }));
+            container.isAutoStartEnabledAtLogin().then(isEnabled => {
+                expect(app.getCurrent).toHaveBeenCalled();
+                expect(current.getShortcuts).toHaveBeenCalled();
+                expect(isEnabled).toEqual(true);
+            }).then(done);
+        });
+
+        it("isAutoStartEnabledAtLogin errors out on getLoginItemSettings", (done) => {
+            const app = desktop.Application;
+            const current = app.getCurrent();
+            spyOn(app, "getCurrent").and.callThrough();
+            spyOn(current, "getShortcuts").and.callFake(() => {
+                throw new Error("something went wrong");
+            });
+            container.isAutoStartEnabledAtLogin().then(() => { }, (err) => {
+                expect(app.getCurrent).toHaveBeenCalled();
+                expect(current.getShortcuts).toHaveBeenCalled();
+                expect(err).toEqual(new Error("something went wrong"));
+            }).then(done);
         });
     });
 

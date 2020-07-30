@@ -264,6 +264,10 @@ export namespace Default {
             throw new TypeError("SetOptions not implemented by this container");
         }
 
+        public isAutoStartEnabledAtLogin(): Promise<boolean> {
+            return Promise.reject(new TypeError("Auto start is not implemented by this container"));
+        }
+
         public getInfo(): Promise<string | undefined> {
             return Promise.resolve(this.globalWindow.navigator.appVersion);
         }

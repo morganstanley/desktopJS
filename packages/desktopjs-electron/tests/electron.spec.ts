@@ -473,7 +473,8 @@ describe("ElectronContainer", () => {
             require: (type: string) => { return {} },
             getCurrentWindow: () => { return windows[0]; },
             process: { versions: { electron: "1", chrome: "2" } },
-            setLoginItemSettings: (config) => { }
+            setLoginItemSettings: (config) => { },
+            getLoginItemSettings: () => { return {}; }
         };
         container = new ElectronContainer(electron, new MockIpc(), globalWindow);
     });
@@ -757,6 +758,24 @@ describe("ElectronContainer", () => {
             container.setOptions({ autoStartOnLogin: true });
             expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
             expect(console.error).toHaveBeenCalledTimes(1);
+        });
+
+        it("isAutoStartEnabledAtLogin returns the status", (done) => {
+            spyOn(electron, "getLoginItemSettings").and.returnValue({ openAtLogin: true });
+            container.isAutoStartEnabledAtLogin().then((isEnabled: boolean) => {
+                expect(electron.getLoginItemSettings).toHaveBeenCalled();
+                expect(isEnabled).toEqual(true);
+            }).then(done);
+        });
+
+        it("isAutoStartEnabledAtLogin errors out on getLoginItemSettings", (done) => {
+            spyOn(electron, "getLoginItemSettings").and.callFake(() => {
+                throw new Error("something went wrong");
+            });
+            container.isAutoStartEnabledAtLogin().then(() => { }, (err) => {
+                expect(electron.getLoginItemSettings).toHaveBeenCalled();
+                expect(err).toEqual(new Error("something went wrong"));
+            }).then(done);
         });
     });
 });

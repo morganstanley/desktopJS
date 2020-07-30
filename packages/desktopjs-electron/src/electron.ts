@@ -406,6 +406,17 @@ export class ElectronContainer extends WebContainerBase {
         }
     }
 
+    public isAutoStartEnabledAtLogin(): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                const config = this.electron.getLoginItemSettings();
+                resolve(config.openAtLogin);
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
     protected createMessageBus() : MessageBus {
         return new ElectronMessageBus(this.internalIpc, this.browserWindow);
     }

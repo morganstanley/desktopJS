@@ -290,6 +290,14 @@ describe("DefaultContainer", () => {
         expect(() => container.setOptions({})).toThrowError(TypeError);
     });
 
+    it("isAutoStartEnabledAtLogin Throws Not implemented", (done) => {
+        const window = new MockWindow();
+        const container: Default.DefaultContainer = new Default.DefaultContainer(<any>window);
+        container.isAutoStartEnabledAtLogin().then(() => { }, (error) => {
+            expect(error).toEqual(new TypeError("Auto start is not implemented by this container"));
+        }).then(done);
+    });
+
     describe("createWindow", () => {
         let container: Default.DefaultContainer;
 
