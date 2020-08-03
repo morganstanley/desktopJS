@@ -18,7 +18,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^13.0.0",
+    "@rollup/plugin-commonjs": "^14.0.0",
     "@rollup/plugin-replace": "^2.3.2",
     "@types/node": "^14.0.0",
     "codecov": "^3.7.0",
