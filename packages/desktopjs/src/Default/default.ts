@@ -285,10 +285,9 @@ export namespace Default {
             const window = open.apply(this.globalWindow, args);
             const uuid = Guid.newGuid();
 
-            const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
-            windows[uuid] = window;
-
             if (this.isSameOrigin(window)) {
+                const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+                windows[uuid] = window;
                 window[DefaultContainer.windowUuidPropertyKey] = uuid;
 
                 // Attach event handlers on window to cleanup reference on global windows object.  beforeunload -> unload to prevent
