@@ -48,4 +48,5 @@ export class MessageBusSubscription {
 export class MessageBusOptions {
     public uuid?: string;
     public name?: string;
+    public targetOrigin?: string;
 }
