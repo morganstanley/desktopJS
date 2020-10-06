@@ -209,12 +209,8 @@ export namespace Default {
                         continue;
                     }
 
-                    // Since there should be nothing listening, don't bother sending to non matching origin children
-                    if (win.location.origin !== this.container.globalWindow.location.origin) {
-                        continue;
-                    }
-
-                    win.postMessage({ source: DefaultMessageBus.messageSource, topic: topic, message: message }, this.container.globalWindow.location.origin);
+                    const targetOrigin = options?.targetOrigin || this.container.globalWindow.location.origin;
+                    win.postMessage({ source: DefaultMessageBus.messageSource, topic: topic, message: message }, targetOrigin);
                 }
             }
 
@@ -287,21 +283,24 @@ export namespace Default {
 
         protected onOpen(open: (...args: any[]) => Window, ...args: any[]): Window {
             const window = open.apply(this.globalWindow, args);
+            const uuid = Guid.newGuid();
 
-            const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
-            const uuid = window[DefaultContainer.windowUuidPropertyKey] = Guid.newGuid();
-            windows[uuid] = window;
+            if (this.isSameOrigin(window)) {
+                const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+                windows[uuid] = window;
+                window[DefaultContainer.windowUuidPropertyKey] = uuid;
 
-            // Attach event handlers on window to cleanup reference on global windows object.  beforeunload -> unload to prevent
-            // unload being called on open within Chrome.
-            window.addEventListener("beforeunload", () => {
-                window.addEventListener("unload", () => {
-                    delete windows[uuid];
+                // Attach event handlers on window to cleanup reference on global windows object.  beforeunload -> unload to prevent
+                // unload being called on open within Chrome.
+                window.addEventListener("beforeunload", () => {
+                    window.addEventListener("unload", () => {
+                        delete windows[uuid];
+                    });
                 });
-            });
 
-            // Propagate the global windows object to the new window
-            window[DefaultContainer.windowsPropertyKey] = windows;
+                // Propagate the global windows object to the new window
+                window[DefaultContainer.windowsPropertyKey] = windows;
+            }
 
             Container.emit("window-created", { name: "window-created", windowId: uuid });
             ContainerWindow.emit("window-created", { name: "window-created", windowId: uuid });
@@ -326,13 +325,17 @@ export namespace Default {
             }
 
             const window = this.globalWindow.open(url, target, features);
-            window[Container.windowOptionsPropertyKey] = options; // Store the original options
+            const isSameOrigin = this.isSameOrigin(window);
 
-            // Set name as a unique desktopJS name property instead of overloading window.name
-            window[DefaultContainer.windowNamePropertyKey] = newOptions.name;
+            if (isSameOrigin) {
+                window[Container.windowOptionsPropertyKey] = options; // Store the original options
+
+                // Set name as a unique desktopJS name property instead of overloading window.name
+                window[DefaultContainer.windowNamePropertyKey] = newOptions.name;
+            }
 
             const newWindow = this.wrapWindow(window);
-            this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: newWindow.id, windowName: newOptions.name });
+            this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: isSameOrigin ? newWindow.id : undefined, windowName: newOptions.name });
 
             return Promise.resolve(newWindow);
         }
@@ -434,6 +437,15 @@ export namespace Default {
                     }).catch(reject);
                 });
             });
+        }
+
+        private isSameOrigin(window: Window): boolean {
+            try {
+                const origin = window.location.origin;
+                return origin !== "null";
+            } catch {
+                return false;
+            }
         }
     }
 
