@@ -11,8 +11,9 @@ import { Guid } from "../guid";
 import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../ipc";
 import { EventArgs } from "../events";
 
-declare var Notification: any;
+declare let Notification: any;
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Default {
     const windowEventMap = {
         close: "unload"
@@ -117,7 +118,7 @@ export namespace Default {
         }
 
         public getOptions(): Promise<any> {
-            return new Promise<any>((resolve, reject) => {
+            return new Promise<any>((resolve) => {
                 resolve(this.innerWindow[Container.windowOptionsPropertyKey]);
             });
         }
@@ -166,7 +167,7 @@ export namespace Default {
         }
 
         subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
-            return new Promise<MessageBusSubscription>((resolve, reject) => {
+            return new Promise<MessageBusSubscription>((resolve) => {
                 const subscription: MessageBusSubscription = new MessageBusSubscription(topic, (event: any) => {
                     // Only allow same origin
                     if (event.origin !== this.container.globalWindow.location.origin) {
@@ -301,7 +302,7 @@ export namespace Default {
                 // Propagate the global windows object to the new window
                 window[DefaultContainer.windowsPropertyKey] = windows;
             } catch (e) {
-                console.warn(`Error tracking new window, '${e.message}'`);
+                this.log("warn", `Error tracking new window, '${e.message}'`);
             }
 
             Container.emit("window-created", { name: "window-created", windowId: uuid });
@@ -336,7 +337,7 @@ export namespace Default {
                 window[DefaultContainer.windowNamePropertyKey] = newOptions.name;
             } catch (e) {
                 windowReachable = false;
-                console.warn(`Error proprogating properties to new window, '${e.message}'`);
+                this.log("warn",`Error proprogating properties to new window, '${e.message}'`);
             }
 
             const newWindow = this.wrapWindow(window);
@@ -347,21 +348,21 @@ export namespace Default {
 
         public showNotification(title: string, options?: NotificationOptions) {
             if (!("Notification" in this.globalWindow)) {
-                console.warn("Notifications not supported");
+                this.log("warn", "Notifications not supported");
                 return;
             }
 
             (<any>this.globalWindow).Notification.requestPermission(permission => {
                 if (permission === "denied") {
-                    console.warn("Notifications not permitted");
+                    this.log("warn", "Notifications not permitted");
                 } else if (permission === "granted") {
-                    new (<any>this.globalWindow).Notification(title, options); // tslint:disable-line
+                    new (<any>this.globalWindow).Notification(title, options); 
                 }
             });
         }
 
-        protected closeAllWindows(excludeSelf?: Boolean): Promise<void> {
-            return new Promise<void>((resolve, reject) => {
+        protected closeAllWindows(excludeSelf?: boolean): Promise<void> {
+            return new Promise<void>((resolve) => {
                 const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
                 for (const key in windows) {
                     const win = windows[key];
@@ -374,7 +375,7 @@ export namespace Default {
         }
 
         public getAllWindows(): Promise<ContainerWindow[]> {
-            return new Promise<ContainerWindow[]>((resolve, reject) => {
+            return new Promise<ContainerWindow[]>((resolve) => {
                 const windows: ContainerWindow[] = [];
                 const trackedWindows = this.globalWindow[DefaultContainer.windowsPropertyKey];
                 for (const key in trackedWindows) {
@@ -385,14 +386,14 @@ export namespace Default {
         }
 
         public getWindowById(id: string): Promise<ContainerWindow | null> {
-            return new Promise<ContainerWindow>((resolve, reject) => {
+            return new Promise<ContainerWindow>((resolve) => {
                 const win = this.globalWindow[DefaultContainer.windowsPropertyKey][id];
                 resolve(win ? this.wrapWindow(win) : null);
             });
         }
 
         public getWindowByName(name: string): Promise<ContainerWindow | null> {
-            return new Promise<ContainerWindow>((resolve, reject) => {
+            return new Promise<ContainerWindow>((resolve) => {
                 const trackedWindows = this.globalWindow[DefaultContainer.windowsPropertyKey];
                 for (const key in trackedWindows) {
                     if (trackedWindows[key][DefaultContainer.windowNamePropertyKey] === name) {
@@ -421,6 +422,7 @@ export namespace Default {
                                 return;
                             }
 
+                            // eslint-disable-next-line no-async-promise-executor
                             promises.push(new Promise<void>(async (innerResolve) => {
                                 if (this.globalWindow !== nativeWin) {
                                     layout.windows.push(
@@ -440,7 +442,7 @@ export namespace Default {
                             // An error can happen if the window is not same origin and due to async loading we were able to
                             // add tracking to it before the content was loaded so we have a window with tracking in which we
                             // can't access properties any more so we will skip it with warning
-                            console.warn(`Error while accessing window so skipping, '${e.message}'`);
+                            this.log('warn', `Error while accessing window so skipping, '${e.message}'`);
                         }
                     });
 
@@ -487,7 +489,7 @@ export namespace Default {
         }
 
         public getMousePosition(): Promise<Point> {
-            return new Promise<Point>((resolve, reject) => {
+            return new Promise<Point>((resolve) => {
                 resolve({ x: (<any>this.window.event).screenX, y: (<any>this.window.event).screenY });
             });
         }

@@ -1,19 +1,16 @@
 import {} from "jasmine";
 import * as registry from "../../src/registry";
 import { Container } from "../../src/container";
-import { Default } from "../../src/Default/default";
 
 describe("registry", () => {
     describe("resolveContainer", () => {
         let mockContainer: jasmine.SpyObj<Container>;
-
-        // tslint:disable-next-line: mocha-no-side-effect-code
-        const setUpContainer = (registration?: registry.ContainerRegistration, id: string = "Test", hostType: string = "Test") => {
+        const setUpContainer = (registration?: registry.ContainerRegistration, id = "Test", hostType = "Test") => {
             mockContainer = jasmine.createSpyObj<Container>("Container", ["createWindow"]);
             mockContainer.hostType = hostType;
 
             registration = registration || {
-                condition: (options?: any): boolean => true,
+                condition: (_options?: any): boolean => true,
                 create: (): Container => mockContainer
             };
             registry.registerContainer(id, registration );
@@ -41,10 +38,9 @@ describe("registry", () => {
             expect(container.hostType).toEqual("Default");
         });
 
-        // tslint:disable-next-line: mocha-no-side-effect-code
         it("Subsequent call returns from cache", () => {
             const container: Container = registry.resolveContainer(true);
-            spyOn(registry, "container").and.returnValue(container);
+            (registry as any).container = container;
             const container2: Container = registry.resolveContainer(); // Specifically testing cached value
             expect(container2).toBeDefined();
             expect(container2.uuid).toEqual(container.uuid);
@@ -65,13 +61,13 @@ describe("registry", () => {
 
         it ("resolveContainer passes options", () => {
             const providedOptions = {};
-            let condition: boolean = false;
-            let create: boolean = false;
+            let condition = false;
+            let create = false;
 
             registry.registerContainer("TestContainer",
             {
                 condition: (options) => { 
-                    console.log('condition', (options === providedOptions)); // tslint:disable-line
+                    console.log('condition', (options === providedOptions)); 
                     return condition = (options === providedOptions);
                 },
                 create: (options) => { create = (options === providedOptions); return mockContainer; }
@@ -84,7 +80,7 @@ describe("registry", () => {
         });
 
         it ("resolveContainer resolves in order", () => {
-            const hostType: string = "AnotherContainer";
+            const hostType = "AnotherContainer";
             let mockContainer2;
             setUpContainer({ condition: () => true, create: () => mockContainer });
             registry.registerContainer("Test", { condition: () => true, create: () => {

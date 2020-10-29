@@ -1,16 +1,12 @@
 {
     "json.schemas": [
         {
-            "fileMatch": [ "tslint.json" ],
-            "url": "http://json.schemastore.org/tslint"
-        },
-        {
             "fileMatch": [ "app.json" ],
-            "url": "http://json.schemastore.org/openfin"
+            "url": "https://json.schemastore.org/openfin"
         },
         {
-            "fileMatch": [ "tsconfig-staging.json" ],
-            "url": "http://json.schemastore.org/tsconfig"
+            "fileMatch": [ "tsconfig.staging.json" ],
+            "url": "https://json.schemastore.org/tsconfig"
         }
     ]
 }

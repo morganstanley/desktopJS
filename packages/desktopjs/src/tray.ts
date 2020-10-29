@@ -3,7 +3,7 @@
  */
 
 /** Represents an icon in the system notification area. */
-export class TrayIconDetails { // tslint:disable-line
+export class TrayIconDetails { 
     /** The hover text for this tray icon.
      * @type {string}
      */

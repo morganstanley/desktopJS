@@ -2,7 +2,7 @@ import {} from "jasmine";
 import { MenuItem } from "../../src/menu";
 
 describe('menu', () => {
-    let item: MenuItem = new MenuItem();
+    const item: MenuItem = new MenuItem();
 
     describe('id', () => {
         it("Set matches Get", () => {
