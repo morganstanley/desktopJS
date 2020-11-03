@@ -16,6 +16,9 @@ module.exports = function (gulp, config) {
                 // Run jasmine under istanbul
                 gulp.src(config.test.src)
                     .pipe(jasmine({ verbose: true, errorOnFail: true, includeStackTrace: false }))
+                    .on('error', (err) => {
+                        process.exit(1);
+                    })
                     .pipe(istanbul.writeReports({
                         dir: config.test.coverage.dest,
                         reporters: ['json']

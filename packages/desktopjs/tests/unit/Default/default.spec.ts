@@ -554,31 +554,6 @@ describe("DefaultMessageBus", () => {
         bus.publish("topic", message, { name: "target" }).then(done);
         expect(mockWindow.postMessage).toHaveBeenCalledTimes(0);
     });
-
-    it("publish with non matching origin skips and continues", (done) => {
-        let message: any = { data: "data" };
-
-        const mockWindow2 = new MockWindow();
-        const mockWindow3 = new MockWindow();
-
-        mockWindow[Default.DefaultContainer.windowsPropertyKey] = {
-            "1": mockWindow,
-            "2": mockWindow2,
-            "3": mockWindow3
-        };
-
-        mockWindow2.location.origin = "OtherOrigin";
-
-        spyOn(mockWindow, "postMessage").and.callThrough();
-        spyOn(mockWindow2, "postMessage").and.callThrough();
-        spyOn(mockWindow3, "postMessage").and.callThrough();
-
-        bus.publish("topic", message).then(done);
-
-        expect(mockWindow.postMessage).toHaveBeenCalled();
-        expect(mockWindow2.postMessage).toHaveBeenCalledTimes(0);
-        expect(mockWindow3.postMessage).toHaveBeenCalled();
-    });
 });
 
 describe("DefaultDisplayManager", () => {
