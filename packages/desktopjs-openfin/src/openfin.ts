@@ -122,6 +122,16 @@ export class OpenFinContainerWindow extends ContainerWindow {
         });
     }
 
+    public getParent(): Promise<ContainerWindow> {
+        return Promise.resolve(null);
+    }
+
+    public setParent(parent: ContainerWindow): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            resolve();
+        });
+    }
+
     public setBounds(bounds: Rectangle): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.innerWindow.setBounds(bounds.x, bounds.y, bounds.width, bounds.height, resolve, reject);

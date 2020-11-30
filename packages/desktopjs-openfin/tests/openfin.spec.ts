@@ -369,6 +369,14 @@ describe("OpenFinContainerWindow", () => {
             });
         });
 
+        it("getParent does not throw", (done) => {
+            expect(() => win.getParent().then(done)).not.toThrow();
+        });
+
+        it("setParent does not throw", (done) => {
+            expect(() => win.setParent(null).then(done)).not.toThrow();
+        });
+
         describe("getOptions", () => {
             it("getOptions invokes underlying getOptions and returns undefined customData", (done) => {
                 spyOn(win.innerWindow, "getOptions").and.callFake(callback => callback({ }));
