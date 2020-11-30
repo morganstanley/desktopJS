@@ -84,9 +84,9 @@ export abstract class ContainerWindow extends EventEmitter {
     /** The underlying concrete container window. */
     public readonly innerWindow: any;
 
-    public readonly id: string;
+    public abstract readonly id: string;
 
-    public readonly name: string;
+    public abstract readonly name: string;
 
     public constructor(wrap: any) {
         super();
