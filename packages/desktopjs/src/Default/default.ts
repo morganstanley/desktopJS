@@ -285,7 +285,7 @@ export namespace Default {
             const window = open.apply(this.globalWindow, args);
             const uuid = Guid.newGuid();
 
-            if (this.isSameOrigin(window)) {
+            try {
                 const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
                 windows[uuid] = window;
                 window[DefaultContainer.windowUuidPropertyKey] = uuid;
@@ -300,6 +300,8 @@ export namespace Default {
 
                 // Propagate the global windows object to the new window
                 window[DefaultContainer.windowsPropertyKey] = windows;
+            } catch (e) {
+                console.warn(`Error tracking new window, '${e.message}'`);
             }
 
             Container.emit("window-created", { name: "window-created", windowId: uuid });
@@ -325,17 +327,20 @@ export namespace Default {
             }
 
             const window = this.globalWindow.open(url, target, features);
-            const isSameOrigin = this.isSameOrigin(window);
+            let windowReachable = true;
 
-            if (isSameOrigin) {
+            try {
                 window[Container.windowOptionsPropertyKey] = options; // Store the original options
 
                 // Set name as a unique desktopJS name property instead of overloading window.name
                 window[DefaultContainer.windowNamePropertyKey] = newOptions.name;
+            } catch (e) {
+                windowReachable = false;
+                console.warn(`Error proprogating properties to new window, '${e.message}'`);
             }
 
             const newWindow = this.wrapWindow(window);
-            this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: isSameOrigin ? newWindow.id : undefined, windowName: newOptions.name });
+            this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: windowReachable ? newWindow.id : undefined, windowName: newOptions.name });
 
             return Promise.resolve(newWindow);
         }
@@ -410,26 +415,33 @@ export namespace Default {
                     windows.forEach(window => {
                         const nativeWin = window.nativeWindow;
 
-                        const options = nativeWin[Container.windowOptionsPropertyKey];
-                        if (options && "persist" in options && !options.persist) {
-                            return;
-                        }
-
-                        promises.push(new Promise<void>(async (innerResolve) => {
-                            if (this.globalWindow !== nativeWin) {
-                                layout.windows.push(
-                                    {
-                                        name: window.name,
-                                        url: (nativeWin && nativeWin.location) ? nativeWin.location.toString() : undefined,
-                                        id: window.id,
-                                        bounds: { x: nativeWin.screenX, y: nativeWin.screenY, width: nativeWin.innerWidth, height: nativeWin.innerHeight },
-                                        options: options,
-                                        state: await window.getState()
-                                    }
-                                );
+                        try {
+                            const options = nativeWin[Container.windowOptionsPropertyKey];
+                            if (options && "persist" in options && !options.persist) {
+                                return;
                             }
-                            innerResolve();
-                        }));
+
+                            promises.push(new Promise<void>(async (innerResolve) => {
+                                if (this.globalWindow !== nativeWin) {
+                                    layout.windows.push(
+                                        {
+                                            name: window.name,
+                                            url: (nativeWin && nativeWin.location) ? nativeWin.location.toString() : undefined,
+                                            id: window.id,
+                                            bounds: { x: nativeWin.screenX, y: nativeWin.screenY, width: nativeWin.innerWidth, height: nativeWin.innerHeight },
+                                            options: options,
+                                            state: await window.getState()
+                                        }
+                                    );
+                                }
+                                innerResolve();
+                            }));
+                        } catch (e) {
+                            // An error can happen if the window is not same origin and due to async loading we were able to
+                            // add tracking to it before the content was loaded so we have a window with tracking in which we
+                            // can't access properties any more so we will skip it with warning
+                            console.warn(`Error while accessing window so skipping, '${e.message}'`);
+                        }
                     });
 
                     Promise.all(promises).then(() => {
@@ -437,15 +449,6 @@ export namespace Default {
                     }).catch(reject);
                 });
             });
-        }
-
-        private isSameOrigin(window: Window): boolean {
-            try {
-                const origin = window.location.origin;
-                return origin !== "null";
-            } catch {
-                return false;
-            }
         }
     }
 
