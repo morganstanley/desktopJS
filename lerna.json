@@ -3,7 +3,7 @@
     "examples/electron",
     "packages/*"
   ],
-  "version": "3.10.0",
+  "version": "3.11.0",
   "command": {
     "publish": {
       "allowBranch": "master",
