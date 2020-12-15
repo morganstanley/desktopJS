@@ -17,7 +17,7 @@ container agnostic and provide portability when multiple container deployments a
 Usage
 ---------------
 
-The first step is to simply [resolve](https://morgan-stanley.github.io/desktopJS/modules/_desktopjs_src_registry_.html#resolvecontainer) the current [container](https://morgan-stanley.github.io/desktopJS/classes/_desktopjs_src_container_.container.html). This enumerates
+The first step is to simply [resolve](http://opensource.morganstanley.com/desktopJS/modules/_desktopjs_src_registry_.html#resolvecontainer) the current [container](http://opensource.morganstanley.com/desktopJS/classes/_desktopjs_src_container_.container.html). This enumerates
 all registered containers (including your own custom container or derived custom implementations) and
 returns the container implementation that matches.
 
@@ -26,7 +26,7 @@ var container = desktopJS.resolveContainer();
 console.log("Container: " + container.hostType);
 ```
 
-Interact with the [container](https://morgan-stanley.github.io/desktopJS/classes/_desktopjs_src_container_.container.html) via a single api instead of having conditional code or applications
+Interact with the [container](http://opensource.morganstanley.com/desktopJS/classes/_desktopjs_src_container_.container.html) via a single api instead of having conditional code or applications
 based on deployment.
 
 ```
