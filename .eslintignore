@@ -1,0 +1,6 @@
+**/dist/*
+**/build/*
+**/gulpfile.js
+
+# Todo: remove and fix at some stage
+examples/* 

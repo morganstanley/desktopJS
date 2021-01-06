@@ -6,7 +6,6 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "noImplicitAny": false,
-        "outDir": "build",
         "declaration": true,
         "sourceMap": true,
         "allowSyntheticDefaultImports": true,
@@ -15,10 +14,4 @@
             "dom"
         ]
     },
-    "include": [
-        "**/*.ts"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
 }

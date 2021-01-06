@@ -127,7 +127,7 @@ export class EventEmitter {
      * @param {string} eventName The type of the event.
      * @param {(event: EventArgs) => void} listener The event handler function.
      */
-    public static addListener(eventName: string, listener: (event: EventArgs) => void): void { // tslint:disable-line
+    public static addListener(eventName: string, listener: (event: EventArgs) => void): void { 
         (this.staticEventListeners[eventName] = this.staticEventListeners[eventName] || []).push(listener);
     }
 
@@ -136,7 +136,7 @@ export class EventEmitter {
      * @param {string} eventName The type of the event.
      * @param {(event: EventArgs) => void} listener The event handler function.
      */
-    public static removeListener(eventName: string, listener: (event: EventArgs) => void): void { // tslint:disable-line
+    public static removeListener(eventName: string, listener: (event: EventArgs) => void): void { 
         const listeners = EventEmitter.listeners(eventName);
 
         if (listeners) {
@@ -151,11 +151,11 @@ export class EventEmitter {
      * Gets an array of listeners for a specific static event type.
      * @param {string} eventName eventName The type of the event.
      */
-    public static listeners(eventName: string): ((event: EventArgs) => void)[] { // tslint:disable-line
+    public static listeners(eventName: string): ((event: EventArgs) => void)[] { 
         return (this.staticEventListeners[eventName] || []);
     }
 
-    public static emit(eventName: string, eventArgs: EventArgs, ipc?: MessageBus) { // tslint:disable-line
+    public static emit(eventName: string, eventArgs: EventArgs, ipc?: MessageBus) { 
         if (ipc && ipc.publish) {
             ipc.publish(EventEmitter.staticEventName, { eventName: eventName, eventArgs: eventArgs });
         } else {

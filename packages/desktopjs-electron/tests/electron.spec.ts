@@ -1,6 +1,6 @@
-import {} from "jasmine";
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { ElectronContainer, ElectronContainerWindow, ElectronMessageBus, ElectronWindowManager } from "../src/electron";
-import {  ContainerWindow, Container } from "@morgan-stanley/desktopjs";
+import { ContainerWindow, Container } from "@morgan-stanley/desktopjs";
 
 class MockEventEmitter {
     private eventListeners: Map<string, any> = new Map();
@@ -20,6 +20,7 @@ class MockEventEmitter {
 
     public emit(eventName: string, ...eventArgs: any[]) {
         for (const listener of this.listeners(eventName)) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             listener(...eventArgs);
         }
@@ -85,7 +86,7 @@ class MockMainIpc extends MockEventEmitter {
 }
 
 class MockIpc extends MockMainIpc {
-    public sendSync(channel: string, ...args: any[]) { return {} };
+    public sendSync(channel: string, ...args: any[]) { return {} }
     public send(channel: string, ...args: any[]) { }
 }
 
@@ -183,7 +184,7 @@ describe("ElectronContainerWindow", () => {
 
         it("isShowing", (done) => {
             spyOn(innerWin, "isVisible").and.callThrough();
-            let success: boolean = false;
+            let success = false;
 
             win.isShowing().then((showing) => {
                 success = true;
@@ -197,9 +198,9 @@ describe("ElectronContainerWindow", () => {
 
         describe("getState", () => {
             it("getState undefined", (done) => {
-                let mockWindow = new MockWindow();
+                const mockWindow = new MockWindow();
                 mockWindow.webContents = null;
-                let win = new ElectronContainerWindow(mockWindow, container);
+                const win = new ElectronContainerWindow(mockWindow, container);
 
                 win.getState().then(state => {
                     expect(state).toBeUndefined();
@@ -219,9 +220,9 @@ describe("ElectronContainerWindow", () => {
     
         describe("setState", () => {
             it("setState undefined", (done) => {
-                let mockWindow = new MockWindow();
+                const mockWindow = new MockWindow();
                 mockWindow.webContents = null;
-                let win = new ElectronContainerWindow(mockWindow, container);
+                const win = new ElectronContainerWindow(mockWindow, container);
 
                 win.setState({}).then(done);
             });
@@ -238,7 +239,7 @@ describe("ElectronContainerWindow", () => {
 
         it("getSnapshot", (done) => {
             spyOn(innerWin, "capturePage").and.callThrough();
-            let success: boolean = false;
+            let success = false;
 
             win.getSnapshot().then((snapshot) => {
                 success = true;
@@ -304,7 +305,7 @@ describe("ElectronContainerWindow", () => {
         it ("getOptions sends synchronous ipc message", (done) => {
             spyOn(container.internalIpc, "sendSync").and.returnValue({ foo: "bar"});
             spyOnProperty(win, "id", "get").and.returnValue(5);
-            spyOn(container, "wrapWindow").and.returnValue(new MockWindow());
+            spyOn(container, "wrapWindow").and.returnValue(new MockWindow() as any);
             spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
 
             win.getOptions().then(options => {
@@ -322,17 +323,17 @@ describe("ElectronContainerWindow", () => {
     
             describe("beforeunload", () => {
                 it ("beforeunload attaches to underlying dom window", () => {
-                    var window = jasmine.createSpyObj("window", ["addEventListener"]);
-                    spyOn(container, "getCurrentWindow").and.returnValue({ id: 1});
+                    const window = jasmine.createSpyObj("window", ["addEventListener"]);
+                    spyOn(container, "getCurrentWindow").and.returnValue({ id: "1"} as any);
                     win = new ElectronContainerWindow(innerWin, container, window);
-                    spyOnProperty(win, "id", "get").and.returnValue(1);
+                    spyOnProperty(win, "id", "get").and.returnValue("1");
                     win.addListener("beforeunload", () => {});
                     expect(window.addEventListener).toHaveBeenCalledWith("beforeunload", jasmine.any(Function));
                 });
     
-                it ("beforeunload throws error if not current window", () => {
-                    var window = jasmine.createSpyObj("window", ["addEventListener"]);
-                    spyOn(container, "getCurrentWindow").and.returnValue({ id: 2});
+                it("beforeunload throws error if not current window", () => {
+                    const window = jasmine.createSpyObj("window", ["addEventListener"]);
+                    spyOn(container, "getCurrentWindow").and.returnValue({ id: "2"} as any);
                     win = new ElectronContainerWindow(innerWin, container, window);
                     spyOnProperty(win, "id", "get").and.returnValue(1);
                     expect(() => {win.addListener("beforeunload", () => {})}).toThrowError("Event handler for 'beforeunload' can only be added on current window");
@@ -347,7 +348,7 @@ describe("ElectronContainerWindow", () => {
         });
 
         it("nativeWindow returns window", () => {
-            var window = {};
+            const window = {};
             const win = new ElectronContainerWindow(innerWin, container, <any>window);
             expect(win.nativeWindow).toEqual(<any>window);
         });
@@ -361,7 +362,7 @@ describe("ElectronContainerWindow", () => {
         it ("getGroup sends synchronous ipc message", (done) => {
             spyOn(container.internalIpc, "sendSync").and.returnValue([ 1, 5, 2 ]);
             spyOnProperty(win, "id", "get").and.returnValue(5);
-            spyOn(container, "wrapWindow").and.returnValue(new MockWindow());
+            spyOn(container, "wrapWindow").and.returnValue(new MockWindow() as any);
             spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
 
             win.getGroup().then(windows => {
@@ -440,7 +441,7 @@ describe("ElectronContainerWindow", () => {
 describe("ElectronContainer", () => {
     let electron: any;
     let container: ElectronContainer;
-    let globalWindow: any = {};
+    const globalWindow: any = {};
     let windows: MockWindow[];
 
     beforeEach(() => {
@@ -769,7 +770,7 @@ describe("ElectronMessageBus", () => {
     });
 
     it("publish invokes underling publish", (done) => {
-        let message: any = {};
+        const message: any = {};
         spyOn(mockIpc, "send").and.callThrough();
         spyOn(mockWindow.webContents, "send").and.callThrough();
         bus.publish("topic", message).then(done);
@@ -786,7 +787,7 @@ describe("ElectronMessageBus", () => {
     });
 
     it("publish with optional name invokes underling send", (done) => {
-        let message: any = {};
+        const message: any = {};
         bus.publish("topic", message, { name: "target" }).then(done);
     });
 });

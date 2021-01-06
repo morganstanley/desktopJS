@@ -345,8 +345,7 @@ export class OpenFinContainer extends WebContainerBase {
 
     public notificationOptionsMap: PropertyMap = OpenFinContainer.notificationOptionsMap;
 
-    /* tslint:disable */
-    public static menuHtml: string =
+    public static menuHtml =
         `<html>
         <head>
             <style>
@@ -395,13 +394,12 @@ export class OpenFinContainer extends WebContainerBase {
                         window.close();
                     }
                 }, false);
-            <\/script>
+            </script>
         </head>
         <body>
             <ul class="context-menu" id="contextMenu"></ul>
         </body>
     </html>`;
-    /* tslint:enable */
 
     public constructor(desktop?: any, win?: Window, options?: any) {
         super(win);
@@ -434,7 +432,7 @@ export class OpenFinContainer extends WebContainerBase {
         if (this.desktop.GlobalHotkey) {
             this.globalShortcut = new OpenFinGlobalShortcutManager(this.desktop);
         } else {
-            console.warn("Global shortcuts require minimum OpenFin runtime of 9.61.32.34");
+            this.log("warn", "Global shortcuts require minimum OpenFin runtime of 9.61.32.34");
         }
     }
 
@@ -445,7 +443,8 @@ export class OpenFinContainer extends WebContainerBase {
     protected registerNotificationsApi() {
         if (typeof this.globalWindow !== "undefined" && this.globalWindow) {
             // Define owningContainer for closure to inner class
-            const owningContainer: OpenFinContainer = this; // tslint:disable-line
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const owningContainer: OpenFinContainer = this;
 
             this.globalWindow["Notification"] = class OpenFinNotification extends ContainerNotification {
                 constructor(title: string, options?: NotificationOptions) {
@@ -457,7 +456,7 @@ export class OpenFinContainer extends WebContainerBase {
                     options["onClick"] = (event) => { if (this.onclick) { this.onclick(event); } };
                     options["onError"] = (event) => { if (this.onerror) { this.onerror(event); } };
 
-                    owningContainer.showNotification(title, options);
+                    owningContainer.showNotification(this.title, this.options);
                 }
             };
         }
@@ -467,7 +466,7 @@ export class OpenFinContainer extends WebContainerBase {
         return new Promise<string | undefined>((resolve, reject) => {
             this.desktop.System.getRvmInfo(rvmInfo => {
                 this.desktop.System.getRuntimeInfo(runtimeInfo => {
-                    console.log(runtimeInfo); // tslint:disable-line
+                    this.log("info",runtimeInfo); 
                     resolve(`RVM/${rvmInfo.version} Runtime/${runtimeInfo.version}`);
                 }, reject);
             }, reject);
@@ -551,7 +550,7 @@ export class OpenFinContainer extends WebContainerBase {
             : "<span>&nbsp;</span>";
 
         return `<li class="context-menu-item" onclick="fin.desktop.InterApplicationBus.send('${(<any>this.desktop.Application.getCurrent()).uuid}`
-            + `', null, 'TrayIcon_ContextMenuClick_${this.uuid}', { id: '${item.id}' });this.close()\">${imgHtml}${item.label}</li>`;
+            + `', null, 'TrayIcon_ContextMenuClick_${this.uuid}', { id: '${item.id}' });this.close()">${imgHtml}${item.label}</li>`;
     }
 
     private showMenu(x: number, y: number, monitorInfo: any, menuItems: MenuItem[]) {
@@ -578,7 +577,7 @@ export class OpenFinContainer extends WebContainerBase {
                 win.document.write(this.getMenuHtml());
                 win.document.close();
 
-                let menuItemHtml: string = "";
+                let menuItemHtml = "";
                 for (const item of menuItems.filter(value => value.label)) {
                     if (!item.id) {
                         item.id = Guid.newGuid();
@@ -588,7 +587,7 @@ export class OpenFinContainer extends WebContainerBase {
                 }
 
                 const contextMenuElement: HTMLElement = win.document.getElementById("contextMenu");
-                contextMenuElement.innerHTML = menuItemHtml; // tslint:disable-line
+                contextMenuElement.innerHTML = menuItemHtml; 
 
                 // Size <ul> to fit
                 const { "offsetWidth": width, "offsetHeight": height } = contextMenuElement;
@@ -630,7 +629,7 @@ export class OpenFinContainer extends WebContainerBase {
                         }
                     });
 
-            }, (error) => { console.error(error); });
+            }, (error) => { this.log("error", error); });
     }
 
     protected closeAllWindows(): Promise<void> {
@@ -673,6 +672,7 @@ export class OpenFinContainer extends WebContainerBase {
     public buildLayout(): Promise<PersistedWindowLayout> {
         const layout = new PersistedWindowLayout();
 
+        // eslint-disable-next-line no-async-promise-executor
         return new Promise<PersistedWindowLayout>(async (resolve, reject) => {
             const windows = await this.getAllWindows();
             const mainWindow = this.getMainWindow();
@@ -680,6 +680,7 @@ export class OpenFinContainer extends WebContainerBase {
 
             windows.filter(window => window.name !== "queueCounter" && !window.name.startsWith(OpenFinContainer.notificationGuid))
                 .forEach(djsWindow => {
+                    // eslint-disable-next-line no-async-promise-executor
                     promises.push(new Promise<void>(async (innerResolve, innerReject) => {
                         const state = await djsWindow.getState();
                         const window = djsWindow.innerWindow;
