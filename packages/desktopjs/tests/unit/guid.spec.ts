@@ -3,7 +3,7 @@ import { Guid } from "../../src/guid";
 
 describe("Guid", () => {
     describe("newGuid()", () => {
-        let guid: string = Guid.newGuid();
+        const guid: string = Guid.newGuid();
 
         it("Returns a value", () => {
             expect(guid).toBeDefined();

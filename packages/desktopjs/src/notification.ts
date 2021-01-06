@@ -37,7 +37,7 @@ export abstract class ContainerNotification {
      * @param {NotificationPermissionCallback} [callback] An optional callback function that is called with the permission value. Depcrecated in favor of the promise return value
      * @returns {Promise<string>} A Promise that resolves to the permission picked by the user.
      */
-    static requestPermission(callback?: NotificationPermissionCallback): Promise<string> { // tslint:disable-line
+    static requestPermission(callback?: NotificationPermissionCallback): Promise<string> { 
         if (callback) {
             callback(ContainerNotification.permission);
         }
@@ -49,6 +49,5 @@ export abstract class ContainerNotification {
      * @param {string} title Defines a title for the notification.  Depending on container and choice of notification mechanism, this might not be shown.
      * @param {NotificationOptions} [options] Notification options.
      */
-    constructor(title: string, options?: NotificationOptions) { // tslint:disable-line
-    }
+    constructor(protected title: string, protected options?: NotificationOptions) {}
 }

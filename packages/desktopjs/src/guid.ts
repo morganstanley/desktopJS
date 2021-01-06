@@ -2,7 +2,6 @@
  * @module @morgan-stanley/desktopjs
  */
 
-/* tslint:disable */
 /** Represents a GUID. */
 export class Guid {
     /**
@@ -17,4 +16,3 @@ export class Guid {
         });
     }
 }
-/* tslint:enable */

@@ -1,10 +1,54 @@
 import {} from "jasmine";
 import { ContainerWindow, WindowEventType, WindowEventArgs, WindowStateTracking, GroupWindowManager, SnapAssistWindowManager, Rectangle } from "../../src/window";
 import { EventArgs, EventEmitter } from "../../src/events";
-import { TestContainer } from "./container.spec";
+import { TestContainer } from "./container.spec"
 
-// @ts-ignore
 class MockWindow extends ContainerWindow {
+    public id: string;
+    public name: string;
+    public load(url: string, options?: any): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    public show(): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    public hide(): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    public close(): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    public maximize(): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    public isShowing(): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
+    public getSnapshot(): Promise<string> {
+        throw new Error("Method not implemented.");
+    }
+    public getBounds(): Promise<Rectangle> {
+        throw new Error("Method not implemented.");
+    }
+    public flash(enable: boolean, options?: any): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    public getParent(): Promise<ContainerWindow> {
+        throw new Error("Method not implemented.");
+    }
+    public setParent(parent: ContainerWindow): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    public setBounds(bounds: Rectangle): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    public getOptions(): Promise<any> {
+        throw new Error("Method not implemented.");
+    }
+    protected detachListener(eventName: WindowEventType, listener: (event: EventArgs) => void): void {
+        throw new Error("Method not implemented.");
+    }
+ 
     protected attachListener(eventName: WindowEventType, listener: (event: EventArgs) => void): void {
         return;
     }

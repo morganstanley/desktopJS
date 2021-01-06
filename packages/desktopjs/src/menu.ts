@@ -3,7 +3,7 @@
  */
 
 /** Represents an individual item used in menus and context menus. */
-export class MenuItem { // tslint:disable-line
+export class MenuItem { 
     /** Unique identifier for the menu item.
      * @type {string}
      */

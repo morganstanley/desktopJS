@@ -10,6 +10,7 @@ matrix:
 
 script:
   - npm run bootstrap
+  - npm run lint
   - npm run build
   - npm test
   - npm run docs

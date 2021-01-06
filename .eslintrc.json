@@ -1,0 +1,24 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "rules": {
+      "@typescript-eslint/no-inferrable-types": ["error", { "ignoreProperties": true, "ignoreParameters": true}],
+      "no-console": "error"
+    },
+    "overrides": [
+      {
+        "files": ["**/*.spec.ts"],
+        "rules": {
+          "@typescript-eslint/no-empty-function": "off",
+          "no-console": "warn"
+        }
+      }
+    ]
+    
+}

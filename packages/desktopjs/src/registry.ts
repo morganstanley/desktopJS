@@ -40,20 +40,20 @@ export let container: Container;
  * @param {boolean} force (Optional) Determines whether to always create a new instance or returned the cached instance.
  * @returns {Container} Current concrete container.  If no match is found, a DefaultContainer.
  */
-export function resolveContainer(force?: boolean): Container; // tslint:disable-line
+export function resolveContainer(force?: boolean): Container; 
 
 /** Resolve the current container.
  * @param {any} options (Optional) Options to pass through to condition and create factory method.
  * @returns {Container} Current concrete container.  If no match is found, a DefaultContainer.
  */
-export function resolveContainer(options?: any): Container; // tslint:disable-line
+export function resolveContainer(options?: any): Container; 
 
 /** Resolve the current container.
  * @param {boolean} force Determines whether to always create a new instance or returned the cached instance.
  * @param {any} options (Optional) Options to pass through to condition and create factory method.
  * @returns {Container} Current concrete container.  If no match is found, a DefaultContainer.
  */
-export function resolveContainer(force: boolean, options?: any): Container; // tslint:disable-line
+export function resolveContainer(force: boolean, options?: any): Container; 
 
 export function resolveContainer(param1?: boolean | any, param2?: any): Container {
     let force = false;
@@ -70,13 +70,14 @@ export function resolveContainer(param1?: boolean | any, param2?: any): Containe
     }
     let registration: ContainerRegistration, containerId: string;
     try {
-        for (let i: number = 0; i < registeredContainers.length; i++) { // tslint:disable-line
+        for (let i = 0; i < registeredContainers.length; i++) { 
             containerId = registeredContainers[i].id;
             const testReg: ContainerRegistration = registeredContainers[i].registration;
             registration = testReg.condition(options) ? testReg : registration;
         }
         container = registration ? registration.create(options) : undefined;
     } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(`Error resolving container '${containerId}' : ${e.toString()}`);
     } finally {
         container = container || new Default.DefaultContainer();
