@@ -32,7 +32,6 @@ module.exports = function (gulp, pkg, config, name, input, iffe) {
                     file: destination,
                     format: format,
                     name: name,
-                    moduleName: pkg.title,
                     sourcemap: true,
                     globals: {
                         "@morgan-stanley/desktopjs": "desktopJS"
