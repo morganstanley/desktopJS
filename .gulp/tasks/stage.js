@@ -10,8 +10,7 @@ module.exports = function (gulp, config) {
 
         var tsResult = tsProject.src()
             .pipe(sourcemaps.init())
-            .pipe(tsProject(gulpts.reporter.fullReporter(true)))
-            .on("error", (e) => { /* Continue */ });
+            .pipe(tsProject(gulpts.reporter.fullReporter(true)));
 
         return merge([
             tsResult.js
@@ -20,6 +19,5 @@ module.exports = function (gulp, config) {
             tsResult.dts
                 .pipe(gulp.dest(config.staging.dest))
         ]);;
-
     };
 }
