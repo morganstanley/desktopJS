@@ -8,5 +8,7 @@
             "fileMatch": [ "tsconfig.staging.json" ],
             "url": "https://json.schemastore.org/tsconfig"
         }
-    ]
+    ],
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
 }
