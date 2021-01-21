@@ -12,10 +12,10 @@
   "author": "Morgan Stanley",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Morgan-Stanley/desktopJS.git"
+    "url": "https://github.com/MorganStanley/desktopJS.git"
   },
   "bugs": {
-    "url": "https://github.com/Morgan-Stanley/desktopJS/issues"
+    "url": "https://github.com/MorganStanley/desktopJS/issues"
   },
   "keywords": [
     "container",
