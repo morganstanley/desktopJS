@@ -10,9 +10,9 @@
   "types": "dist/desktopjs-electron.d.ts",
   "license": "Apache-2.0",
   "author": "Morgan Stanley",
-  "repository": "https://github.com/Morgan-Stanley/desktopJS/tree/master/packages/desktopjs-electron",
+  "repository": "https://github.com/MorganStanley/desktopJS/tree/master/packages/desktopjs-electron",
   "bugs": {
-    "url": "https://github.com/Morgan-Stanley/desktopJS/issues"
+    "url": "https://github.com/MorganStanley/desktopJS/issues"
   },
   "keywords": [
     "container",
