@@ -13,9 +13,5 @@ module.exports = {
             lcovFile: 'build/coverage/lcov.info',
             threshold: 80
         }
-    },
-    documentation: {
-        src: ['packages/**/src/**/*.ts', '!**/*.d.ts' , '!**/node_modules/**/*'],
-        out: 'docs/'
     }
 };
