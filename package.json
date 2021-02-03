@@ -13,7 +13,7 @@
     "build": "lerna run build:lerna",
     "test": "gulp test",
     "start": "gulp server",
-    "docs": "gulp docs",
+    "docs": "typedoc",
     "watch": "lerna run --parallel watch",
     "deploy": "lerna run deploy"
   },
@@ -35,7 +35,6 @@
     "gulp-rename": "^2.0.0",
     "gulp-replace": "^1.0.0",
     "gulp-sourcemaps": "^3.0.0",
-    "gulp-typedoc": "^2.2.5",
     "gulp-typescript": "^5.0.1",
     "gulp-uglify": "^3.0.2",
     "husky": "^4.3.0",
@@ -47,7 +46,8 @@
     "rollup-plugin-sourcemaps": "^0.6.2",
     "rollup-plugin-typescript": "^1.0.1",
     "run-sequence": "^2.2.1",
-    "typedoc": "^0.19.2",
+    "typedoc": "^0.20.20",
+    "typedoc-plugin-nojekyll": "^1.0.1",
     "typescript": "^4.0.5"
   },
   "husky": {
