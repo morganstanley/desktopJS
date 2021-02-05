@@ -363,6 +363,7 @@ export class ElectronContainer extends WebContainerBase {
             this.nodeIntegration = null;
             this.setOptions(options);
         } catch (e) {
+            // eslint-disable-next-line no-console
             console.error(e);
         }
 
@@ -403,6 +404,7 @@ export class ElectronContainer extends WebContainerBase {
                 this.nodeIntegration = options.node;
             }
         } catch (e) {
+            // eslint-disable-next-line no-console
             console.error(e);
         }
     }
