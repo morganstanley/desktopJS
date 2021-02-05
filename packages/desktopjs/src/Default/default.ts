@@ -261,7 +261,7 @@ export namespace Default {
         }
 
         public setOptions(options: any) {
-            throw new TypeError("SetOptions not implemented by this container");
+            // noop. Any override to be done in overriding containers.
         }
 
         public isAutoStartEnabledAtLogin(): Promise<boolean> {
