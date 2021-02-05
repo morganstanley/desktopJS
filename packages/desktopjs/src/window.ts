@@ -6,7 +6,7 @@ import { Container } from "./container";
 import { EventEmitter, EventArgs } from "./events";
 
 /** Represents the bounds of a rectangle */
-export class Rectangle { // tslint:disable-line
+export class Rectangle { 
     /** The x coordinate of the origin of the rectangle
      * @type {number}
      */
@@ -35,11 +35,11 @@ export class Rectangle { // tslint:disable-line
         return Rectangle.getBottom(this);
     }
 
-    public static getRight(r: Rectangle) { // tslint:disable-line
+    public static getRight(r: Rectangle) { 
         return r.x + r.width;
     }
 
-    public static getBottom(r: Rectangle): number { // tslint:disable-line
+    public static getBottom(r: Rectangle): number { 
         return r.y + r.height;
     }
 
@@ -84,9 +84,9 @@ export abstract class ContainerWindow extends EventEmitter {
     /** The underlying concrete container window. */
     public readonly innerWindow: any;
 
-    public readonly id: string;
+    public abstract readonly id: string;
 
-    public readonly name: string;
+    public abstract readonly name: string;
 
     public constructor(wrap: any) {
         super();
@@ -211,19 +211,19 @@ export abstract class ContainerWindow extends EventEmitter {
         return super.removeListener(eventName, callback);
     }
 
-    public static addListener(eventName: WindowEventType, listener: (event: WindowEventArgs | WindowGroupEventArgs) => void): void { // tslint:disable-line
+    public static addListener(eventName: WindowEventType, listener: (event: WindowEventArgs | WindowGroupEventArgs) => void): void { 
         EventEmitter.addListener(ContainerWindow.staticEventScopePrefix + eventName, listener);
     }
 
-    public static removeListener(eventName: WindowEventType, listener: (event: WindowEventArgs | WindowGroupEventArgs) => void): void { // tslint:disable-line
+    public static removeListener(eventName: WindowEventType, listener: (event: WindowEventArgs | WindowGroupEventArgs) => void): void { 
         EventEmitter.removeListener(ContainerWindow.staticEventScopePrefix + eventName, listener);
     }
 
-    public static emit(eventName: WindowEventType, eventArgs: WindowEventArgs | WindowGroupEventArgs): void { // tslint:disable-line
+    public static emit(eventName: WindowEventType, eventArgs: WindowEventArgs | WindowGroupEventArgs): void { 
         EventEmitter.emit(ContainerWindow.staticEventScopePrefix + eventName, eventArgs, Container.ipc);
     }
 
-    public static listeners(eventName: string): ((event: EventArgs) => void)[] { // tslint:disable-line
+    public static listeners(eventName: string): ((event: EventArgs) => void)[] { 
         return EventEmitter.listeners(ContainerWindow.staticEventScopePrefix + eventName);
     }
 }

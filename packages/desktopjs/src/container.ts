@@ -33,7 +33,7 @@ export type ContainerEventArgs = EventArgs | WindowEventArgs | LayoutEventArgs;
 export abstract class Container extends EventEmitter implements ContainerWindowManager, ContainerNotificationManager {
     private static readonly staticEventScopePrefix: string = "container-";
 
-    private static _ipc: MessageBus; // tslint:disable-line
+    private static _ipc: MessageBus;
 
     public static readonly windowOptionsPropertyKey: string = "desktopJS-options";
 
@@ -43,7 +43,7 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
      */
     public abstract hostType: string;
 
-    public getInfo(): Promise<string> {
+    public getInfo(): Promise<string | undefined> {
         return Promise.resolve(undefined);
     }
 
@@ -130,31 +130,31 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
      */
     public globalShortcut: GlobalShortcutManager;
 
-    public addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { // tslint:disable-line
+    public addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { 
         return super.addListener(eventName, listener);
     }
 
-    public removeListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { // tslint:disable-line
+    public removeListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): this { 
         return super.removeListener(eventName, listener);
     }
 
-    public emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs): void { // tslint:disable-line
+    public emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs): void { 
         super.emit(eventName, eventArgs);
     }
 
-    public static addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): void { // tslint:disable-line
+    public static addListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): void { 
         EventEmitter.addListener(Container.staticEventScopePrefix + eventName, listener);
     }
 
-    public static removeListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): void { // tslint:disable-line
+    public static removeListener(eventName: ContainerEventType, listener: (event: ContainerEventArgs) => void): void { 
         EventEmitter.removeListener(Container.staticEventScopePrefix + eventName, listener);
     }
 
-    public static emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs): void { // tslint:disable-line
+    public static emit(eventName: ContainerEventType, eventArgs: ContainerEventArgs): void { 
         EventEmitter.emit(Container.staticEventScopePrefix + eventName, eventArgs, Container.ipc);
     }
 
-    public static listeners(eventName: string): ((event: EventArgs) => void)[] { // tslint:disable-line
+    public static listeners(eventName: string): ((event: EventArgs) => void)[] { 
         return EventEmitter.listeners(Container.staticEventScopePrefix + eventName);
     }
 }
@@ -212,7 +212,7 @@ export abstract class ContainerBase extends Container {
         }
     }
 
-    protected abstract closeAllWindows(excludeSelf?: Boolean): Promise<void>;
+    protected abstract closeAllWindows(excludeSelf?: boolean): Promise<void>;
 
     public loadLayout(layout: string | PersistedWindowLayout): Promise<PersistedWindowLayout> {
         return new Promise<PersistedWindowLayout>((resolve, reject) => {
@@ -314,19 +314,19 @@ export abstract class ContainerBase extends Container {
             let logger;
             switch (level) {
                 case "debug": {
-                    logger = console.debug; // tslint:disable-line
+                    logger = console.debug; // eslint-disable-line no-console
                     break;
                 }
                 case "warn": {
-                    logger = console.warn; // tslint:disable-line
+                    logger = console.warn; // eslint-disable-line no-console
                     break;
                 }
                 case "error": {
-                    logger = console.error; // tslint:disable-line
+                    logger = console.error; // eslint-disable-line no-console
                     break;
                 }
                 default: {
-                    logger = console.log; // tslint:disable-line
+                    logger = console.log; // eslint-disable-line no-console
                 }
             }
 

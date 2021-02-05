@@ -1,12 +1,9 @@
-![desktopJS](https://raw.githubusercontent.com/wiki/morgan-stanley/desktopJS/images/logo.png)
+![desktopJS](https://raw.githubusercontent.com/wiki/MorganStanley/desktopJS/images/logo.png)
 ==========
 [![npm version](https://badge.fury.io/js/%40morgan-stanley%2Fdesktopjs.svg)](https://www.npmjs.com/package/@morgan-stanley/desktopjs)
-[![Build Status](https://travis-ci.com/Morgan-Stanley/desktopJS.svg?branch=master)](https://travis-ci.com/Morgan-Stanley/desktopJS?branch=master)
-[![codecov](https://codecov.io/gh/Morgan-Stanley/desktopJS/branch/master/graph/badge.svg)](https://codecov.io/gh/Morgan-Stanley/desktopJS)
-
-[![devDependencies Status](https://david-dm.org/Morgan-Stanley/desktopJS/dev-status.svg)](https://david-dm.org/Morgan-Stanley/desktopJS?type=dev)
-[![dependencies Status](https://david-dm.org/Morgan-Stanley/desktopJS/status.svg)](https://david-dm.org/Morgan-Stanley/desktopJS)
-[![GitPitch](https://gitpitch.com/assets/badge.svg)](https://gitpitch.com/Morgan-Stanley/desktopJS/master?grs=github&t=white&p=pitch)
+[![Build Status](https://travis-ci.com/MorganStanley/desktopJS.svg?branch=master)](https://travis-ci.com/MorganStanley/desktopJS?branch=master)
+[![codecov](https://codecov.io/gh/MorganStanley/desktopJS/branch/master/graph/badge.svg)](https://codecov.io/gh/MorganStanley/desktopJS)
+[![GitPitch](https://gitpitch.com/assets/badge.svg)](https://gitpitch.com/MorganStanley/desktopJS/master?grs=github&t=white&p=pitch)
 
 desktopJS is a common API across multiple HTML5 containers. By programming to a
 common API, applications can target multiple HTML5 containers without change. Detecting
@@ -17,7 +14,7 @@ container agnostic and provide portability when multiple container deployments a
 Usage
 ---------------
 
-The first step is to simply [resolve](https://morgan-stanley.github.io/desktopJS/modules/_desktopjs_src_registry_.html#resolvecontainer) the current [container](https://morgan-stanley.github.io/desktopJS/classes/_desktopjs_src_container_.container.html). This enumerates
+The first step is to simply [resolve](http://opensource.morganstanley.com/desktopJS/modules/_desktopjs_src_registry_.html#resolvecontainer) the current [container](http://opensource.morganstanley.com/desktopJS/classes/_desktopjs_src_container_.container.html). This enumerates
 all registered containers (including your own custom container or derived custom implementations) and
 returns the container implementation that matches.
 
@@ -26,7 +23,7 @@ var container = desktopJS.resolveContainer();
 console.log("Container: " + container.hostType);
 ```
 
-Interact with the [container](https://morgan-stanley.github.io/desktopJS/classes/_desktopjs_src_container_.container.html) via a single api instead of having conditional code or applications
+Interact with the [container](http://opensource.morganstanley.com/desktopJS/classes/_desktopjs_src_container_.container.html) via a single api instead of having conditional code or applications
 based on deployment.
 
 ```
@@ -97,5 +94,5 @@ or it is recommended to define a custom keyboard binding.
 Examples
 --------
 Examples showcasing usage of desktopJS for various containers and scenarios can be found under
-the [examples](https://github.com/Morgan-Stanley/desktopJS/tree/master/examples) directory.
+the [examples](https://github.com/MorganStanley/desktopJS/tree/master/examples) directory.
 

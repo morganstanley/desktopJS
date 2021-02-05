@@ -13,5 +13,3 @@ gulp.task("server", function () {
 		livereload: true
   	});
 });
-
-gulp.task('docs', require('./.gulp/tasks/docs')(gulp, gulpConfig));

@@ -1,15 +1,40 @@
 import {} from "jasmine";
-import { Container, ContainerBase, WebContainerBase } from "../../src/container";
-import { ContainerWindow, PersistedWindowLayout, PersistedWindow } from "../../src/window";
+import { Container, ContainerBase } from "../../src/container";
+import { ContainerWindow, PersistedWindowLayout } from "../../src/window";
 import { NotificationOptions } from "../../src/notification";
 import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../../src/ipc";
 import { EventArgs, EventEmitter } from "../../src/events";
 
-// @ts-ignore
+
+
 class MockContainer extends ContainerBase {
+    protected closeAllWindows(excludeSelf?: boolean): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    public buildLayout(): Promise<PersistedWindowLayout> {
+        throw new Error("Method not implemented.");
+    }
+    public getMainWindow(): ContainerWindow {
+        throw new Error("Method not implemented.");
+    }
+    public getCurrentWindow(): ContainerWindow {
+        throw new Error("Method not implemented.");
+    }
+    public createWindow(url: string, options?: any): Promise<ContainerWindow> {
+        throw new Error("Method not implemented.");
+    }
+    public getAllWindows(): Promise<ContainerWindow[]> {
+        throw new Error("Method not implemented.");
+    }
+    public getWindowById(id: string): Promise<ContainerWindow> {
+        throw new Error("Method not implemented.");
+    }
+    public getWindowByName(name: string): Promise<ContainerWindow> {
+        throw new Error("Method not implemented.");
+    }
 }
 
-export class MockMessageBus implements MessageBus { // tslint:disable-line
+export class MockMessageBus implements MessageBus { 
     private listener: any;
 
     subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
@@ -58,7 +83,7 @@ export class TestContainer extends ContainerBase {
         this.ipc = new MockMessageBus();
 
         this.storage = <any> {
-            getItem(key: string): string {
+            getItem(): string {
                 const layout: PersistedWindowLayout = new PersistedWindowLayout();
                 layout.windows.push({ name: "1", id: "1", url: "url", bounds: {}, state: { "value": "foo" }, group: ["1", "2", "3"]});
                 layout.windows.push({ name: "2", id: "2", main: true, url: "url", bounds: {}, group: ["1", "2", "3"]});
@@ -66,13 +91,13 @@ export class TestContainer extends ContainerBase {
                 layout.name = "Test";
                 return JSON.stringify({ "Test": layout });
             },
-            setItem(key: string, value: any) {
+            setItem() {
                 // no op
             }
         };
     }
 
-    public closeAllWindows(excludeSelf?: Boolean): Promise<void> {
+    public closeAllWindows(excludeSelf?: boolean): Promise<void> {
         return Promise.resolve();
     }
 
@@ -116,13 +141,13 @@ describe("container", () => {
     describe("Static events", () => {
         it("addListener adds callback to listeners", () => {
             expect(Container.listeners("TestEvent").length).toEqual(0);
-            Container.addListener(<any>"TestEvent", (event: EventArgs) => { });
+            Container.addListener(<any>"TestEvent", () => { });
             expect(Container.listeners("TestEvent").length).toEqual(1);
         });
 
         it("removeListener removes callback to listeners", () => {
             expect(Container.listeners("TestEvent").length).toEqual(0);
-            const callback = (event: EventArgs) => { };
+            const callback = () => { };
             Container.addListener(<any>"TestEvent", callback);
             expect(Container.listeners("TestEvent").length).toEqual(1);
             Container.removeListener(<any>"TestEvent", callback);
@@ -202,7 +227,7 @@ describe("container", () => {
             });
 
             it("loadLayout fires layout-loaded", (done) => {
-                container.addListener("layout-loaded", (e) => {
+                container.addListener("layout-loaded", () => {
                     done();
                 });
 
@@ -258,7 +283,7 @@ describe("container", () => {
             });
 
             it("deleteLayout fires layout-deleted", async (done) => {
-                container.addListener("layout-deleted", async (e) => {
+                container.addListener("layout-deleted", async () => {
                     done();
                 });
                 container.deleteLayout("Test");
@@ -274,12 +299,12 @@ describe("container", () => {
 
         describe("instance events", () => {
             it("addListener", done => {
-                container.addListener("window-created", e => done());
+                container.addListener("window-created", () => done());
                 container.emit("window-created", { sender: this, name: "window-created" });
             });
 
             it("removeListener", () => {
-                const callback = e => fail();
+                const callback = () => fail();
                 container.addListener("window-created", callback);
                 container.removeListener("window-created", callback);
                 container.emit("window-created", { sender: this, name: "window-created" });

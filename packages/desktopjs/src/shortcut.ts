@@ -5,7 +5,7 @@
 /** Register/unregister a glboal keyboard shortcut with the operating system so that you
  *  can customize the operations for various shortcuts.
  */
-export abstract class GlobalShortcutManager { // tslint:disable-line
+export abstract class GlobalShortcutManager { 
     /** Registers a global shortcut.
      * @param shortcut {string} [Accelerator]{@link https://electronjs.org/docs/api/accelerator}
      */

@@ -1,54 +1,52 @@
 {
-    "version": "0.1.0",
-    "showOutput": "always",
+    "version": "2.0.0",
     "tasks": [
         {
-            "taskName": "build",
-            "command": "${workspaceRoot}/node_modules/.bin/lerna",
-            "args": [
-                "run",
-                "build:lerna"
-            ],
-            "showOutput": "always",
-            "echoCommand": true,
-            "isShellCommand": true,
-            "isBuildCommand": true,
+            "label": "npm: build",
+            "type": "npm",
+            "script": "build",
+            "isBackground": false,
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
             "problemMatcher": [
                 "$tsc",
-                {
-                    "owner": "tslint",
-                    "pattern": {
-                        "regexp": "^(.+):\\s+\\(.+\\)\\s(\\S+)\\[(\\d+)(.{2})(\\d+)\\]:\\s+(.+)$",
-                        "severity": 0,
-                        "file": 2,
-                        "line": 3,
-                        "column": 5,
-                        "message": 6
-                    },
-                    "fileLocation": "absolute"
-                }
+                "$gulp-tsc"
             ]
         },
         {
-            "taskName": "test",
-            "command": "${workspaceRoot}/node_modules/.bin/gulp",
-            "args": [
-                "test"
-            ],
-            "showOutput": "always",
-            "echoCommand": true,
-            "isShellCommand": true,
-            "isTestCommand": true
+            "label": "npm: test",
+            "type": "npm",
+            "script": "test",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": [],
+            "detail": "gulp test"
         },
         {
-            "taskName": "Launch OpenFin",
+            "label": "Launch OpenFin",
+            "type": "shell",
             "command": "openfin",
             "args": [
                 "-l",
                 "-c",
                 "examples/openfin/app.json"
             ],
-            "isShellCommand": true
+            "presentation": {
+                "reveal": "never"
+            },
+            "problemMatcher": []
         }
     ]
 }

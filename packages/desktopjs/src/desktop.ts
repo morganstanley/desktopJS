@@ -2,8 +2,6 @@
  * @preferred
  * @module @morgan-stanley/desktopjs
  */
-
- /* tslint:disable */
 export * from "./container";
 export * from "./events";
 export * from "./guid";
@@ -18,4 +16,4 @@ export * from "./window";
 export * from "./shortcut";
 export * from "./Default/default";
 
-export const version: string = "PACKAGE_VERSION";
+export const version = "PACKAGE_VERSION";

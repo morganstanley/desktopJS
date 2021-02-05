@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /**
  * @module @morgan-stanley/desktopjs-electron
  */
@@ -308,7 +309,7 @@ export class ElectronMessageBus implements MessageBus {
  * @extends ContainerBase
  */
 export class ElectronContainer extends WebContainerBase {
-    protected isRemote: Boolean = true;
+    protected isRemote: boolean = true;
     protected electron: any;
     protected app: any;
     public browserWindow: any;
@@ -424,13 +425,14 @@ export class ElectronContainer extends WebContainerBase {
     protected registerNotificationsApi() {
         if (typeof this.globalWindow !== "undefined" && this.globalWindow) {
             // Define owningContainer for closure to inner class
-            const owningContainer: ElectronContainer = this; // tslint:disable-line
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const owningContainer: ElectronContainer = this;
 
             this.globalWindow["Notification"] = class ElectronNotification extends ContainerNotification {
                 constructor(title: string, options?: NotificationOptions) {
                     super(title, options);
                     options["notification"] = this;
-                    owningContainer.showNotification(title, options);
+                    owningContainer.showNotification(this.title, this.options);
                 }
             };
         }
@@ -465,7 +467,7 @@ export class ElectronContainer extends WebContainerBase {
         return ObjectTransform.transformProperties(options, this.windowOptionsMap);
     }
 
-    public wrapWindow(containerWindow: any) {
+    public wrapWindow(containerWindow: any): ElectronContainerWindow {
         return new ElectronContainerWindow(containerWindow, this);
     }
 
@@ -527,7 +529,7 @@ export class ElectronContainer extends WebContainerBase {
         }
     }
 
-    protected closeAllWindows(excludeSelf?: Boolean): Promise<void> {
+    protected closeAllWindows(excludeSelf?: boolean): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             for (const window of this.browserWindow.getAllWindows()) {
                 if (!excludeSelf || window !== this.electron.getCurrentWindow()) {

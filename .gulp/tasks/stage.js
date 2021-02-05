@@ -6,12 +6,11 @@ var sourcemaps = require('gulp-sourcemaps'),
 
 module.exports = function (gulp, config) {
     return function () {
-        var tsProject = gulpts.createProject('./tsconfig-staging.json');
+        var tsProject = gulpts.createProject('./tsconfig.staging.json');
 
         var tsResult = tsProject.src()
             .pipe(sourcemaps.init())
-            .pipe(tsProject(gulpts.reporter.fullReporter(true)))
-            .on("error", (e) => { /* Continue */ });
+            .pipe(tsProject(gulpts.reporter.fullReporter(true)));
 
         return merge([
             tsResult.js
@@ -20,6 +19,5 @@ module.exports = function (gulp, config) {
             tsResult.dts
                 .pipe(gulp.dest(config.staging.dest))
         ]);;
-
     };
 }

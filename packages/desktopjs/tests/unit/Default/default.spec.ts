@@ -7,14 +7,14 @@ class MockWindow {
     public listener: any;
 
     public name: string = "Name";
-    public focus(): void { };
-    public show(): void { };
-    public close(): Promise<void> { return Promise.resolve(); };
+    public focus(): void { }
+    public show(): void { }
+    public close(): Promise<void> { return Promise.resolve(); }
     public open(url?: string, target?: string, features?: string, replace?: boolean): any { return new MockWindow(); }
     public addEventListener(type: string, listener: any): void { this.listener = listener; }
     public removeEventListener(type: string, listener: any): void { }
-    public postMessage(message: string, origin: string): void { };
-    public moveTo(x: number, y: number): void { };
+    public postMessage(message: string, origin: string): void { }
+    public moveTo(x: number, y: number): void { }
     public resizeTo(width: number, height: number): void { }
     public getState(): Promise<any> { return Promise.resolve(undefined); }
     public setState(): Promise<void> { return Promise.resolve(); }
@@ -76,9 +76,9 @@ describe("DefaultContainerWindow", () => {
 
     describe("getState", () => {
         it("getState undefined", (done) => {
-            let mockWindow = new MockWindow();
+            const mockWindow = new MockWindow();
             delete mockWindow.getState;            
-            let win = new Default.DefaultContainerWindow(mockWindow);
+            const win = new Default.DefaultContainerWindow(mockWindow);
 
             win.getState().then(state => {
                 expect(state).toBeUndefined();
@@ -97,9 +97,9 @@ describe("DefaultContainerWindow", () => {
 
     xdescribe("setState", () => {
         it("setState undefined", (done) => {
-            let mockWindow = new MockWindow();
+            const mockWindow = new MockWindow();
             delete mockWindow.setState;            
-            let win = new Default.DefaultContainerWindow(mockWindow);
+            const win = new Default.DefaultContainerWindow(mockWindow);
             
             win.setState({}).then(done);
         });
@@ -115,7 +115,7 @@ describe("DefaultContainerWindow", () => {
     });
 
     it("getSnapshot rejects", (done) => {
-        let success: boolean = false;
+        let success = false;
 
         win.getSnapshot().then(() => {
             fail();
@@ -271,7 +271,7 @@ describe("DefaultContainer", () => {
     });
 
     it("hostType is Default", () => {
-        let container: Default.DefaultContainer = new Default.DefaultContainer();
+        const container: Default.DefaultContainer = new Default.DefaultContainer();
         expect(container.hostType).toEqual("Default");
     });
 
@@ -302,19 +302,19 @@ describe("DefaultContainer", () => {
 
         it("Returns a DefaultContainerWindow and invokes underlying window.open", async () => {
             spyOn(window, "open").and.callThrough();
-            let newWin: ContainerWindow = await container.createWindow("url");
+            const newWin: ContainerWindow = await container.createWindow("url");
             expect(window.open).toHaveBeenCalledWith("url", "_blank", undefined);
         });
 
         it("Options target property maps to open target parameter", async () => {
             spyOn(window, "open").and.callThrough();
-            let newWin: ContainerWindow = await container.createWindow("url", { target: "MockTarget" });
+            const newWin: ContainerWindow = await container.createWindow("url", { target: "MockTarget" });
             expect(window.open).toHaveBeenCalledWith("url", "MockTarget", "target=MockTarget,");
         });
 
         it("Options parameters are converted to features", async () => {
             spyOn(window, "open").and.callThrough();
-            let newWin: ContainerWindow = await container.createWindow("url",
+            const newWin: ContainerWindow = await container.createWindow("url",
                 {
                     x: "x0",
                     y: "y0"
@@ -358,37 +358,37 @@ describe("DefaultContainer", () => {
     });
 
     it("getMainWindow returns DefaultContainerWindow wrapping scoped window", () => {
-        let container: Default.DefaultContainer = new Default.DefaultContainer(window);
-        let win: ContainerWindow = container.getMainWindow();
+        const container: Default.DefaultContainer = new Default.DefaultContainer(window);
+        const win: ContainerWindow = container.getMainWindow();
         expect(win).toBeDefined();
         expect(win.id).toEqual("root");
         expect(win.innerWindow).toEqual(window);
     });
 
     it("getCurrentWindow returns DefaultContainerWindow wrapping scoped window", () => {
-        let container:Default. DefaultContainer = new Default.DefaultContainer(window);
-        let win: ContainerWindow = container.getCurrentWindow();
+        const container:Default. DefaultContainer = new Default.DefaultContainer(window);
+        const win: ContainerWindow = container.getCurrentWindow();
         expect(win).toBeDefined();
         expect(win.innerWindow).toEqual(window);
     });
 
     describe("Notifications", () => {
         it("showNotification warns about not being implemented", () => {
-            let container: Default.DefaultContainer = new Default.DefaultContainer(window);
+            const container: Default.DefaultContainer = new Default.DefaultContainer(window);
             spyOn(console, "warn");
             container.showNotification("message", {});
             expect(console.warn).toHaveBeenCalledWith("Notifications not supported");
         });
 
         it("showNotification warns about not being permitted", () => {
-            let window = {
+            const window = {
                 Notification: {
-                    requestPermission(callback: (permission: string) => {}) { callback("denied"); }
+                    requestPermission(callback: (permission: string) => void) { callback("denied"); }
                 }
             };
 
             spyOn(console, "warn");
-            let container: Default.DefaultContainer = new Default.DefaultContainer(<any>window);
+            const container: Default.DefaultContainer = new Default.DefaultContainer(<any>window);
             container.showNotification("message", {});
             expect(console.warn).toHaveBeenCalledWith("Notifications not permitted");
         });
@@ -401,7 +401,7 @@ describe("DefaultContainer", () => {
                 "2": new MockWindow()
             };
 
-            let container: Default.DefaultContainer = new Default.DefaultContainer(window);
+            const container: Default.DefaultContainer = new Default.DefaultContainer(window);
             container.getAllWindows().then(wins => {
                 expect(wins).not.toBeNull();
                 expect(wins.length).toEqual(2);
@@ -463,7 +463,7 @@ describe("DefaultContainer", () => {
         });
 
         it("closeAllWindows invokes window.close", (done) => {
-            let container: Default.DefaultContainer = new Default.DefaultContainer(window);
+            const container: Default.DefaultContainer = new Default.DefaultContainer(window);
             spyOn(window, "close").and.callThrough();
             (<any>container).closeAllWindows().then(done);
             expect(window.close).toHaveBeenCalled();
@@ -475,7 +475,7 @@ describe("DefaultContainer", () => {
                 "2": new MockWindow()
             };
 
-            let container: Default.DefaultContainer = new Default.DefaultContainer(window);
+            const container: Default.DefaultContainer = new Default.DefaultContainer(window);
             spyOn<any>(container, "saveLayoutToStorage").and.stub();
             container.saveLayout("Test")
                 .then(layout => {
@@ -498,7 +498,7 @@ describe("DefaultContainer", () => {
             window[Default.DefaultContainer.windowsPropertyKey]["1"][Container.windowOptionsPropertyKey] = { persist: false };
             window[Default.DefaultContainer.windowsPropertyKey]["2"][Default.DefaultContainer.windowNamePropertyKey] = "win2";
 
-            let container: Default.DefaultContainer = new Default.DefaultContainer(window);
+            const container: Default.DefaultContainer = new Default.DefaultContainer(window);
             container.buildLayout().then(layout => {
                 expect(layout).toBeDefined();
                 expect(layout.windows.length).toEqual(1);
@@ -549,7 +549,7 @@ describe("DefaultMessageBus", () => {
     });
 
     it("publish invokes underling publish", (done) => {
-        let message: any = { data: "data" };
+        const message: any = { data: "data" };
         spyOn(mockWindow, "postMessage").and.callThrough();
         bus.publish("topic", message).then(() => {
             expect(mockWindow.postMessage).toHaveBeenCalledWith({ source: "desktopJS", topic: "topic", message: message }, "origin");
@@ -557,35 +557,10 @@ describe("DefaultMessageBus", () => {
     });
 
     it("publish with non matching optional name does not invoke underling send", (done) => {
-        let message: any = {};
+        const message: any = {};
         spyOn(mockWindow, "postMessage").and.callThrough();
         bus.publish("topic", message, { name: "target" }).then(done);
         expect(mockWindow.postMessage).toHaveBeenCalledTimes(0);
-    });
-
-    it("publish with non matching origin skips and continues", (done) => {
-        let message: any = { data: "data" };
-
-        const mockWindow2 = new MockWindow();
-        const mockWindow3 = new MockWindow();
-
-        mockWindow[Default.DefaultContainer.windowsPropertyKey] = {
-            "1": mockWindow,
-            "2": mockWindow2,
-            "3": mockWindow3
-        };
-
-        mockWindow2.location.origin = "OtherOrigin";
-
-        spyOn(mockWindow, "postMessage").and.callThrough();
-        spyOn(mockWindow2, "postMessage").and.callThrough();
-        spyOn(mockWindow3, "postMessage").and.callThrough();
-
-        bus.publish("topic", message).then(done);
-
-        expect(mockWindow.postMessage).toHaveBeenCalled();
-        expect(mockWindow2.postMessage).toHaveBeenCalledTimes(0);
-        expect(mockWindow3.postMessage).toHaveBeenCalled();
     });
 });
 

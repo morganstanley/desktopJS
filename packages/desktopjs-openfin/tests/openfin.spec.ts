@@ -92,7 +92,7 @@ class MockWindow {
         return {};
     }
 
-    close(force: Boolean, callback: () => void, error: (reason) => void): any {
+    close(force: boolean, callback: () => void, error: (reason) => void): any {
         callback();
         return {};
     }
@@ -257,7 +257,7 @@ describe("OpenFinContainerWindow", () => {
    
     it("isShowing", (done) => {
         spyOn(innerWin, "isShowing").and.callThrough();
-        let success: boolean = false;
+        let success = false;
 
         win.isShowing().then((showing) => {
             success = true;
@@ -272,9 +272,9 @@ describe("OpenFinContainerWindow", () => {
 
     describe("getState", () => {
         it("getState undefined", (done) => {
-            let mockWindow = new MockWindow();
+            const mockWindow = new MockWindow();
             delete (<any>mockWindow.nativeWindow).getState;
-            let win = new OpenFinContainerWindow(innerWin);
+            const win = new OpenFinContainerWindow(innerWin);
 
             win.getState().then(state => {
                 expect(state).toBeUndefined();
@@ -294,9 +294,9 @@ describe("OpenFinContainerWindow", () => {
 
     describe("setState", () => {
         it("setState undefined", (done) => {
-            let mockWindow = new MockWindow();
+            const mockWindow = new MockWindow();
             delete (<any>mockWindow.nativeWindow).setState;
-            let win = new OpenFinContainerWindow(innerWin);
+            const win = new OpenFinContainerWindow(innerWin);
 
             win.setState({}).then(done);
         });
@@ -314,7 +314,7 @@ describe("OpenFinContainerWindow", () => {
     describe("getSnapshot", () => {
         it("getSnapshot invokes underlying getSnapshot", (done) => {
             spyOn(innerWin, "getSnapshot").and.callThrough();
-            let success: boolean = false;
+            let success = false;
 
             win.getSnapshot().then((snapshot) => {
                 success = true;
@@ -328,7 +328,7 @@ describe("OpenFinContainerWindow", () => {
 
         it("getSnapshot propagates internal error to promise reject", (done) => {
             spyOn(innerWin, "getSnapshot").and.callFake((callback, reject) => reject("Error"));
-            let success: boolean = false;
+            let success = false;
 
             win.getSnapshot().catch((error) => {
                 success = true;
@@ -516,7 +516,7 @@ describe("OpenFinContainer", () => {
     });
 
     it ("getInfo invokes underlying getRvmInfo and getRuntimeInfo", (done) => {
-        const system = jasmine.createSpyObj("system", ["getRvmInfo", "getRuntimeInfo"]);
+        const system = jasmine.createSpyObj("system", ["getRvmInfo", "getRuntimeInfo", "log"]);
         system.getRvmInfo.and.callFake(f => f({ version: "1" }));
         system.getRuntimeInfo.and.callFake(f => f({ version: "2" }));
         Object.defineProperty(desktop, "System", { value: system });
@@ -629,7 +629,7 @@ describe("OpenFinContainer", () => {
 
     describe("createWindow", () => {
         beforeEach(() => {
-            spyOn(desktop, "Window").and.callFake((options?: any, callback?: Function) => { if (callback) { callback(); } });
+            spyOn(desktop, "Window").and.callFake((options?: any, callback?: () => void) => { if (callback) { callback(); } });
         });
 
         it("defaults", (done) => {
@@ -877,21 +877,21 @@ describe("OpenFinMessageBus", () => {
     });
 
     it("publish invokes underling publish", (done) => {
-        let message: any = {};
+        const message: any = {};
         spyOn(mockBus, "publish").and.callThrough();
         bus.publish("topic", message).then(done);
         expect(mockBus.publish).toHaveBeenCalledWith("topic", message, jasmine.any(Function), jasmine.any(Function));
     });
 
     it("publish with optional uuid invokes underling send", (done) => {
-        let message: any = {};
+        const message: any = {};
         spyOn(mockBus, "send").and.callThrough();
         bus.publish("topic", message, { uuid: "uuid" }).then(done);
         expect(mockBus.send).toHaveBeenCalledWith("uuid", undefined, "topic", message, jasmine.any(Function), jasmine.any(Function));
     });
 
     it("publish with optional name invokes underling send", (done) => {
-        let message: any = {};
+        const message: any = {};
         spyOn(mockBus, "send").and.callThrough();
         bus.publish("topic", message, { uuid: "uuid", name: "name" }).then(done);
         expect(mockBus.send).toHaveBeenCalledWith("uuid", "name", "topic", message, jasmine.any(Function), jasmine.any(Function));
@@ -986,10 +986,10 @@ describe("OpenfinGlobalShortcutManager", () => {
 
     it ("Unavailable in OpenFin is unavailable on container", () => {
         delete desktop.GlobalHotkey;
-        spyOn(console, "warn").and.stub();
+        spyOn(OpenFinContainer.prototype, "log").and.stub();
         const container = new OpenFinContainer(desktop);
         expect(container.globalShortcut).toBeUndefined();
-        expect(console.warn).toHaveBeenCalledWith("Global shortcuts require minimum OpenFin runtime of 9.61.32.34");
+        expect(OpenFinContainer.prototype.log).toHaveBeenCalledWith("warn","Global shortcuts require minimum OpenFin runtime of 9.61.32.34");
     });  
 
     describe("invokes underlying OpenFin", () => {

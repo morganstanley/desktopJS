@@ -1,5 +1,6 @@
 {
     "recommendations": [
-        "msjsdiag.debugger-for-chrome"
+        "msjsdiag.debugger-for-chrome",
+        "dbaeumer.vscode-eslint"
     ]
 }
