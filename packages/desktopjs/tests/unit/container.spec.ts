@@ -32,6 +32,14 @@ class MockContainer extends ContainerBase {
     public getWindowByName(name: string): Promise<ContainerWindow> {
         throw new Error("Method not implemented.");
     }
+
+    public isAutoStartEnabledAtLogin(): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
+
+    public setOptions(options: any) {
+        throw new Error("Method not implemented.");
+    }
 }
 
 export class MockMessageBus implements MessageBus { 
