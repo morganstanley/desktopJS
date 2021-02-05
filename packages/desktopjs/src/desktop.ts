@@ -15,5 +15,6 @@ export * from "./tray";
 export * from "./window";
 export * from "./shortcut";
 export * from "./Default/default";
+export * from "./i-container-options";
 
 export const version = "PACKAGE_VERSION";

@@ -1,6 +1,6 @@
 import {} from "jasmine";
 import { OpenFinContainer, OpenFinContainerWindow, OpenFinMessageBus } from "../src/openfin";
-import { ContainerWindow, MessageBusSubscription, MenuItem } from "@morgan-stanley/desktopjs";
+import { ContainerWindow, MessageBusSubscription, MenuItem, IContainerOptions } from "@morgan-stanley/desktopjs";
 
 class MockDesktop {
     public static application: any = {
@@ -765,29 +765,29 @@ describe("OpenFinContainer", () => {
             expect(current.setShortcuts).toHaveBeenCalled();
         });
 
-        it("isAutoStartEnabledAtLogin returns the status", (done) => {
+        it("getOptions returns autoStartOnLogin status", (done) => {
             const app = desktop.Application;
             const current = app.getCurrent();
             spyOn(app, "getCurrent").and.callThrough();
             spyOn(current, "getShortcuts").and.callFake((callback) => callback({ systemStartup: true }));
-            container.isAutoStartEnabledAtLogin().then((isEnabled: boolean) => {
+            container.getOptions().then((result: IContainerOptions) => {
                 expect(app.getCurrent).toHaveBeenCalled();
                 expect(current.getShortcuts).toHaveBeenCalled();
-                expect(isEnabled).toEqual(true);
+                expect(result.autoStartOnLogin).toEqual(true);
             }).then(done);
         });
 
-        it("isAutoStartEnabledAtLogin errors out on getLoginItemSettings", (done) => {
+        it("getOptions error out while fetching auto start info", (done) => {
             const app = desktop.Application;
             const current = app.getCurrent();
             spyOn(app, "getCurrent").and.callThrough();
             spyOn(current, "getShortcuts").and.callFake(() => {
                 throw new Error("something went wrong");
             });
-            container.isAutoStartEnabledAtLogin().then(() => { }, (err) => {
+            container.getOptions().then(() => { }, (err) => {
                 expect(app.getCurrent).toHaveBeenCalled();
                 expect(current.getShortcuts).toHaveBeenCalled();
-                expect(err).toEqual(new Error("something went wrong"));
+                expect(err).toEqual(new Error("Error getting Container options. Error: something went wrong"));
             }).then(done);
         });
     });

@@ -4,8 +4,7 @@ import { ContainerWindow, PersistedWindowLayout } from "../../src/window";
 import { NotificationOptions } from "../../src/notification";
 import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../../src/ipc";
 import { EventArgs, EventEmitter } from "../../src/events";
-
-
+import { IContainerOptions } from "../../src/i-container-options";
 
 class MockContainer extends ContainerBase {
     protected closeAllWindows(excludeSelf?: boolean): Promise<void> {
@@ -33,7 +32,7 @@ class MockContainer extends ContainerBase {
         throw new Error("Method not implemented.");
     }
 
-    public isAutoStartEnabledAtLogin(): Promise<boolean> {
+    public getOptions(): Promise<IContainerOptions> {
         throw new Error("Method not implemented.");
     }
 
@@ -121,7 +120,7 @@ export class TestContainer extends ContainerBase {
 
     public setOptions(options: any) { }
 
-    public isAutoStartEnabledAtLogin(): Promise<boolean> { return Promise.resolve(false); }
+    public getOptions(): Promise<any> { return Promise.resolve({}); }
 }
 
 describe("container", () => {

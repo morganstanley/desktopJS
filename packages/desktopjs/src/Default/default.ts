@@ -261,8 +261,9 @@ export namespace Default {
             // noop. Any override to be done in overriding containers.
         }
 
-        public isAutoStartEnabledAtLogin(): Promise<boolean> {
-            return Promise.resolve(false);
+        public getOptions(): Promise<any> {
+            // noop. Any override to be done in overriding containers.
+            return Promise.resolve({});
         }
 
         public getInfo(): Promise<string | undefined> {

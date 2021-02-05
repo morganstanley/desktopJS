@@ -284,11 +284,11 @@ describe("DefaultContainer", () => {
         }).then(done);
     });
 
-    it("isAutoStartEnabledAtLogin returns false", (done) => {
+    it("getOptions returns autoStartOnLogin as false", (done) => {
         const window = new MockWindow();
         const container: Default.DefaultContainer = new Default.DefaultContainer(<any>window);
-        container.isAutoStartEnabledAtLogin().then(() => { }, (result) => {
-            expect(result).toBeFalsy();
+        container.getOptions().then((result: { autoStartOnLogin: boolean }) => { }, (result) => {
+            expect(result.autoStartOnLogin).toBeUndefined();
         }).then(done);
     });
 

@@ -94,7 +94,7 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
      */
     public abstract setOptions(options: any);
 
-    public abstract isAutoStartEnabledAtLogin(): Promise<boolean>;
+    public abstract getOptions(): Promise<any>;
 
     public static get ipc(): MessageBus {
         return Container._ipc;

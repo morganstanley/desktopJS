@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ElectronContainer, ElectronContainerWindow, ElectronMessageBus, ElectronWindowManager } from "../src/electron";
-import { ContainerWindow, Container } from "@morgan-stanley/desktopjs";
+import { ContainerWindow, Container, IContainerOptions } from "@morgan-stanley/desktopjs";
 
 class MockEventEmitter {
     private eventListeners: Map<string, any> = new Map();
@@ -761,21 +761,21 @@ describe("ElectronContainer", () => {
             expect(console.error).toHaveBeenCalledTimes(1);
         });
 
-        it("isAutoStartEnabledAtLogin returns the status", (done) => {
+        it("getOptions returns autoStartOnLogin status", (done) => {
             spyOn(electron, "getLoginItemSettings").and.returnValue({ openAtLogin: true });
-            container.isAutoStartEnabledAtLogin().then((isEnabled: boolean) => {
+            container.getOptions().then((result: IContainerOptions) => {
                 expect(electron.getLoginItemSettings).toHaveBeenCalled();
-                expect(isEnabled).toEqual(true);
+                expect(result.autoStartOnLogin).toEqual(true);
             }).then(done);
         });
 
-        it("isAutoStartEnabledAtLogin errors out on getLoginItemSettings", (done) => {
+        it("getOptions error out while fetching auto start info", (done) => {
             spyOn(electron, "getLoginItemSettings").and.callFake(() => {
                 throw new Error("something went wrong");
             });
-            container.isAutoStartEnabledAtLogin().then(() => { }, (err) => {
+            container.getOptions().then(() => { }, (err) => {
                 expect(electron.getLoginItemSettings).toHaveBeenCalled();
-                expect(err).toEqual(new Error("something went wrong"));
+                expect(err).toEqual(new Error("Error getting Container options. Error: something went wrong"));
             }).then(done);
         });
     });
