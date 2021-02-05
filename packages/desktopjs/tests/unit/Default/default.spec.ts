@@ -284,11 +284,11 @@ describe("DefaultContainer", () => {
         }).then(done);
     });
 
-    it("isAutoStartEnabledAtLogin Throws Not implemented", (done) => {
+    it("isAutoStartEnabledAtLogin returns false", (done) => {
         const window = new MockWindow();
         const container: Default.DefaultContainer = new Default.DefaultContainer(<any>window);
-        container.isAutoStartEnabledAtLogin().then(() => { }, (error) => {
-            expect(error).toEqual(new TypeError("Auto start is not implemented by this container"));
+        container.isAutoStartEnabledAtLogin().then(() => { }, (result) => {
+            expect(result).toBeFalsy();
         }).then(done);
     });
 
