@@ -265,7 +265,7 @@ export namespace Default {
         }
 
         public isAutoStartEnabledAtLogin(): Promise<boolean> {
-            return Promise.reject(new TypeError("Auto start is not implemented by this container"));
+            return Promise.resolve(false);
         }
 
         public getInfo(): Promise<string | undefined> {
