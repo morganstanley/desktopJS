@@ -284,6 +284,14 @@ describe("DefaultContainer", () => {
         }).then(done);
     });
 
+    it("getOptions returns autoStartOnLogin as false", (done) => {
+        const window = new MockWindow();
+        const container: Default.DefaultContainer = new Default.DefaultContainer(<any>window);
+        container.getOptions().then((result: { autoStartOnLogin: boolean }) => { }, (result) => {
+            expect(result.autoStartOnLogin).toBeUndefined();
+        }).then(done);
+    });
+
     describe("createWindow", () => {
         let container: Default.DefaultContainer;
 

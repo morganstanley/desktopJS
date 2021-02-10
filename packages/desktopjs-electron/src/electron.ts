@@ -7,7 +7,7 @@ import {
     registerContainer, ContainerWindow, PersistedWindowLayout, Rectangle, Container, WebContainerBase,
     ScreenManager, Display, Point, ObjectTransform, PropertyMap, NotificationOptions, ContainerNotification,
     TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions, GlobalShortcutManager,
-    EventArgs, WindowEventArgs
+    EventArgs, WindowEventArgs, IContainerOptions
 } from "@morgan-stanley/desktopjs";
 
 registerContainer("Electron", {
@@ -360,8 +360,21 @@ export class ElectronContainer extends WebContainerBase {
 
             this.internalIpc = ipc || ((this.isRemote) ? require("electron").ipcRenderer : this.electron.ipcMain);
             this.ipc = this.createMessageBus();
+            this.nodeIntegration = null;
+            this.setOptions(options);
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error(e);
+        }
 
-            if (!this.isRemote || (options && typeof options.isRemote !== "undefined" && !options.isRemote)) {
+        this.screen = new ElectronDisplayManager(this.electron);
+
+        this.globalShortcut = new ElectronGlobalShortcutManager(this.electron);
+    }
+
+    public setOptions(options: any) {
+        try {
+            if ((!this.isRemote || (options && typeof options.isRemote !== "undefined" && !options.isRemote)) && !this.windowManager) {
                 this.windowManager = new ElectronWindowManager(this.app, this.internalIpc, this.browserWindow);
 
                 this.app.on("browser-window-created", (event, window) => {
@@ -371,25 +384,49 @@ export class ElectronContainer extends WebContainerBase {
                     });
                 });
             }
+
+            if (options && options.autoStartOnLogin) {
+                this.electron.setLoginItemSettings({
+                    openAtLogin: options.autoStartOnLogin
+                });
+            }
+
+            let replaceNotificationApi = ElectronContainer.replaceNotificationApi;
+            if (options && typeof options.replaceNotificationApi !== "undefined") {
+                replaceNotificationApi = options.replaceNotificationApi;
+            }
+
+            if (replaceNotificationApi) {
+                this.registerNotificationsApi();
+            }
+
+            if (options && options.node) {
+                this.nodeIntegration = options.node;
+            }
         } catch (e) {
             // eslint-disable-next-line no-console
             console.error(e);
         }
+    }
 
-        let replaceNotificationApi = ElectronContainer.replaceNotificationApi;
-        if (options && typeof options.replaceNotificationApi !== "undefined") {
-            replaceNotificationApi = options.replaceNotificationApi;
+    public async getOptions(): Promise<IContainerOptions> {
+        try {
+            const autoStartOnLogin = await this.isAutoStartEnabledAtLogin();
+            return { autoStartOnLogin };
+        } catch(error) {
+            throw new Error("Error getting Container options. " + error);
         }
+    }
 
-        if (replaceNotificationApi) {
-            this.registerNotificationsApi();
-        }
-
-        this.nodeIntegration = (options && options.node != null) ? options.node : null;
-
-        this.screen = new ElectronDisplayManager(this.electron);
-
-        this.globalShortcut = new ElectronGlobalShortcutManager(this.electron);
+    private isAutoStartEnabledAtLogin(): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                const config = this.electron.getLoginItemSettings();
+                resolve(config.openAtLogin);
+            } catch (err) {
+                reject(err);
+            }
+        });
     }
 
     protected createMessageBus() : MessageBus {
@@ -569,6 +606,7 @@ export class ElectronContainer extends WebContainerBase {
             });
         });
     }
+
 }
 
 export class ElectronWindowManager {

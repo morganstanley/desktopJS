@@ -257,6 +257,15 @@ export namespace Default {
             return new DefaultMessageBus(this);
         }
 
+        public setOptions(options: any) {
+            // noop. Any override to be done in overriding containers.
+        }
+
+        public getOptions(): Promise<any> {
+            // noop. Any override to be done in overriding containers.
+            return Promise.resolve({});
+        }
+
         public getInfo(): Promise<string | undefined> {
             return Promise.resolve(this.globalWindow.navigator.appVersion);
         }

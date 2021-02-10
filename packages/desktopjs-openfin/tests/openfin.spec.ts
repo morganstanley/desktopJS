@@ -1,6 +1,6 @@
 import {} from "jasmine";
 import { OpenFinContainer, OpenFinContainerWindow, OpenFinMessageBus } from "../src/openfin";
-import { ContainerWindow, MessageBusSubscription, MenuItem } from "@morgan-stanley/desktopjs";
+import { ContainerWindow, MessageBusSubscription, MenuItem, IContainerOptions } from "@morgan-stanley/desktopjs";
 
 class MockDesktop {
     public static application: any = {
@@ -8,6 +8,8 @@ class MockDesktop {
         uuid: "uuid",
         getChildWindows(callback) { callback([MockWindow.singleton, new MockWindow("Window2", JSON.stringify({ persist: false }))]); },
         setTrayIcon() { },
+        setShortcuts(config) { },
+        getShortcuts(callback) { callback(); },
         getWindow() { return MockWindow.singleton; },
         addEventListener(eventName, listener) {
             (this.eventListeners[eventName] = this.eventListeners[eventName] || []).push(listener);
@@ -21,7 +23,7 @@ class MockDesktop {
             }
         }
     }
-    main(callback): any { callback() }
+    main(callback): any { callback(); }
     GlobalHotkey: any = { };
     Window: any = MockWindow;
     Notification(): any { return {}; }
@@ -30,7 +32,7 @@ class MockDesktop {
         getCurrent() {
             return MockDesktop.application;
         }
-    }
+    };
 
 }
 
@@ -449,7 +451,7 @@ describe("OpenFinContainerWindow", () => {
             win.removeListener(unmappedEvent, () => { });
             expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
         });
-    });    
+    });
 
     describe("window grouping", () => {
         it("allowGrouping is true", () => {
@@ -539,7 +541,7 @@ describe("OpenFinContainer", () => {
 
             beforeEach(() => {
                 desktop = jasmine.createSpyObj("desktop", ["Application", "InterApplicationBus", "GlobalHotkey"]);
-                app = jasmine.createSpyObj("application", ["getCurrent", "registerUser", "addEventListener"]);
+                app = jasmine.createSpyObj("application", ["getCurrent", "registerUser", "addEventListener", "setShortcuts"]);
                 Object.defineProperty(desktop, "Application", { value: app });
                 Object.defineProperty(desktop, "InterApplicationBus", { value: new MockInterApplicationBus() });
                 app.getCurrent.and.returnValue(app);
@@ -563,6 +565,16 @@ describe("OpenFinContainer", () => {
             it("options missing userName and appName does not invoke registerUser", () => {
                 const container = new OpenFinContainer(desktop, null, {});
                 expect(app.registerUser).toHaveBeenCalledTimes(0);
+            });
+
+            it("options autoStartOnLogin to setShortcuts", () => {
+                const container = new OpenFinContainer(desktop, null, { autoStartOnLogin: true });
+                expect(app.setShortcuts).toHaveBeenCalledWith({ systemStartup: true });
+            });
+
+            it("options missing autoStartOnLogin does not invoke setShortcuts", () => {
+                const container = new OpenFinContainer(desktop, null, { });
+                expect(app.setShortcuts).toHaveBeenCalledTimes(0);
             });
         });
     });
@@ -739,10 +751,46 @@ describe("OpenFinContainer", () => {
             container.buildLayout().then(layout => {
                 expect(layout).toBeDefined();
                 expect(layout.windows.length).toEqual(2);
-                expect(layout.windows[0].name === "Singleton")
+                expect(layout.windows[0].name === "Singleton");
             }).then(done);
         });
-    });    
+
+        it("setOptions allows the auto startup settings to be turned on", () => {
+            const app = desktop.Application;
+            const current = app.getCurrent();
+            spyOn(app, "getCurrent").and.callThrough();
+            spyOn(current, "setShortcuts").and.callThrough();
+            container.setOptions({ autoStartOnLogin: true });
+            expect(app.getCurrent).toHaveBeenCalled();
+            expect(current.setShortcuts).toHaveBeenCalled();
+        });
+
+        it("getOptions returns autoStartOnLogin status", (done) => {
+            const app = desktop.Application;
+            const current = app.getCurrent();
+            spyOn(app, "getCurrent").and.callThrough();
+            spyOn(current, "getShortcuts").and.callFake((callback) => callback({ systemStartup: true }));
+            container.getOptions().then((result: IContainerOptions) => {
+                expect(app.getCurrent).toHaveBeenCalled();
+                expect(current.getShortcuts).toHaveBeenCalled();
+                expect(result.autoStartOnLogin).toEqual(true);
+            }).then(done);
+        });
+
+        it("getOptions error out while fetching auto start info", (done) => {
+            const app = desktop.Application;
+            const current = app.getCurrent();
+            spyOn(app, "getCurrent").and.callThrough();
+            spyOn(current, "getShortcuts").and.callFake(() => {
+                throw new Error("something went wrong");
+            });
+            container.getOptions().then(() => { }, (err) => {
+                expect(app.getCurrent).toHaveBeenCalled();
+                expect(current.getShortcuts).toHaveBeenCalled();
+                expect(err).toEqual(new Error("Error getting Container options. Error: something went wrong"));
+            }).then(done);
+        });
+    });
 
     describe("notifications", () => {
         it("showNotification passes message and invokes underlying notification api", () => {
@@ -758,7 +806,7 @@ describe("OpenFinContainer", () => {
         });
 
         it("notification api delegates to showNotification", () => {
-            spyOn(container, "showNotification").and.stub();
+            spyOn(container, "showNotification");
             new globalWindow["Notification"]("title", { body: "Test message" });
             expect(container.showNotification).toHaveBeenCalled();
         });

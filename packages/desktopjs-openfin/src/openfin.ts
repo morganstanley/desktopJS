@@ -6,7 +6,7 @@ import {
     registerContainer, ContainerWindow, PersistedWindowLayout, Rectangle, Container, WebContainerBase,
     ScreenManager, Display, Point, ObjectTransform, PropertyMap, NotificationOptions, ContainerNotification,
     TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions, EventArgs,
-    GlobalShortcutManager, WindowEventArgs
+    GlobalShortcutManager, WindowEventArgs, IContainerOptions
 } from "@morgan-stanley/desktopjs";
 
 registerContainer("OpenFin", {
@@ -406,20 +406,9 @@ export class OpenFinContainer extends WebContainerBase {
         this.desktop = desktop || (<any>window).fin.desktop;
         this.hostType = "OpenFin";
 
-        if (options && options.userName && options.appName) {
-            this.desktop.Application.getCurrent().registerUser(options.userName, options.appName);
-        }
+        this.setOptions(options);
 
         this.ipc = this.createMessageBus();
-
-        let replaceNotificationApi = OpenFinContainer.replaceNotificationApi;
-        if (options && typeof options.replaceNotificationApi !== "undefined") {
-            replaceNotificationApi = options.replaceNotificationApi;
-        }
-
-        if (replaceNotificationApi) {
-            this.registerNotificationsApi();
-        }
 
         this.desktop.Application.getCurrent().addEventListener("window-created", (event: any) => {
             this.emit("window-created", { sender: this, name: "window-created", windowId: event.name, windowName: event.name });
@@ -434,6 +423,40 @@ export class OpenFinContainer extends WebContainerBase {
         } else {
             this.log("warn", "Global shortcuts require minimum OpenFin runtime of 9.61.32.34");
         }
+    }
+
+    public setOptions(options: any) {
+        if (options && options.userName && options.appName) {
+            this.desktop.Application.getCurrent().registerUser(options.userName, options.appName);
+        }
+
+        if (options && options.autoStartOnLogin) {
+            this.desktop.Application.getCurrent().setShortcuts({ systemStartup: options.autoStartOnLogin });
+        }
+
+        let replaceNotificationApi = OpenFinContainer.replaceNotificationApi;
+        if (options && typeof options.replaceNotificationApi !== "undefined") {
+            replaceNotificationApi = options.replaceNotificationApi;
+        }
+
+        if (replaceNotificationApi) {
+            this.registerNotificationsApi();
+        }
+    }
+
+    public async getOptions(): Promise<IContainerOptions> {
+        try {
+            const autoStartOnLogin = await this.isAutoStartEnabledAtLogin();
+            return { autoStartOnLogin };
+        } catch(error) {
+            throw new Error("Error getting Container options. " + error);
+        }
+    }
+
+    private isAutoStartEnabledAtLogin(): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            this.desktop.Application.getCurrent().getShortcuts((config: any) => resolve(config.systemStartup), reject);
+        });
     }
 
     protected createMessageBus(): MessageBus {

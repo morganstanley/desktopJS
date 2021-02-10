@@ -4,8 +4,7 @@ import { ContainerWindow, PersistedWindowLayout } from "../../src/window";
 import { NotificationOptions } from "../../src/notification";
 import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../../src/ipc";
 import { EventArgs, EventEmitter } from "../../src/events";
-
-
+import { IContainerOptions } from "../../src/i-container-options";
 
 class MockContainer extends ContainerBase {
     protected closeAllWindows(excludeSelf?: boolean): Promise<void> {
@@ -30,6 +29,14 @@ class MockContainer extends ContainerBase {
         throw new Error("Method not implemented.");
     }
     public getWindowByName(name: string): Promise<ContainerWindow> {
+        throw new Error("Method not implemented.");
+    }
+
+    public getOptions(): Promise<IContainerOptions> {
+        throw new Error("Method not implemented.");
+    }
+
+    public setOptions(options: any) {
         throw new Error("Method not implemented.");
     }
 }
@@ -101,7 +108,7 @@ export class TestContainer extends ContainerBase {
         return Promise.resolve();
     }
 
-    public getAllWindows(): Promise<ContainerWindow[]> { return Promise.resolve(undefined) }
+    public getAllWindows(): Promise<ContainerWindow[]> { return Promise.resolve(undefined); }
 
     public getCurrentWindow(): ContainerWindow { return undefined; }
 
@@ -110,6 +117,10 @@ export class TestContainer extends ContainerBase {
     public buildLayout(): Promise<PersistedWindowLayout> { return Promise.resolve(undefined); }
 
     public saveLayout(): Promise<PersistedWindowLayout> { return Promise.resolve(undefined); }
+
+    public setOptions(options: any) { }
+
+    public getOptions(): Promise<any> { return Promise.resolve({}); }
 }
 
 describe("container", () => {
