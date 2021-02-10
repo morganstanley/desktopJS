@@ -6,7 +6,7 @@ import {
     registerContainer, ContainerWindow, PersistedWindowLayout, Rectangle, Container, WebContainerBase,
     ScreenManager, Display, Point, ObjectTransform, PropertyMap, NotificationOptions, ContainerNotification,
     TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions, EventArgs,
-    GlobalShortcutManager, WindowEventArgs, IContainerOptions
+    GlobalShortcutManager, WindowEventArgs
 } from "@morgan-stanley/desktopjs";
 
 registerContainer("OpenFin", {
@@ -444,10 +444,9 @@ export class OpenFinContainer extends WebContainerBase {
         }
     }
 
-    public async getOptions(): Promise<IContainerOptions> {
+    public async getOptions(): Promise<any> {
         try {
-            const autoStartOnLogin = await this.isAutoStartEnabledAtLogin();
-            return { autoStartOnLogin };
+            return { autoStartOnLogin: await this.isAutoStartEnabledAtLogin() };
         } catch(error) {
             throw new Error("Error getting Container options. " + error);
         }

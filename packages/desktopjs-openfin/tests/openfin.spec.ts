@@ -1,6 +1,6 @@
 import {} from "jasmine";
 import { OpenFinContainer, OpenFinContainerWindow, OpenFinMessageBus } from "../src/openfin";
-import { ContainerWindow, MessageBusSubscription, MenuItem, IContainerOptions } from "@morgan-stanley/desktopjs";
+import { ContainerWindow, MessageBusSubscription, MenuItem } from "@morgan-stanley/desktopjs";
 
 class MockDesktop {
     public static application: any = {
@@ -770,7 +770,7 @@ describe("OpenFinContainer", () => {
             const current = app.getCurrent();
             spyOn(app, "getCurrent").and.callThrough();
             spyOn(current, "getShortcuts").and.callFake((callback) => callback({ systemStartup: true }));
-            container.getOptions().then((result: IContainerOptions) => {
+            container.getOptions().then((result: any) => {
                 expect(app.getCurrent).toHaveBeenCalled();
                 expect(current.getShortcuts).toHaveBeenCalled();
                 expect(result.autoStartOnLogin).toEqual(true);

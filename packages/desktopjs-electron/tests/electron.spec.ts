@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ElectronContainer, ElectronContainerWindow, ElectronMessageBus, ElectronWindowManager } from "../src/electron";
-import { ContainerWindow, Container, IContainerOptions } from "@morgan-stanley/desktopjs";
+import { ContainerWindow, Container } from "@morgan-stanley/desktopjs";
 
 class MockEventEmitter {
     private eventListeners: Map<string, any> = new Map();
@@ -474,9 +474,8 @@ describe("ElectronContainer", () => {
             require: (type: string) => { return {} },
             getCurrentWindow: () => { return windows[0]; },
             process: { versions: { electron: "1", chrome: "2" } },
-            setLoginItemSettings: (config) => { },
-            getLoginItemSettings: () => { return {}; }
         };
+
         container = new ElectronContainer(electron, new MockIpc(), globalWindow);
     });
 
@@ -495,18 +494,6 @@ describe("ElectronContainer", () => {
         spyOn(console, "error");
         new ElectronContainer();
         expect(console.error).toHaveBeenCalledTimes(1);
-    });
-
-    it("options autoStartOnLogin to setLoginItemSettings", () => {
-        spyOn(electron, "setLoginItemSettings").and.callThrough();
-        const container = new ElectronContainer(electron, new MockMainIpc(), globalWindow, { autoStartOnLogin: true });
-        expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
-    });
-
-    it("options missing autoStartOnLogin does not invoke setLoginItemSettings", () => {
-        spyOn(electron, "setLoginItemSettings").and.callThrough();
-        const container = new ElectronContainer(electron, new MockMainIpc(), globalWindow, { });
-        expect(electron.setLoginItemSettings).toHaveBeenCalledTimes(0);
     });
 
     it("electron members are copied", () => {
@@ -630,6 +617,54 @@ describe("ElectronContainer", () => {
         });
     });
 
+    describe("LoginItemSettings", () => {
+        it("options autoStartOnLogin to setLoginItemSettings", () => {
+            electron.app.setLoginItemSettings = jasmine.createSpy().and.stub();
+            const container = new ElectronContainer(electron, new MockMainIpc(), globalWindow, { autoStartOnLogin: true });
+            expect(electron.app.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
+        });
+    
+        it("options missing autoStartOnLogin does not invoke setLoginItemSettings", () => {
+            electron.app.setLoginItemSettings = jasmine.createSpy().and.stub();
+            const container = new ElectronContainer(electron, new MockMainIpc(), globalWindow, { });
+            expect(electron.app.setLoginItemSettings).toHaveBeenCalledTimes(0);
+        });
+
+        it("setOptions allows the auto startup settings to be turned on", () => {
+            electron.app.setLoginItemSettings = jasmine.createSpy().and.stub();
+            container.setOptions({ autoStartOnLogin: true });
+            expect(electron.app.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
+        });
+    
+        it("setOptions errors out on setLoginItemSettings", () => {
+            electron.app.setLoginItemSettings = jasmine.createSpy().and.callFake(() => {
+                throw new Error("something went wrong");
+            });
+            spyOn(console, "error");
+            container.setOptions({ autoStartOnLogin: true });
+            expect(electron.app.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
+            expect(console.error).toHaveBeenCalledTimes(1);
+        });
+    
+        it("getOptions returns autoStartOnLogin status", (done) => {
+            electron.app.getLoginItemSettings = jasmine.createSpy().and.returnValue({ openAtLogin: true });
+            container.getOptions().then((result: any) => {
+                expect(electron.app.getLoginItemSettings).toHaveBeenCalled();
+                expect(result.autoStartOnLogin).toEqual(true);
+            }).then(done);
+        });
+    
+        it("getOptions error out while fetching auto start info", (done) => {
+            electron.app.getLoginItemSettings = jasmine.createSpy().and.callFake(() => {
+                throw new Error("something went wrong");
+            });
+            container.getOptions().then(() => { }, (err) => {
+                expect(electron.app.getLoginItemSettings).toHaveBeenCalled();
+                expect(err).toEqual(new Error("Error getting Container options. Error: something went wrong"));
+            }).then(done);
+        });            
+    });
+
     describe("window management", () => {
         beforeEach(() => {
             electron.BrowserWindow = {
@@ -742,40 +777,6 @@ describe("ElectronContainer", () => {
                 expect(layout).toBeDefined();
                 expect(layout.windows.length).toEqual(1);
                 expect(layout.windows[0].name === "win1")
-            }).then(done);
-        });
-
-        it("setOptions allows the auto startup settings to be turned on", () => {
-            spyOn(electron, "setLoginItemSettings").and.callThrough();
-            container.setOptions({ autoStartOnLogin: true });
-            expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
-        });
-
-        it("setOptions errors out on setLoginItemSettings", () => {
-            spyOn(electron, "setLoginItemSettings").and.callFake(() => {
-                throw new Error("something went wrong");
-            });
-            spyOn(console, "error");
-            container.setOptions({ autoStartOnLogin: true });
-            expect(electron.setLoginItemSettings).toHaveBeenCalledWith({ openAtLogin: true });
-            expect(console.error).toHaveBeenCalledTimes(1);
-        });
-
-        it("getOptions returns autoStartOnLogin status", (done) => {
-            spyOn(electron, "getLoginItemSettings").and.returnValue({ openAtLogin: true });
-            container.getOptions().then((result: IContainerOptions) => {
-                expect(electron.getLoginItemSettings).toHaveBeenCalled();
-                expect(result.autoStartOnLogin).toEqual(true);
-            }).then(done);
-        });
-
-        it("getOptions error out while fetching auto start info", (done) => {
-            spyOn(electron, "getLoginItemSettings").and.callFake(() => {
-                throw new Error("something went wrong");
-            });
-            container.getOptions().then(() => { }, (err) => {
-                expect(electron.getLoginItemSettings).toHaveBeenCalled();
-                expect(err).toEqual(new Error("Error getting Container options. Error: something went wrong"));
             }).then(done);
         });
     });
