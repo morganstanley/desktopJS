@@ -1,2 +1,5 @@
 # Ignore artifacts:
 build
+.github
+dco/
+CONTRIBUTING.md
