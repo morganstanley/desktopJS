@@ -1,5 +1,4 @@
-desktopJS and [Electron](https://electron.atom.io/ "Electron")
-===============================================================
+# desktopJS and [Electron](https://electron.atom.io/ "Electron")
 
 It is possible to use desktopJS within the main electron node process to author
 container portable bootstraps or within the renderer to leverage desktop functionality
@@ -80,8 +79,8 @@ btnOpenWindow.onclick = function () {
 ```
 
 In order to show notifications while hosted in Electron, it is necessary for you as a
-developer to provide a polyfill of showNotification.  This allows you the flexibility
-to use the node module of your choice for displaying notifications. 
+developer to provide a polyfill of showNotification. This allows you the flexibility
+to use the node module of your choice for displaying notifications.
 
 Here is an example polyfill using electron-notify.
 

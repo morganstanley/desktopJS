@@ -1,12 +1,8 @@
 {
-    "extends": "../../tsconfig.staging.json",
-    "compilerOptions": {
-        "outDir": "build",
-    },
-    "include": [
-        "**/*.ts"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+  "extends": "../../tsconfig.staging.json",
+  "compilerOptions": {
+    "outDir": "build"
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
 }

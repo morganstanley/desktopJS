@@ -1,20 +1,10 @@
 {
-  "packages": [
-    "examples/electron",
-    "packages/*"
-  ],
+  "packages": ["examples/electron", "packages/*"],
   "version": "3.11.0",
   "command": {
     "publish": {
       "allowBranch": "master",
-      "ignoreChanges": [
-        "*.md",
-        "*.json",
-        "*.txt",
-        ".npmrc",
-        "tests/**",
-        "*.js"
-      ]
+      "ignoreChanges": ["*.md", "*.json", "*.txt", ".npmrc", "tests/**", "*.js"]
     }
   }
 }

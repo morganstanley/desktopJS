@@ -1,52 +1,45 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "npm: build",
-            "type": "npm",
-            "script": "build",
-            "isBackground": false,
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared"
-            },
-            "problemMatcher": [
-                "$tsc",
-                "$gulp-tsc"
-            ]
-        },
-        {
-            "label": "npm: test",
-            "type": "npm",
-            "script": "test",
-            "group": {
-                "kind": "test",
-                "isDefault": true
-            },
-            "presentation": {
-                "reveal": "always",
-                "panel": "shared"
-            },
-            "problemMatcher": [],
-            "detail": "gulp test"
-        },
-        {
-            "label": "Launch OpenFin",
-            "type": "shell",
-            "command": "openfin",
-            "args": [
-                "-l",
-                "-c",
-                "examples/openfin/app.json"
-            ],
-            "presentation": {
-                "reveal": "never"
-            },
-            "problemMatcher": []
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "npm: build",
+      "type": "npm",
+      "script": "build",
+      "isBackground": false,
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": ["$tsc", "$gulp-tsc"]
+    },
+    {
+      "label": "npm: test",
+      "type": "npm",
+      "script": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "gulp test"
+    },
+    {
+      "label": "Launch OpenFin",
+      "type": "shell",
+      "command": "openfin",
+      "args": ["-l", "-c", "examples/openfin/app.json"],
+      "presentation": {
+        "reveal": "never"
+      },
+      "problemMatcher": []
+    }
+  ]
 }

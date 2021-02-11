@@ -1,14 +1,14 @@
 {
-    "json.schemas": [
-        {
-            "fileMatch": [ "app.json" ],
-            "url": "https://json.schemastore.org/openfin"
-        },
-        {
-            "fileMatch": [ "tsconfig.staging.json" ],
-            "url": "https://json.schemastore.org/tsconfig"
-        }
-    ],
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "json.schemas": [
+    {
+      "fileMatch": ["app.json"],
+      "url": "https://json.schemastore.org/openfin"
+    },
+    {
+      "fileMatch": ["tsconfig.staging.json"],
+      "url": "https://json.schemastore.org/tsconfig"
+    }
+  ],
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

@@ -1,17 +1,14 @@
 {
-    "compilerOptions": {
-        "target": "es5",
-        "module": "umd",
-        "moduleResolution": "node",
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "noImplicitAny": false,
-        "declaration": true,
-        "sourceMap": true,
-        "allowSyntheticDefaultImports": true,
-        "lib": [
-            "es2016",
-            "dom"
-        ]
-    },
+  "compilerOptions": {
+    "target": "es5",
+    "module": "umd",
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": false,
+    "declaration": true,
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["es2016", "dom"]
+  }
 }

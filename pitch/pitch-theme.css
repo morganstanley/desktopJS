@@ -1,12 +1,13 @@
 body {
   background: #0f8ec7;
-  background-color: #0f8ec7; }
-
-.reveal .slides {
-    text-align: left;
+  background-color: #0f8ec7;
 }
 
-.reveal .slides section>* {
-    margin-left: 0;
-    margin-right: 0;
+.reveal .slides {
+  text-align: left;
+}
+
+.reveal .slides section > * {
+  margin-left: 0;
+  margin-right: 0;
 }

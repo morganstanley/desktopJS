@@ -1,22 +1,22 @@
 {
-    "devtools_port": 9090,
-    "startup_app": {
-        "name": "desktopJS Demo",
-        "description": "desktopJS Demo",
-        "url": "http://localhost:8000/index.html",
-        "uuid": "desktopJS",
-        "autoShow": true,
-        "defaultWidth": 850,
-        "defaultHeight": 500,
-        "saveWindowState": false,
-        "defaultCentered": true,
-        "icon": "http://localhost:8000/favicon.ico"
-    },
-    "runtime": {
-        "arguments": "",
-        "version": "stable"
-    },
-    "shortcut": {
-        "target": []
-    }
+  "devtools_port": 9090,
+  "startup_app": {
+    "name": "desktopJS Demo",
+    "description": "desktopJS Demo",
+    "url": "http://localhost:8000/index.html",
+    "uuid": "desktopJS",
+    "autoShow": true,
+    "defaultWidth": 850,
+    "defaultHeight": 500,
+    "saveWindowState": false,
+    "defaultCentered": true,
+    "icon": "http://localhost:8000/favicon.ico"
+  },
+  "runtime": {
+    "arguments": "",
+    "version": "stable"
+  },
+  "shortcut": {
+    "target": []
+  }
 }

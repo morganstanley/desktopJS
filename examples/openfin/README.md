@@ -1,10 +1,9 @@
-desktopJS and [OpenFin](https://openfin.co/ "OpenFin")
-======================================================
+# desktopJS and [OpenFin](https://openfin.co/ "OpenFin")
 
 It is possible to use desktopJS from an application hosted within OpenFin.
 
 To launch the example manually, run OpenFin providing the application manifest
-as the argument.  It is expected that openfin-cli is installed globally and available
+as the argument. It is expected that openfin-cli is installed globally and available
 on the path.
 
 <blockquote>

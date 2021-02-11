@@ -1,10 +1,9 @@
-'use strict';
+"use strict";
 
-var clean = require('gulp-clean');
+var clean = require("gulp-clean");
 
 module.exports = function (gulp, path) {
-    return function () {
-        return gulp.src(path, { read: false, allowEmpty: true })
-            .pipe(clean());
-    };
-}
+  return function () {
+    return gulp.src(path, { read: false, allowEmpty: true }).pipe(clean());
+  };
+};
