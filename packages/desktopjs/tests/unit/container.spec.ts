@@ -4,7 +4,6 @@ import { ContainerWindow, PersistedWindowLayout } from "../../src/window";
 import { NotificationOptions } from "../../src/notification";
 import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../../src/ipc";
 import { EventArgs, EventEmitter } from "../../src/events";
-import { IContainerOptions } from "../../src/i-container-options";
 
 class MockContainer extends ContainerBase {
     protected closeAllWindows(excludeSelf?: boolean): Promise<void> {
@@ -32,7 +31,7 @@ class MockContainer extends ContainerBase {
         throw new Error("Method not implemented.");
     }
 
-    public getOptions(): Promise<IContainerOptions> {
+    public getOptions(): Promise<any> {
         throw new Error("Method not implemented.");
     }
 

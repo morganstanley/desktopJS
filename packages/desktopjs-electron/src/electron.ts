@@ -7,7 +7,7 @@ import {
     registerContainer, ContainerWindow, PersistedWindowLayout, Rectangle, Container, WebContainerBase,
     ScreenManager, Display, Point, ObjectTransform, PropertyMap, NotificationOptions, ContainerNotification,
     TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions, GlobalShortcutManager,
-    EventArgs, WindowEventArgs, IContainerOptions
+    EventArgs, WindowEventArgs
 } from "@morgan-stanley/desktopjs";
 
 registerContainer("Electron", {
@@ -386,7 +386,7 @@ export class ElectronContainer extends WebContainerBase {
             }
 
             if (options && options.autoStartOnLogin) {
-                this.electron.setLoginItemSettings({
+                this.app.setLoginItemSettings({
                     openAtLogin: options.autoStartOnLogin
                 });
             }
@@ -409,10 +409,9 @@ export class ElectronContainer extends WebContainerBase {
         }
     }
 
-    public async getOptions(): Promise<IContainerOptions> {
+    public async getOptions(): Promise<any> {
         try {
-            const autoStartOnLogin = await this.isAutoStartEnabledAtLogin();
-            return { autoStartOnLogin };
+            return { autoStartOnLogin: await this.isAutoStartEnabledAtLogin() };
         } catch(error) {
             throw new Error("Error getting Container options. " + error);
         }
@@ -421,7 +420,7 @@ export class ElectronContainer extends WebContainerBase {
     private isAutoStartEnabledAtLogin(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             try {
-                const config = this.electron.getLoginItemSettings();
+                const config = this.app.getLoginItemSettings();
                 resolve(config.openAtLogin);
             } catch (err) {
                 reject(err);
