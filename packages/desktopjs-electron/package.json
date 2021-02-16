@@ -10,7 +10,7 @@
   "types": "dist/desktopjs-electron.d.ts",
   "license": "Apache-2.0",
   "author": "Morgan Stanley",
-  "repository": "https://github.com/MorganStanley/desktopJS/tree/master/packages/desktopjs-electron",
+  "repository": "https://github.com/MorganStanley/desktopJS/tree/main/packages/desktopjs-electron",
   "bugs": {
     "url": "https://github.com/MorganStanley/desktopJS/issues"
   },
