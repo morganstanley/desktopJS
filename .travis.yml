@@ -28,10 +28,10 @@ deploy:
     local_dir: docs/
     github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
     on:
-      branch: master
+      branch: main
   - provider: script
     script: bash deploy.sh
     skip_cleanup: true
     on:
       tags: true
-      branch: master
+      branch: main
