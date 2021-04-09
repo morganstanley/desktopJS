@@ -3,7 +3,6 @@
 [![npm version](https://badge.fury.io/js/%40morgan-stanley%2Fdesktopjs.svg)](https://www.npmjs.com/package/@morgan-stanley/desktopjs)
 [![Build Status](https://travis-ci.com/MorganStanley/desktopJS.svg?branch=main)](https://travis-ci.com/MorganStanley/desktopJS?branch=main)
 [![codecov](https://codecov.io/gh/MorganStanley/desktopJS/branch/main/graph/badge.svg)](https://codecov.io/gh/MorganStanley/desktopJS)
-[![GitPitch](https://gitpitch.com/assets/badge.svg)](https://gitpitch.com/MorganStanley/desktopJS/main?grs=github&t=white&p=pitch)
 
 desktopJS is a common API across multiple HTML5 containers. By programming to a
 common API, applications can target multiple HTML5 containers without change. Detecting
