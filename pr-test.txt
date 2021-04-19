@@ -1,0 +1,13 @@
+Testing in solidarity bot -
+
+This is a line with master in it.
+
+This is a line with slave in in it.
+
+This is a line with whitelist in it.
+
+This is a line with blacklist in it.
+
+This is a line with segregation in it.
+
+This is a line with whitelist and blacklist in it.
