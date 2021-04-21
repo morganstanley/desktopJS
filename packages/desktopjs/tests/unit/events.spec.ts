@@ -62,7 +62,7 @@ describe("EventEmitter", () => {
         const listener = (event: EventArgs) => { done(); };
         const wrappedCallback = emitter.registerAndWrapListener("TestEvent", listener);
         expect(wrappedCallback).not.toBeNull();
-        emitter.addListener("TestEvent", wrappedCallback);        
+        emitter.addListener("TestEvent", wrappedCallback);
         emitter.emit("TestEvent", {});
     });
 
@@ -73,10 +73,10 @@ describe("EventEmitter", () => {
     });
 
     it ("postProcessArgs copies returnValue to innerEvent", () => {
-        const innerEvent = {};
+        const innerEvent: any = {};
         const args = new EventArgs({}, "event", innerEvent);
         args.returnValue = "Foo";
         emitter.postProcessArgs(args)
-        expect((<any>innerEvent).returnValue).toEqual("Foo");
+        expect(innerEvent.returnValue).toEqual("Foo");
     }); 
 });

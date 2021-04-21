@@ -43,19 +43,17 @@ class MockContainer extends ContainerBase {
 export class MockMessageBus implements MessageBus { 
     private listener: any;
 
-    subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
+    async subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
         this.listener = listener;
-        return Promise.resolve(undefined);
+        return undefined;
     }
 
-    unsubscribe(subscription: MessageBusSubscription): Promise<void> {
+    async unsubscribe(subscription: MessageBusSubscription) {
         this.listener = undefined;
-        return Promise.resolve();
     }
 
-    publish<T>(topic: string, message: T, options?: MessageBusOptions): Promise<void> {
+    async publish<T>(topic: string, message: T, options?: MessageBusOptions) {
         this.listener({ topic: topic }, message);
-        return Promise.resolve();
     }
 }
 
@@ -68,19 +66,19 @@ export class TestContainer extends ContainerBase {
         return win;
     }
 
-    getWindowByName(): Promise<ContainerWindow> {
+    async getWindowByName(): Promise<ContainerWindow> {
         const win = jasmine.createSpyObj("ContainerWindow", ["setBounds", "joinGroup"]);
         Object.defineProperty(win, "id", { value: "1" });
-        return Promise.resolve(win);
+        return win;
     }
 
-    createWindow(url: string, options?: any): Promise<ContainerWindow> {
+    async createWindow(url: string, options?: any): Promise<ContainerWindow> {
         const win = jasmine.createSpyObj("ContainerWindow", ["id", "getState", "setState"]);
         Object.defineProperty(win, "name", { value: options.name || "1" });
         Object.defineProperty(win, "id", { value: options.name || "1" });
         win.getState.and.returnValue(Promise.resolve({}));
         win.setState.and.returnValue(Promise.resolve());
-        return Promise.resolve(win);
+        return win;
     }
 
     constructor() {
@@ -103,23 +101,22 @@ export class TestContainer extends ContainerBase {
         };
     }
 
-    public closeAllWindows(excludeSelf?: boolean): Promise<void> {
-        return Promise.resolve();
+    public async closeAllWindows(excludeSelf?: boolean) {
     }
 
-    public getAllWindows(): Promise<ContainerWindow[]> { return Promise.resolve(undefined); }
+    public async getAllWindows(): Promise<ContainerWindow[]> { return undefined; }
 
     public getCurrentWindow(): ContainerWindow { return undefined; }
 
-    public getWindowById(): Promise<ContainerWindow> { return Promise.resolve(undefined); }
+    public async getWindowById(): Promise<ContainerWindow> { return undefined; }
 
-    public buildLayout(): Promise<PersistedWindowLayout> { return Promise.resolve(undefined); }
+    public async buildLayout(): Promise<PersistedWindowLayout> { return undefined; }
 
-    public saveLayout(): Promise<PersistedWindowLayout> { return Promise.resolve(undefined); }
+    public async saveLayout(): Promise<PersistedWindowLayout> { return undefined; }
 
     public setOptions(options: any) { }
 
-    public getOptions(): Promise<any> { return Promise.resolve({}); }
+    public async getOptions(): Promise<any> { return {}; }
 }
 
 describe("container", () => {
@@ -134,14 +131,11 @@ describe("container", () => {
         expect(container.ipc).toBeDefined();
     });
 
-    it("ready resolves", (done) => {
-        container.ready().then(done);
-    });
+    it("ready resolves", () => container.ready());
 
-    it ("getInfo returns undefined", (done) => {
-        container.getInfo().then(info => {
-            expect(info).toBeUndefined();
-        }).then(done);
+    it ("getInfo returns undefined", async () => {
+        const info = await container.getInfo();
+        expect(info).toBeUndefined();
     });
 
     describe("Static events", () => {
@@ -218,18 +212,14 @@ describe("container", () => {
                 spyOn(container, "createWindow").and.returnValue(jasmine.createSpyObj("window", ["joinGroup"]));
             });
 
-            it("loadLayout by name", (done) => {
-                container.loadLayout("Test").then(layout => {
-                    expect(layout).toBeDefined();
-                    expect(container.createWindow).toHaveBeenCalledWith("url", { name: "1" });
-                    done();
-                });
+            it("loadLayout by name", async () => {
+                const layout = await container.loadLayout("Test");
+                expect(layout).toBeDefined();
+                expect(container.createWindow).toHaveBeenCalledWith("url", { name: "1" });
             });
 
-            it ("loadLayout by unknown name rejects", (done) => {
-                container.loadLayout("Unknown").catch(error => {
-                    expect(error).toEqual("Layout does not exist or is invalid");
-                }).then(done);
+            it ("loadLayout by unknown name rejects", async () => {
+                await expectAsync(container.loadLayout("Unknown")).toBeRejectedWithError("Layout does not exist or is invalid");
             });
 
             it("loadLayout fires layout-loaded", (done) => {
@@ -251,16 +241,12 @@ describe("container", () => {
                 expect(layout.name).toEqual("Test");
             });
 
-            it ("loadLayout by unknown name rejects", (done) => {
-                container.loadLayout("Unknown").catch(error => {
-                    expect(error).toEqual("Layout does not exist or is invalid");
-                }).then(done);
+            it ("loadLayout by unknown name rejects", async () => {
+                await expectAsync(container.loadLayout("Unknown")).toBeRejectedWithError("Layout does not exist or is invalid");
             });
 
-            it ("loadLayout with no windows rejects", (done) => {
-                container.loadLayout(new PersistedWindowLayout("Test")).catch(error => {
-                    expect(error).toEqual("Layout does not exist or is invalid");
-                }).then(done);
+            it ("loadLayout with no windows rejects", async () => {
+                await expectAsync(container.loadLayout({ name: "Test", windows: null })).toBeRejectedWithError("Layout does not exist or is invalid");
             });
 
             it ("loadLayout with poorly constructed layout still creates windows", async () => {
@@ -288,32 +274,30 @@ describe("container", () => {
                 (<any>container).saveLayoutToStorage("Test", layout);
             });
 
-            it("deleteLayout fires layout-deleted", async (done) => {
-                container.addListener("layout-deleted", async () => {
+            it("deleteLayout fires layout-deleted", (done) => {
+                container.addListener("layout-deleted", () => {
                     done();
                 });
                 container.deleteLayout("Test");
             });
 
-            it("getLayouts", (done) => {
-                container.getLayouts().then(layouts => {
-                    expect(layouts).toBeDefined();
-                    done();
-                });
+            it("getLayouts", async () => {
+                const layouts = await container.getLayouts();
+                expect(layouts).toBeDefined();
             });
         });
 
         describe("instance events", () => {
             it("addListener", done => {
                 container.addListener("window-created", () => done());
-                container.emit("window-created", { sender: this, name: "window-created" });
+                container.emit("window-created", { sender: this, name: "window-created", windowId: "1" });
             });
 
             it("removeListener", () => {
                 const callback = () => fail();
                 container.addListener("window-created", callback);
                 container.removeListener("window-created", callback);
-                container.emit("window-created", { sender: this, name: "window-created" });
+                container.emit("window-created", { sender: this, name: "window-created", windowId: "2" });
             });
         });
     });

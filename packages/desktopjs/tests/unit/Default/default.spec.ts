@@ -174,14 +174,8 @@ describe("DefaultContainerWindow", () => {
         }).then(done);
     });
 
-    it("flash resolves with not supported", (done) => {
-        win.flash(true).then(() => {
-            fail("Reject is not thrown");
-            done();
-        }).catch(reason => {
-            expect(reason).toEqual("Not supported");
-            done();
-        });
+    it("flash resolves with not supported", async () => {
+        await expectAsync(win.flash(true)).toBeRejectedWithError("Not supported");
     });
 
     it("getParent throws no errors", (done) => {
@@ -242,10 +236,8 @@ describe("DefaultContainerWindow", () => {
             }).then(done);
         });
 
-        it ("joinGroup not supported", (done) => {
-            new Default.DefaultContainerWindow(null).joinGroup(null).catch(reason => {
-                expect(reason).toEqual("Not supported");
-            }).then(done);
+        it ("joinGroup not supported", async () => {
+            await expectAsync(new Default.DefaultContainerWindow(null).joinGroup(null)).toBeRejectedWithError("Not supported");
         });
 
         it ("leaveGroup resolves", (done) => {

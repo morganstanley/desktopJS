@@ -37,11 +37,11 @@ export abstract class ContainerNotification {
      * @param {NotificationPermissionCallback} [callback] An optional callback function that is called with the permission value. Depcrecated in favor of the promise return value
      * @returns {Promise<string>} A Promise that resolves to the permission picked by the user.
      */
-    static requestPermission(callback?: NotificationPermissionCallback): Promise<string> { 
+    static async requestPermission(callback?: NotificationPermissionCallback): Promise<string> { 
         if (callback) {
             callback(ContainerNotification.permission);
         }
-        return Promise.resolve(ContainerNotification.permission);
+        return ContainerNotification.permission;
     }
 
     /**

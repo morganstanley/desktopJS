@@ -45,7 +45,7 @@ export class ElectronContainerWindow extends ContainerWindow {
     }
 
     private get isRemote(): boolean {
-        return ((<any> this.container.internalIpc).send);
+        return !!this.container.internalIpc.send;
     }
 
     public get id(): string {
@@ -56,65 +56,47 @@ export class ElectronContainerWindow extends ContainerWindow {
         return this.innerWindow.name;
     }
 
-    public load(url: string, options?: any) : Promise<void> {
-        return new Promise<void>(resolve => {
-            if (options) {
-                this.innerWindow.loadURL(url, options);
-            } else {
-                this.innerWindow.loadURL(url);
-            }
-            resolve();
-        });
+    public async load(url: string, options?: any) {
+        if (options) {
+            this.innerWindow.loadURL(url, options);
+        } else {
+            this.innerWindow.loadURL(url);
+        }
     }
 
-    public focus(): Promise<void> {
+    public async focus() {
         this.innerWindow.focus();
-        return Promise.resolve();
     }
 
-    public show(): Promise<void> {
+    public async show() {
         this.innerWindow.show();
-        return Promise.resolve();
     }
 
-    public hide(): Promise<void> {
+    public async hide() {
         this.innerWindow.hide();
-        return Promise.resolve();
     }
 
-    public close(): Promise<void> {
+    public async close() {
         this.innerWindow.close();
-        return Promise.resolve();
     }
 
-    public maximize(): Promise<void> {
-        return new Promise<void>(resolve => {
-            this.innerWindow.maximize();
-            resolve();
-        });
+    public async maximize() {
+        this.innerWindow.maximize();
     }
 
-    public minimize(): Promise<void> {
-        return new Promise<void>(resolve => {
-            this.innerWindow.minimize();
-            resolve();
-        });
+    public async minimize() {
+        this.innerWindow.minimize();
     }
 
-    public restore(): Promise<void> {
-        return new Promise<void>(resolve => {
-            this.innerWindow.restore();
-            resolve();
-        });
+    public async restore() {
+        this.innerWindow.restore();
     }
 
-    public isShowing(): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            resolve(this.innerWindow.isVisible());
-        });
+    public async isShowing() {
+        return this.innerWindow.isVisible();
     }
 
-    public getSnapshot(): Promise<string> {
+    public async getSnapshot() {
         return new Promise<string>((resolve, reject) => {
             this.innerWindow.capturePage((snapshot) => {
                 resolve("data:image/png;base64," + snapshot.toPNG().toString("base64"));
@@ -122,53 +104,42 @@ export class ElectronContainerWindow extends ContainerWindow {
         });
     }
 
-    public flash(enable: boolean, options?: any): Promise<void> {
+    public async flash(enable: boolean, options?: any) {
         this.innerWindow.flashFrame(enable);
-        return Promise.resolve();
     }
 
-    public getParent(): Promise<ContainerWindow> {
-        return Promise.resolve(this.innerWindow.getParentWindow());
+    public async getParent(): Promise<ContainerWindow> {
+        return this.innerWindow.getParentWindow();
     }
 
-    public setParent(parent: ContainerWindow): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            this.innerWindow.setParentWindow(parent.innerWindow);
-            resolve();
-        });
+    public async setParent(parent: ContainerWindow) {
+        this.innerWindow.setParentWindow(parent.innerWindow);
     }
 
-    public getBounds(): Promise<Rectangle> {
-        return new Promise<Rectangle>(resolve => {
-            const { x, y, width, height } = this.innerWindow.getBounds();
-            resolve(new Rectangle(x, y, width, height));
-        });
+    public async getBounds() {
+        const { x, y, width, height } = this.innerWindow.getBounds();
+        return new Rectangle(x, y, width, height);
     }
 
-    public setBounds(bounds: Rectangle): Promise<void> {
-        return new Promise<void>(resolve => {
-            this.innerWindow.setBounds(bounds);
-            resolve();
-        });
+    public async setBounds(bounds: Rectangle) {
+        this.innerWindow.setBounds(bounds);
     }
 
     public get allowGrouping() {
         return true;
     }
 
-    public getGroup(): Promise<any[]> {
-        return new Promise<ContainerWindow[]>(resolve => {
-            const ids = (this.isRemote)
-                ? (<any>this.container.internalIpc).sendSync(InternalMessageType.getGroup, { source: this.id })
-                : (<any>this.container).windowManager.getGroup(this.innerWindow);
-
-            resolve(ids.map(id => {return (id === this.id) ? this : this.container.wrapWindow(this.container.browserWindow.fromId(id)); }));
-        });
+    public async getGroup(): Promise<ContainerWindow[]> {
+        const ids = (this.isRemote)
+        ? (<any>this.container.internalIpc).sendSync(InternalMessageType.getGroup, { source: this.id })
+        : (<any>this.container).windowManager.getGroup(this.innerWindow);
+        
+        return ids.map(id => (id === this.id) ? this : this.container.wrapWindow(this.container.browserWindow.fromId(id)));
     }
 
-    public joinGroup(target: ContainerWindow): Promise<void> {
+    public async joinGroup(target: ContainerWindow) {
         if (!target || target.id === this.id) {
-            return Promise.resolve();
+            return;
         }
 
         if (this.isRemote) {
@@ -176,54 +147,39 @@ export class ElectronContainerWindow extends ContainerWindow {
         } else {
             (<any>this.container).windowManager.groupWindows(target.innerWindow, this.innerWindow);
         }
-
-        return Promise.resolve();
     }
 
-    public leaveGroup(): Promise<void> {
+    public async leaveGroup() {
         if (this.isRemote) {
             (<any>this.container.internalIpc).send(InternalMessageType.leaveGroup, { source: this.id });
         } else {
             (<any>this.container).windowManager.ungroupWindows(this.innerWindow);
         }
-
-        return Promise.resolve();
     }
 
-    public bringToFront(): Promise<void> {
-        return new Promise<void>(resolve => {
-            this.innerWindow.moveTop();
-            resolve();
-        });
+    public async bringToFront() {
+        this.innerWindow.moveTop();
     }
 
-    public getOptions(): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
-            const options = (this.isRemote)
-                ? (<any>this.container.internalIpc).sendSync(InternalMessageType.getOptions, { source: this.id })
-                : this.innerWindow[Container.windowOptionsPropertyKey];
-
-            resolve(options);
-        });
+    public async getOptions() {
+        const options = (this.isRemote)
+        ? (<any>this.container.internalIpc).sendSync(InternalMessageType.getOptions, { source: this.id })
+        : this.innerWindow[Container.windowOptionsPropertyKey];
+        
+        return options;
     }
 
-    public getState(): Promise<any> {
+    public async getState() {
         if (this.innerWindow && this.innerWindow.webContents) {
             return this.innerWindow.webContents.executeJavaScript("window.getState ? window.getState() : undefined");
-        } else {
-            return Promise.resolve(undefined);
         }
     }
 
-    public setState(state: any): Promise<void> {
-        const promise = (this.innerWindow && this.innerWindow.webContents)
-            ? this.innerWindow.webContents.executeJavaScript(`if (window.setState) { window.setState(JSON.parse(\`${JSON.stringify(state)}\`)); }`)
-            : Promise.resolve();
-
-        return promise.then(() => {
-            this.emit("state-changed", <EventArgs> { name: "state-changed", sender: this, state: state });
-            ContainerWindow.emit("state-changed", <WindowEventArgs> { name: "state-changed", windowId: this.id, state: state } );
-        });
+    public async setState(state: any) {
+        await this.innerWindow?.webContents?.executeJavaScript(`if (window.setState) { window.setState(JSON.parse(\`${JSON.stringify(state)}\`)); }`);
+        
+        this.emit("state-changed", <EventArgs> { name: "state-changed", sender: this, state: state });
+        ContainerWindow.emit("state-changed", <WindowEventArgs> { name: "state-changed", windowId: this.id, state: state } );
     }
 
     protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
@@ -261,47 +217,39 @@ export class ElectronMessageBus implements MessageBus {
         this.browserWindow = browserWindow;
     }
 
-    public subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
-        return new Promise<MessageBusSubscription>((resolve, reject) => {
-            const subscription: MessageBusSubscription = new MessageBusSubscription(topic, (event: any, message: any) => {
-                listener({ topic: topic }, message);
-            });
-            this.ipc.on(topic, subscription.listener);
-            resolve(subscription);
+    public async subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions) {
+        const subscription = new MessageBusSubscription(topic, (event: any, message: any) => {
+            listener({ topic: topic }, message);
         });
+        this.ipc.on(topic, subscription.listener);
+        return subscription;
     }
 
-    public unsubscribe(subscription: MessageBusSubscription): Promise<void> {
+    public async unsubscribe(subscription: MessageBusSubscription) {
         const { topic, listener, options } = subscription;
-        return Promise.resolve(<any>this.ipc.removeListener(topic, listener));
+        return this.ipc.removeListener(topic, listener);
     }
 
-    public publish<T>(topic: string, message: T, options?: MessageBusOptions): Promise<void> {
+    public async publish<T>(topic: string, message: T, options?: MessageBusOptions) {
         // If publisher is targeting a window, do not send to main
-        if (!options || !options.name) {
+        if (!options?.name) {
             if ((<any>this.ipc).send !== undefined) {
                 // Publish to main from renderer (send is not available on ipcMain)
                 (<any>this.ipc).send(topic, message);
             } else {
                 // we are in main so invoke listener directly
-                this.ipc.listeners(topic).forEach(cb => cb({ topic: topic }, message));
+                this.ipc.listeners(topic).forEach(cb => cb({ topic }, message));
             }
         }
 
         // Broadcast to all windows or to the individual targeted window
-        if (this.browserWindow && this.browserWindow.getAllWindows) {
-            for (const window of (this.browserWindow).getAllWindows()) {
-                if (options && options.name) {
-                    if (options.name === window.name) {
-                        window.webContents.send(topic, message);
-                    }
-                } else {
+        if (this.browserWindow?.getAllWindows) {
+            for (const window of this.browserWindow.getAllWindows()) {
+                if (!(options?.name) || options.name === window.name) {
                     window.webContents.send(topic, message);
                 }
             }
         }
-
-        return Promise.resolve();
     }
 }
 
@@ -417,15 +365,9 @@ export class ElectronContainer extends WebContainerBase {
         }
     }
 
-    private isAutoStartEnabledAtLogin(): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            try {
-                const config = this.app.getLoginItemSettings();
-                resolve(config.openAtLogin);
-            } catch (err) {
-                reject(err);
-            }
-        });
+    private async isAutoStartEnabledAtLogin(): Promise<boolean> {
+        const config = this.app.getLoginItemSettings();
+        return config.openAtLogin;
     }
 
     protected createMessageBus() : MessageBus {
@@ -448,8 +390,8 @@ export class ElectronContainer extends WebContainerBase {
         }
     }
 
-    public getInfo(): Promise<string | undefined> {
-        return Promise.resolve(`Electron/${this.electron.process.versions.electron} Chrome/${this.electron.process.versions.chrome}`);
+    public async getInfo(): Promise<string | undefined> {
+        return `Electron/${this.electron.process.versions.electron} Chrome/${this.electron.process.versions.chrome}`;
     }
 
     public getMainWindow(): ContainerWindow {
@@ -481,7 +423,7 @@ export class ElectronContainer extends WebContainerBase {
         return new ElectronContainerWindow(containerWindow, this);
     }
 
-    public createWindow(url: string, options?: any): Promise<ContainerWindow> {
+    public async createWindow(url: string, options?: any): Promise<ContainerWindow> {
         const newOptions = this.getWindowOptions(options);
         const electronWindow: any = new this.browserWindow(newOptions);
         const windowName = newOptions.name || Guid.newGuid();
@@ -507,7 +449,7 @@ export class ElectronContainer extends WebContainerBase {
 
         const newWindow = this.wrapWindow(electronWindow);
         this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: electronWindow.id, windowName: windowName });
-        return Promise.resolve(newWindow);
+        return newWindow;
     }
 
     public showNotification(title: string, options?: NotificationOptions) {
@@ -539,73 +481,59 @@ export class ElectronContainer extends WebContainerBase {
         }
     }
 
-    protected closeAllWindows(excludeSelf?: boolean): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            for (const window of this.browserWindow.getAllWindows()) {
-                if (!excludeSelf || window !== this.electron.getCurrentWindow()) {
-                    window.close();
-                }
+    protected async closeAllWindows(excludeSelf?: boolean) {
+        for (const window of this.browserWindow.getAllWindows()) {
+            if (!excludeSelf || window !== this.electron.getCurrentWindow()) {
+                window.close();
             }
-            resolve();
-        });
+        }
     }
 
-    public getAllWindows(): Promise<ContainerWindow[]> {
-        return Promise.resolve(this.browserWindow.getAllWindows().map(window => this.wrapWindow(window)));
+    public async getAllWindows(): Promise<ContainerWindow[]> {
+        return this.browserWindow.getAllWindows().map(window => this.wrapWindow(window));
     }
 
-    public getWindowById(id: string): Promise<ContainerWindow | null> {
-        return new Promise<ContainerWindow>((resolve, reject) => {
-            const win = this.browserWindow.fromId(id);
-            resolve(win ? this.wrapWindow(win) : null);
-        });
+    public async getWindowById(id: string): Promise<ContainerWindow | null> {
+        const win = this.browserWindow.fromId(id);
+        return win ? this.wrapWindow(win) : null;
     }
 
-    public getWindowByName(name: string): Promise<ContainerWindow | null> {
-        return new Promise<ContainerWindow>((resolve, reject) => {
-            const win = this.browserWindow.getAllWindows().find(window => window.name === name);
-            resolve(win ? this.wrapWindow(win) : null);
-        });
+    public async getWindowByName(name: string): Promise<ContainerWindow | null> {
+        const win = this.browserWindow.getAllWindows().find(window => window.name === name);
+        return win ? this.wrapWindow(win) : null;
     }
 
-    public buildLayout(): Promise<PersistedWindowLayout> {
+    public async buildLayout() {
         const layout = new PersistedWindowLayout();
         const mainWindow = this.getMainWindow().innerWindow;
         const promises: Promise<void>[] = [];
-
-        return new Promise<PersistedWindowLayout>((resolve, reject) => {
-            this.getAllWindows().then(windows => {
-                windows.forEach(window => {
-                    const options = window.innerWindow[Container.windowOptionsPropertyKey];
-                    if (options && "persist" in options && !options.persist) {
-                        return;
+        
+        const windows = await this.getAllWindows();
+        windows.forEach(window => {
+            const options = window.innerWindow[Container.windowOptionsPropertyKey];
+            if (options && "persist" in options && !options.persist) {
+                return;
+            }
+            
+            promises.push((async () => {
+                layout.windows.push(
+                    {
+                        id: window.id,
+                        name: window.name,
+                        url: window.innerWindow.webContents.getURL(),
+                        main: (mainWindow === window.innerWindow),
+                        state: await window.getState(),
+                        options: options,
+                        bounds: window.innerWindow.getBounds(),
+                        group: (await window.getGroup()).map(win => win.id)
                     }
-
-                    promises.push(new Promise<void>(innerResolve => {
-                        window.getGroup().then(async group => {
-                            layout.windows.push(
-                                {
-                                    id: window.id,
-                                    name: window.name,
-                                    url: window.innerWindow.webContents.getURL(),
-                                    main: (mainWindow === window.innerWindow),
-                                    state: await window.getState(),
-                                    options: options,
-                                    bounds: window.innerWindow.getBounds(),
-                                    group: group.map(win => win.id)
-                                });
-                            innerResolve();
-                        });
-                    }));
-                });
-
-                Promise.all(promises).then(() => {
-                    resolve(layout);
-                }).catch(reject);
-            });
+                );
+            })());
         });
+        
+        await Promise.all(promises);
+        return layout;
     }
-
 }
 
 export class ElectronWindowManager {
@@ -788,22 +716,16 @@ class ElectronDisplayManager implements ScreenManager {
         return display;
     }
 
-    public getPrimaryDisplay(): Promise<Display> {
-        return new Promise<Display>((resolve, reject) => {
-            resolve(this.createDisplay(this.electron.screen.getPrimaryDisplay()));
-        });
+    public async getPrimaryDisplay() {
+        return this.createDisplay(this.electron.screen.getPrimaryDisplay());
     }
 
-    public getAllDisplays(): Promise<Display[]> {
-        return new Promise<Display[]>((resolve, reject) => {
-            resolve(this.electron.screen.getAllDisplays().map(this.createDisplay));
-        });
+    public async getAllDisplays() {
+        return this.electron.screen.getAllDisplays().map(this.createDisplay.bind(this));
     }
 
-    public getMousePosition(): Promise<Point> {
-        return new Promise<Point>((resolve, reject) => {
-            resolve(this.electron.screen.getCursorScreenPoint());
-        });
+    public async getMousePosition(): Promise<Point> {
+        return this.electron.screen.getCursorScreenPoint();
     }
 }
 
@@ -816,30 +738,19 @@ class ElectronGlobalShortcutManager extends GlobalShortcutManager {
         this.electron = electron;
     }
 
-    public register(shortcut: string, callback: () => void): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            this.electron.globalShortcut.register(shortcut, callback);
-            resolve();
-        });
+    public async register(shortcut: string, callback: () => void) {
+        this.electron.globalShortcut.register(shortcut, callback);
     }
 
-    public isRegistered(shortcut: string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            resolve(this.electron.globalShortcut.isRegistered(shortcut));
-        });
+    public async isRegistered(shortcut: string): Promise<boolean> {
+        return this.electron.globalShortcut.isRegistered(shortcut);
     }
 
-    public unregister(shortcut: string): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            this.electron.globalShortcut.unregister(shortcut);
-            resolve();
-        });
+    public async unregister(shortcut: string) {
+        this.electron.globalShortcut.unregister(shortcut);
     }
 
-    public unregisterAll(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            this.electron.globalShortcut.unregisterAll();
-            resolve();
-        });
+    public async unregisterAll() {
+        this.electron.globalShortcut.unregisterAll();
     }
 }

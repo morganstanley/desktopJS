@@ -66,10 +66,7 @@ describe("registry", () => {
 
             registry.registerContainer("TestContainer",
             {
-                condition: (options) => { 
-                    console.log('condition', (options === providedOptions)); 
-                    return condition = (options === providedOptions);
-                },
+                condition: (options) => condition = (options === providedOptions),
                 create: (options) => { create = (options === providedOptions); return mockContainer; }
             });
 

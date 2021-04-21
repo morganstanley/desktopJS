@@ -199,176 +199,143 @@ describe("OpenFinContainerWindow", () => {
         expect(nativeWin).toEqual(innerWin.nativeWindow);
     });
 
-    it("load", (done) => {
+    it("load", async () => {
         spyOn(innerWin, "navigate").and.callThrough();
-        win.load("url").then(() => {
-            expect(innerWin.navigate).toHaveBeenCalledWith("url", jasmine.any(Function), jasmine.any(Function));
-        }).then(done);
+        await win.load("url");
+        expect(innerWin.navigate).toHaveBeenCalledWith("url", jasmine.any(Function), jasmine.any(Function));
     });
 
-    it("focus", (done) => {
+    it("focus", async () => {
         spyOn(innerWin, "focus").and.callThrough();
-        win.focus().then(() => {
-            expect(innerWin.focus).toHaveBeenCalled();
-        }).then(done);
+        await win.focus();
+        expect(innerWin.focus).toHaveBeenCalled();
     });
 
-    it("show", (done) => {
+    it("show", async () => {
         spyOn(innerWin, "show").and.callThrough();
-        win.show().then(() => {
-            expect(innerWin.show).toHaveBeenCalled();
-        }).then(done);
+        await win.show();
+        expect(innerWin.show).toHaveBeenCalled();
     });
 
-    it("hide", (done) => {
+    it("hide", async () => {
         spyOn(innerWin, "hide").and.callThrough();
-        win.hide().then(() => {
-            expect(innerWin.hide).toHaveBeenCalled();
-        }).then(done);
+        await win.hide();
+        expect(innerWin.hide).toHaveBeenCalled();
     });
 
-    it("close", (done) => {
+    it("close", async () => {
         spyOn(innerWin, "close").and.callThrough();
-        win.close().then(() => {
-            expect(innerWin.close).toHaveBeenCalled();
-        }).then(done);
+        await win.close();
+        expect(innerWin.close).toHaveBeenCalled();
     });
 
-    it("minimize", (done) => {
+    it("minimize", async () => {
         spyOn(innerWin, "minimize").and.callThrough();
-        win.minimize().then(() => {
-            expect(innerWin.minimize).toHaveBeenCalled();
-        }).then(done);
+        await win.minimize();
+        expect(innerWin.minimize).toHaveBeenCalled();
     });
 
-    it("maximize", (done) => {
+    it("maximize", async () => {
         spyOn(innerWin, "maximize").and.callThrough();
-        win.maximize().then(() => {
-            expect(innerWin.maximize).toHaveBeenCalled();
-        }).then(done);
+        await win.maximize();
+        expect(innerWin.maximize).toHaveBeenCalled();
     });
 
-    it("restore", (done) => {
+    it("restore", async () => {
         spyOn(innerWin, "restore").and.callThrough();
-        win.restore().then(() => {
-            expect(innerWin.restore).toHaveBeenCalled();
-        }).then(done);
+        await win.restore();
+        expect(innerWin.restore).toHaveBeenCalled();
     });
    
-    it("isShowing", (done) => {
+    it("isShowing", async () => {
         spyOn(innerWin, "isShowing").and.callThrough();
-        let success = false;
 
-        win.isShowing().then((showing) => {
-            success = true;
-            expect(showing).toBeDefined();
-            expect(showing).toEqual(true);
-        }).then(() => {
-            expect(success).toEqual(true);
-            expect(innerWin.isShowing).toHaveBeenCalled();
-        }).then(done);
+        const showing = await win.isShowing();
+        expect(showing).toBeDefined();
+        expect(showing).toEqual(true);
+        expect(innerWin.isShowing).toHaveBeenCalled();
     });
 
 
     describe("getState", () => {
-        it("getState undefined", (done) => {
+        it("getState undefined", async () => {
             const mockWindow = new MockWindow();
             delete (<any>mockWindow.nativeWindow).getState;
             const win = new OpenFinContainerWindow(innerWin);
 
-            win.getState().then(state => {
-                expect(state).toBeUndefined();
-            }).then(done);
+            const state = await win.getState();
+            expect(state).toBeUndefined();
         });
 
-        it("getState defined", (done) => {
+        it("getState defined", async () => {
             const mockState = { value: "Foo" };
             innerWin.nativeWindow.getState.and.returnValue(mockState);
     
-            win.getState().then(state => {
-                expect(innerWin.nativeWindow.getState).toHaveBeenCalled();
-                expect(state).toEqual(mockState);
-            }).then(done);
+            const state = await win.getState();
+            expect(innerWin.nativeWindow.getState).toHaveBeenCalled();
+            expect(state).toEqual(mockState);
         });
-        });        
+    });
 
     describe("setState", () => {
-        it("setState undefined", (done) => {
+        it("setState undefined", async () => {
             const mockWindow = new MockWindow();
             delete (<any>mockWindow.nativeWindow).setState;
             const win = new OpenFinContainerWindow(innerWin);
 
-            win.setState({}).then(done);
+            await expectAsync(win.setState({})).toBeResolved();
         });
 
-        it("setState defined", (done) => {
+        it("setState defined", async () => {
             const mockState = { value: "Foo" };
             innerWin.nativeWindow.setState.and.returnValue(Promise.resolve());
     
-            win.setState(mockState).then(() => {
-                expect(innerWin.nativeWindow.setState).toHaveBeenCalledWith(mockState);
-            }).then(done);
+            await win.setState(mockState);
+            expect(innerWin.nativeWindow.setState).toHaveBeenCalledWith(mockState);
         });
-        });
+    });
 
     describe("getSnapshot", () => {
-        it("getSnapshot invokes underlying getSnapshot", (done) => {
+        it("getSnapshot invokes underlying getSnapshot", async () => {
             spyOn(innerWin, "getSnapshot").and.callThrough();
-            let success = false;
 
-            win.getSnapshot().then((snapshot) => {
-                success = true;
-                expect(snapshot).toBeDefined();
-                expect(snapshot).toEqual("data:image/png;base64,");
-            }).then(() => {
-                expect(success).toEqual(true);
-                expect(innerWin.getSnapshot).toHaveBeenCalled();
-            }).then(done);
+            const snapshot = await win.getSnapshot();
+            expect(snapshot).toBeDefined();
+            expect(snapshot).toEqual("data:image/png;base64,");
+            expect(innerWin.getSnapshot).toHaveBeenCalled();
         });
 
-        it("getSnapshot propagates internal error to promise reject", (done) => {
+        it("getSnapshot propagates internal error to promise reject", async () => {
             spyOn(innerWin, "getSnapshot").and.callFake((callback, reject) => reject("Error"));
-            let success = false;
 
-            win.getSnapshot().catch((error) => {
-                success = true;
-                expect(error).toBeDefined();
-            }).then(() => {
-                expect(success).toEqual(true);
-            }).then(done);
+            await expectAsync(win.getSnapshot()).toBeRejected();
         });
 
-        it("getBounds retrieves underlying window position", (done) => {
-            win.getBounds().then(bounds => {
-                expect(bounds).toBeDefined();
-                expect(bounds.x).toEqual(0);
-                expect(bounds.y).toEqual(1);
-                expect(bounds.width).toEqual(2);
-                expect(bounds.height).toEqual(3);
-            }).then(done);
+        it("getBounds retrieves underlying window position", async () => {
+            const bounds = await win.getBounds();
+            expect(bounds).toBeDefined();
+            expect(bounds.x).toEqual(0);
+            expect(bounds.y).toEqual(1);
+            expect(bounds.width).toEqual(2);
+            expect(bounds.height).toEqual(3);
         });
 
-        it("setBounds sets underlying window position", (done) => {
+        it("setBounds sets underlying window position", async () => {
             spyOn(win.innerWindow, "setBounds").and.callThrough()
-            win.setBounds(<any> { x: 0, y: 1, width: 2, height: 3 }).then(() => {
-                expect(win.innerWindow.setBounds).toHaveBeenCalledWith(0, 1, 2, 3, jasmine.any(Function), jasmine.any(Function));
-            }).then(done);
+            await win.setBounds(<any> { x: 0, y: 1, width: 2, height: 3 });
+            expect(win.innerWindow.setBounds).toHaveBeenCalledWith(0, 1, 2, 3, jasmine.any(Function), jasmine.any(Function));
         });
 
-        it("flash enable invokes underlying flash", (done) => {
+        it("flash enable invokes underlying flash", async () => {
             spyOn(win.innerWindow, "flash").and.callThrough();
-            win.flash(true).then(() => {
-                expect(win.innerWindow.flash).toHaveBeenCalled();
-                done();
-            });
+            await win.flash(true);
+            expect(win.innerWindow.flash).toHaveBeenCalled();
         });
 
-        it("flash disable invokes underlying stopFlashing", (done) => {
+        it("flash disable invokes underlying stopFlashing", async () => {
             spyOn(win.innerWindow, "stopFlashing").and.callThrough();
-            win.flash(false).then(() => {
-                expect(win.innerWindow.stopFlashing).toHaveBeenCalled();
-                done();
-            });
+            await win.flash(false);
+            expect(win.innerWindow.stopFlashing).toHaveBeenCalled();
         });
 
         it("getParent does not throw", (done) => {
@@ -380,19 +347,17 @@ describe("OpenFinContainerWindow", () => {
         });
 
         describe("getOptions", () => {
-            it("getOptions invokes underlying getOptions and returns undefined customData", (done) => {
+            it("getOptions invokes underlying getOptions and returns undefined customData", async () => {
                 spyOn(win.innerWindow, "getOptions").and.callFake(callback => callback({ }));
-                win.getOptions().then(options => {
-                    expect(options).toBeUndefined();
-                }).then(done);
+                const options = await win.getOptions();
+                expect(options).toBeUndefined();
             });
 
-            it("getOptions invokes underlying getOptions and parses non-null customData", (done) => {
+            it("getOptions invokes underlying getOptions and parses non-null customData", async () => {
                 spyOn(win.innerWindow, "getOptions").and.callFake(callback => callback({ customData: '{ "a": "foo"}' }));
-                win.getOptions().then(options => {
-                    expect(options).toBeDefined();
-                    expect(options.a).toEqual("foo");
-                }).then(done);
+                const options = await win.getOptions();
+                expect(options).toBeDefined();
+                expect(options.a).toEqual("foo");
             });
         });
     });
@@ -458,46 +423,41 @@ describe("OpenFinContainerWindow", () => {
             expect(win.allowGrouping).toEqual(true);
         });
 
-        it ("getGroup invokes underlying getGroup", (done) => {
+        it ("getGroup invokes underlying getGroup", async () => {
             spyOn(innerWin, "getGroup").and.callFake(resolve => {
                 resolve([ win ] );
             });
 
-            win.getGroup().then(windows => {
-                expect(innerWin.getGroup).toHaveBeenCalled();
-                expect(windows).toBeDefined();
-                expect(windows.length).toEqual(1);
-            }).then(done);
+            const windows = await win.getGroup();
+            expect(innerWin.getGroup).toHaveBeenCalled();
+            expect(windows).toBeDefined();
+            expect(windows.length).toEqual(1);
         });
 
-        it ("joinGroup invokes underlying joinGroup", (done) => {
+        it ("joinGroup invokes underlying joinGroup", async () => {
             spyOn(innerWin, "joinGroup").and.callFake((target, resolve) => resolve());
             const window = new OpenFinContainerWindow(new MockWindow("Fake"));
-            win.joinGroup(window).then(() => {
-                expect(innerWin.joinGroup).toHaveBeenCalledWith(window.innerWindow, jasmine.any(Function), jasmine.any(Function));
-            }).then(done);
+            await win.joinGroup(window);
+            expect(innerWin.joinGroup).toHaveBeenCalledWith(window.innerWindow, jasmine.any(Function), jasmine.any(Function));
         });
 
-        it ("joinGroup with source == target does not invoke joinGroup", (done) => {
+        it ("joinGroup with source == target does not invoke joinGroup", async () => {
             spyOn(innerWin, "joinGroup").and.callFake((target, resolve) => resolve());
-            win.joinGroup(win).then(() => {
-                expect(innerWin.joinGroup).toHaveBeenCalledTimes(0);
-            }).then(done);
+            await win.joinGroup(win);
+            expect(innerWin.joinGroup).toHaveBeenCalledTimes(0);
         });
 
-        it ("leaveGroup invokes underlying leaveGroup", (done) => {
+        it ("leaveGroup invokes underlying leaveGroup", async () => {
             spyOn(innerWin, "leaveGroup").and.callFake(resolve => resolve());
-            win.leaveGroup().then(() => {
-                expect(innerWin.leaveGroup).toHaveBeenCalled();
-            }).then(done);
+            await win.leaveGroup();
+            expect(innerWin.leaveGroup).toHaveBeenCalled();
         });
     });
 
-    it("bringToFront invokes underlying bringToFront", (done) => {
+    it("bringToFront invokes underlying bringToFront", async () => {
         spyOn(innerWin, "bringToFront").and.callThrough();
-        win.bringToFront().then(() => {
-            expect(innerWin.bringToFront).toHaveBeenCalled();
-        }).then(done);
+        await win.bringToFront();
+        expect(innerWin.bringToFront).toHaveBeenCalled();
     });
 });
 
@@ -515,23 +475,21 @@ describe("OpenFinContainer", () => {
         expect(container.hostType).toEqual("OpenFin");
     });
 
-    it ("getInfo invokes underlying getRvmInfo and getRuntimeInfo", (done) => {
+    it ("getInfo invokes underlying getRvmInfo and getRuntimeInfo", async () => {
         const system = jasmine.createSpyObj("system", ["getRvmInfo", "getRuntimeInfo", "log"]);
         system.getRvmInfo.and.callFake(f => f({ version: "1" }));
         system.getRuntimeInfo.and.callFake(f => f({ version: "2" }));
         Object.defineProperty(desktop, "System", { value: system });
-        container.getInfo().then(info => {
-            expect(system.getRvmInfo).toHaveBeenCalledTimes(1);
-            expect(system.getRuntimeInfo).toHaveBeenCalledTimes(1);
-            expect(info).toEqual("RVM/1 Runtime/2");
-        }).then(done);
+        const info = await container.getInfo();
+        expect(system.getRvmInfo).toHaveBeenCalledTimes(1);
+        expect(system.getRuntimeInfo).toHaveBeenCalledTimes(1);
+        expect(info).toEqual("RVM/1 Runtime/2");
     });
 
-    it("ready invokes underlying main", (done) => {
+    it("ready invokes underlying main", async () => {
         spyOn(desktop, "main").and.callThrough();
-        container.ready().then(() => {
-            expect(desktop.main).toHaveBeenCalled();
-        }).then(done);
+        await container.ready();
+        expect(desktop.main).toHaveBeenCalled();
     });
 
     describe("ctor options", () => {
@@ -632,15 +590,13 @@ describe("OpenFinContainer", () => {
             spyOn(desktop, "Window").and.callFake((options?: any, callback?: () => void) => { if (callback) { callback(); } });
         });
 
-        it("defaults", (done) => {
-            container.createWindow("url").then(win => {
-                expect(win).toBeDefined();
-                expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: jasmine.stringMatching(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/), customData: undefined }, jasmine.any(Function), jasmine.any(Function));
-                done();
-            });
+        it("defaults", async () => {
+            const win = await container.createWindow("url");
+            expect(win).toBeDefined();
+            expect(desktop.Window).toHaveBeenCalledWith({ autoShow: true, url: "url", name: jasmine.stringMatching(/\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/), customData: undefined }, jasmine.any(Function), jasmine.any(Function));
         });
 
-        it("createWindow defaults", (done) => {
+        it("createWindow defaults", async () => {
             spyOn<any>(container, "ensureAbsoluteUrl").and.returnValue("absoluteIcon");
             const options = {
                 x: "x",
@@ -653,28 +609,26 @@ describe("OpenFinContainer", () => {
                 name: "name"
             }
 
-            container.createWindow("url", options).then(win => {
-                    expect(win).toBeDefined();
-                    expect(desktop.Window).toHaveBeenCalledWith(
-                        {
-                            defaultLeft: "x",
-                            defaultTop: "y",
-                            defaultHeight: "height",
-                            defaultWidth: "width",
-                            showTaskbarIcon: "taskbar",
-                            defaultCentered: "center",
-                            icon: "absoluteIcon",
-                            autoShow: true,
-                            saveWindowState: false,
-                            url: "url",
-                            name: "name",
-                            customData: JSON.stringify(options)
-                        },
-                        jasmine.any(Function),
-                        jasmine.any(Function)
-                    );
-                    done();
-                });
+            const win = await container.createWindow("url", options);
+            expect(win).toBeDefined();
+            expect(desktop.Window).toHaveBeenCalledWith(
+                {
+                    defaultLeft: "x",
+                    defaultTop: "y",
+                    defaultHeight: "height",
+                    defaultWidth: "width",
+                    showTaskbarIcon: "taskbar",
+                    defaultCentered: "center",
+                    icon: "absoluteIcon",
+                    autoShow: true,
+                    saveWindowState: false,
+                    url: "url",
+                    name: "name",
+                    customData: JSON.stringify(options)
+                },
+                jasmine.any(Function),
+                jasmine.any(Function)
+            );
         });
 
         it("application window-created fires container window-created", (done) => {
@@ -684,75 +638,55 @@ describe("OpenFinContainer", () => {
     });
 
     describe("window management", () => {
-        it("getAllWindows returns wrapped native windows", (done) => {
-            container.getAllWindows().then(windows => {
-                expect(windows).not.toBeNull();
-                expect(windows.length).toEqual(3);
-                expect(windows[0].innerWindow).toEqual(MockWindow.singleton);
-                done();
-            });
+        it("getAllWindows returns wrapped native windows", async () => {
+            const windows = await container.getAllWindows();
+            expect(windows).not.toBeNull();
+            expect(windows.length).toEqual(3);
+            expect(windows[0].innerWindow).toEqual(MockWindow.singleton);
         });
 
         describe("getWindow", () => {
-            it("getWindowById returns wrapped window", (done) => {
-                container.getWindowById("Singleton").then(win => {
-                    expect(win).toBeDefined();
-                    expect(win.id).toEqual("Singleton");
-                    done();
-                });
+            it("getWindowById returns wrapped window", async () => {
+                const win = await container.getWindowById("Singleton");
+                expect(win).toBeDefined();
+                expect(win.id).toEqual("Singleton");
             });
 
-            it ("getWindowById with unknown id returns null", (done) => {
-                container.getWindowById("DoesNotExist").then(win => {
-                    expect(win).toBeNull();
-                    done();
-                });
+            it ("getWindowById with unknown id returns null", async () => {
+                const win = await container.getWindowById("DoesNotExist");
+                expect(win).toBeNull();
             });
 
-            it("getWindowByName returns wrapped window", (done) => {
-                container.getWindowByName("Singleton").then(win => {
-                    expect(win).toBeDefined();
-                    expect(win.id).toEqual("Singleton");
-                    done();
-                });
+            it("getWindowByName returns wrapped window", async () => {
+                const win = await container.getWindowByName("Singleton");
+                expect(win).toBeDefined();
+                expect(win.id).toEqual("Singleton");
             });
 
-            it ("getWindowByName with unknown name returns null", (done) => {
-                container.getWindowByName("DoesNotExist").then(win => {
-                    expect(win).toBeNull();
-                    done();
-                });
+            it ("getWindowByName with unknown name returns null", async () => {
+                const win = await container.getWindowByName("DoesNotExist");
+                expect(win).toBeNull();
             });
         });
 
-        it("closeAllWindows invokes window.close", (done) => {
+        it("closeAllWindows invokes window.close", async () => {
             spyOn(MockWindow.singleton, "close").and.callThrough();
-            (<any>container).closeAllWindows().then(done).catch(error => {
-                fail(error);
-                done();
-            });
+            await (<any>container).closeAllWindows();
             expect(MockWindow.singleton.close).toHaveBeenCalled();
         });
 
-        it("saveLayout invokes underlying saveLayoutToStorage", (done) => {
+        it("saveLayout invokes underlying saveLayoutToStorage", async () => {
             spyOn<any>(container, "saveLayoutToStorage").and.stub();
-            container.saveLayout("Test")
-                .then(layout => {
-                    expect(layout).toBeDefined();
-                    expect((<any>container).saveLayoutToStorage).toHaveBeenCalledWith("Test", layout);
-                    done();
-                }).catch(error => {
-                    fail(error);
-                    done();
-                });
+            const layout = await container.saveLayout("Test");
+            expect(layout).toBeDefined();
+            expect((<any>container).saveLayoutToStorage).toHaveBeenCalledWith("Test", layout);
         });
 
-        it("buildLayout skips windows with persist false", (done) => {
-            container.buildLayout().then(layout => {
-                expect(layout).toBeDefined();
-                expect(layout.windows.length).toEqual(2);
-                expect(layout.windows[0].name === "Singleton");
-            }).then(done);
+        it("buildLayout skips windows with persist false", async () => {
+            const layout = await container.buildLayout();
+            expect(layout).toBeDefined();
+            expect(layout.windows.length).toEqual(2);
+            expect(layout.windows[0].name === "Singleton");
         });
 
         it("setOptions allows the auto startup settings to be turned on", () => {
@@ -765,30 +699,27 @@ describe("OpenFinContainer", () => {
             expect(current.setShortcuts).toHaveBeenCalled();
         });
 
-        it("getOptions returns autoStartOnLogin status", (done) => {
+        it("getOptions returns autoStartOnLogin status", async () => {
             const app = desktop.Application;
             const current = app.getCurrent();
             spyOn(app, "getCurrent").and.callThrough();
             spyOn(current, "getShortcuts").and.callFake((callback) => callback({ systemStartup: true }));
-            container.getOptions().then((result: any) => {
-                expect(app.getCurrent).toHaveBeenCalled();
-                expect(current.getShortcuts).toHaveBeenCalled();
-                expect(result.autoStartOnLogin).toEqual(true);
-            }).then(done);
+            const result = await container.getOptions();
+            expect(app.getCurrent).toHaveBeenCalled();
+            expect(current.getShortcuts).toHaveBeenCalled();
+            expect(result.autoStartOnLogin).toEqual(true);
         });
 
-        it("getOptions error out while fetching auto start info", (done) => {
+        it("getOptions error out while fetching auto start info", async () => {
             const app = desktop.Application;
             const current = app.getCurrent();
             spyOn(app, "getCurrent").and.callThrough();
             spyOn(current, "getShortcuts").and.callFake(() => {
                 throw new Error("something went wrong");
             });
-            container.getOptions().then(() => { }, (err) => {
-                expect(app.getCurrent).toHaveBeenCalled();
-                expect(current.getShortcuts).toHaveBeenCalled();
-                expect(err).toEqual(new Error("Error getting Container options. Error: something went wrong"));
-            }).then(done);
+            await expectAsync(container.getOptions()).toBeRejectedWithError("Error getting Container options. Error: something went wrong");
+            expect(app.getCurrent).toHaveBeenCalled();
+            expect(current.getShortcuts).toHaveBeenCalled();
         });
     });
 
@@ -799,10 +730,10 @@ describe("OpenFinContainer", () => {
             expect(desktop.Notification).toHaveBeenCalledWith({ url: "notification.html", message: "Test message" });
         });
 
-        it("requestPermission granted", (done) => {
-            globalWindow["Notification"].requestPermission((permission) => {
+        it("requestPermission granted", async () => {
+            await globalWindow["Notification"].requestPermission((permission) => {
                 expect(permission).toEqual("granted");
-            }).then(done);
+            });
         });
 
         it("notification api delegates to showNotification", () => {
@@ -857,43 +788,43 @@ describe("OpenFinMessageBus", () => {
         expect(mockBus.subscribe).toHaveBeenCalledWith("*", undefined, "topic", jasmine.any(Function), jasmine.any(Function), jasmine.any(Function));
     });
 
-    it("subscribe with options invokes underlying subscribe", (done) => {
+    it("subscribe with options invokes underlying subscribe", async () => {
         spyOn(mockBus, "subscribe").and.callThrough();
-        bus.subscribe("topic", callback, { uuid: "uuid", name: "name" }).then(done);
+        await bus.subscribe("topic", callback, { uuid: "uuid", name: "name" });
         expect(mockBus.subscribe).toHaveBeenCalledWith("uuid", "name", "topic", jasmine.any(Function), jasmine.any(Function), jasmine.any(Function));
     });
 
-    it("unsubscribe invokes underlying unsubscribe", (done) => {
+    it("unsubscribe invokes underlying unsubscribe", async () => {
         spyOn(mockBus, "unsubscribe").and.callThrough();
-        bus.unsubscribe({ topic: "topic", listener: callback }).then(done);
+        await bus.unsubscribe({ topic: "topic", listener: callback });
         expect(mockBus.unsubscribe).toHaveBeenCalledWith("*", undefined, "topic", jasmine.any(Function), jasmine.any(Function), jasmine.any(Function));
     });
 
-    it("unsubscribe with options invokes underlying unsubscribe", (done) => {
+    it("unsubscribe with options invokes underlying unsubscribe", async () => {
         spyOn(mockBus, "unsubscribe").and.callThrough();
         const sub: MessageBusSubscription = new MessageBusSubscription("topic", callback, { uuid: "uuid", name: "name" });
-        bus.unsubscribe(sub).then(done);
+        await bus.unsubscribe(sub);
         expect(mockBus.unsubscribe).toHaveBeenCalledWith("uuid", "name", "topic", jasmine.any(Function), jasmine.any(Function), jasmine.any(Function));
     });
 
-    it("publish invokes underling publish", (done) => {
+    it("publish invokes underling publish", async () => {
         const message: any = {};
         spyOn(mockBus, "publish").and.callThrough();
-        bus.publish("topic", message).then(done);
+        await bus.publish("topic", message);
         expect(mockBus.publish).toHaveBeenCalledWith("topic", message, jasmine.any(Function), jasmine.any(Function));
     });
 
-    it("publish with optional uuid invokes underling send", (done) => {
+    it("publish with optional uuid invokes underling send", async () => {
         const message: any = {};
         spyOn(mockBus, "send").and.callThrough();
-        bus.publish("topic", message, { uuid: "uuid" }).then(done);
+        await bus.publish("topic", message, { uuid: "uuid" });
         expect(mockBus.send).toHaveBeenCalledWith("uuid", undefined, "topic", message, jasmine.any(Function), jasmine.any(Function));
     });
 
-    it("publish with optional name invokes underling send", (done) => {
+    it("publish with optional name invokes underling send", async () => {
         const message: any = {};
         spyOn(mockBus, "send").and.callThrough();
-        bus.publish("topic", message, { uuid: "uuid", name: "name" }).then(done);
+        await bus.publish("topic", message, { uuid: "uuid", name: "name" });
         expect(mockBus.send).toHaveBeenCalledWith("uuid", "name", "topic", message, jasmine.any(Function), jasmine.any(Function));
     });
 });
@@ -942,37 +873,34 @@ describe("OpenFinDisplayManager", () => {
         expect(container.screen).toBeDefined();
     });
 
-    it("getPrimaryMonitor", (done) => {
-        container.screen.getPrimaryDisplay().then(display => {
-            expect(display).toBeDefined();
-            expect(display.id).toBe("name1");
-            expect(display.scaleFactor).toBe(1);
-            
-            expect(display.bounds.x).toBe(2);
-            expect(display.bounds.y).toBe(3);
-            expect(display.bounds.width).toBe(2);  // right - left
-            expect(display.bounds.height).toBe(2); // bottom - top
-
-            expect(display.workArea.x).toBe(6);
-            expect(display.workArea.y).toBe(7);
-            expect(display.workArea.width).toBe(2); // right - left
-            expect(display.workArea.height).toBe(2); // bottom - top
-        }).then(done);
+    it("getPrimaryMonitor", async () => {
+        const display = await container.screen.getPrimaryDisplay();
+        expect(display).toBeDefined();
+        expect(display.id).toBe("name1");
+        expect(display.scaleFactor).toBe(1);
+        
+        expect(display.bounds.x).toBe(2);
+        expect(display.bounds.y).toBe(3);
+        expect(display.bounds.width).toBe(2);  // right - left
+        expect(display.bounds.height).toBe(2); // bottom - top
+        
+        expect(display.workArea.x).toBe(6);
+        expect(display.workArea.y).toBe(7);
+        expect(display.workArea.width).toBe(2); // right - left
+        expect(display.workArea.height).toBe(2); // bottom - top
     });
 
-    it ("getAllDisplays", (done) => {
-        container.screen.getAllDisplays().then(displays => {
-            expect(displays).toBeDefined();
-            expect(displays.length).toBe(2);
-            expect(displays[0].id).toBe("name1");
-            expect(displays[1].id).toBe("name2");
-        }).then(done);
+    it ("getAllDisplays", async () => {
+        const displays = await container.screen.getAllDisplays();
+        expect(displays).toBeDefined();
+        expect(displays.length).toBe(2);
+        expect(displays[0].id).toBe("name1");
+        expect(displays[1].id).toBe("name2");
     });
 
-    it ("getMousePosition", (done) => {
-        container.screen.getMousePosition().then(point => {
-            expect(point).toEqual({ x: 1, y: 2});
-        }).then(done);
+    it ("getMousePosition", async () => {
+        const point = await container.screen.getMousePosition();
+        expect(point).toEqual({ x: 1, y: 2});
     });
 });
 
@@ -1008,11 +936,10 @@ describe("OpenfinGlobalShortcutManager", () => {
             expect(desktop.GlobalHotkey.unregister).toHaveBeenCalledWith("shortcut", jasmine.any(Function), jasmine.any(Function));
         });
 
-        it ("isRegistered", (done) => {
+        it ("isRegistered", async () => {
             desktop.GlobalHotkey.isRegistered.and.callFake((shortcut, resolve, reject) => resolve(true));
-            container.globalShortcut.isRegistered("shortcut").then(() => {
-                expect(desktop.GlobalHotkey.isRegistered).toHaveBeenCalledWith("shortcut", jasmine.any(Function), jasmine.any(Function));
-            }).then(done);
+            await container.globalShortcut.isRegistered("shortcut");
+            expect(desktop.GlobalHotkey.isRegistered).toHaveBeenCalledWith("shortcut", jasmine.any(Function), jasmine.any(Function));
         });
 
         it ("unregisterAll", () => {

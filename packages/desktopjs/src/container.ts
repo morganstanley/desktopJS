@@ -2,7 +2,7 @@
  * @module @morgan-stanley/desktopjs
  */
 
-import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, WindowEventArgs } from "./window";
+import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, WindowEventArgs, WindowEventType } from "./window";
 import { ScreenManager } from "./screen";
 import { ContainerNotificationManager } from "./notification";
 import { EventEmitter, EventArgs } from "./events";
@@ -12,11 +12,9 @@ import { MenuItem } from "./menu";
 import { Guid } from "./guid";
 import { GlobalShortcutManager } from "./shortcut";
 
-export type ContainerEventType =
-    "window-created" |
-    "layout-loaded" |
-    "layout-saved" |
-    "layout-deleted";
+type LayoutEventType = "layout-loaded" | "layout-saved" | "layout-deleted";
+
+export type ContainerEventType = WindowEventType | LayoutEventType;
 
 export class LayoutEventArgs extends EventArgs {
     public readonly layout?: PersistedWindowLayout;
@@ -43,8 +41,8 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
      */
     public abstract hostType: string;
 
-    public getInfo(): Promise<string | undefined> {
-        return Promise.resolve(undefined);
+    public async getInfo(): Promise<string | undefined> {
+        return undefined;
     }
 
     /**
@@ -214,94 +212,84 @@ export abstract class ContainerBase extends Container {
 
     protected abstract closeAllWindows(excludeSelf?: boolean): Promise<void>;
 
-    public loadLayout(layout: string | PersistedWindowLayout): Promise<PersistedWindowLayout> {
-        return new Promise<PersistedWindowLayout>((resolve, reject) => {
-            this.closeAllWindows(true).then(() => {
-                const layoutToLoad = (typeof layout === "string") ? <PersistedWindowLayout>this.getLayoutFromStorage(layout) : layout;
-                if (layoutToLoad && layoutToLoad.windows) {
-                    const promises: Promise<ContainerWindow>[] = [];
-                    for (const window of layoutToLoad.windows) {
-                        const options: any = Object.assign(window.options || {}, window.bounds);
-                        options.name = window.name;
-                        if (window.main) {
-                            this.getMainWindow().setBounds(window.bounds);
-                            promises.push(Promise.resolve(this.getMainWindow()));
-                        } else {
-                            promises.push(this.createWindow(window.url, options));
-                        }
-                    }
+    public async loadLayout(layout: string | PersistedWindowLayout): Promise<PersistedWindowLayout> {
+        await this.closeAllWindows(true);
 
-                    Promise.all(promises).then(windows => {
-                        const groupMap: Map<ContainerWindow, string[]> = new Map();
-
-                        // de-dupe window grouping
-                        windows.forEach(window => {
-                            const matchingWindow = layoutToLoad.windows.find(win => win.name === window.name);
-                            if (matchingWindow && matchingWindow.state && window.setState) {
-                                window.setState(matchingWindow.state).catch(e => this.log("error", "Error invoking setState: " + e));
-                            }
-
-                            let found = false;
-                            groupMap.forEach((targets, win) => {
-                                if (!found && targets.indexOf(window.id) >= 0) {
-                                    found = true;
-                                }
-                            });
-
-                            if (!found) {
-                                const group = matchingWindow ? matchingWindow.group : undefined;
-                                if (group && group.length > 0) {
-                                    groupMap.set(window, group.filter(id => id !== window.id));
-                                }
-                            }
-                        });
-
-                        groupMap.forEach((targets, window) => {
-                            targets.forEach(target => {
-                                this.getWindowByName(layoutToLoad.windows.find(win => win.id === target).name).then(targetWin => {
-                                    targetWin.joinGroup(window);
-                                });
-                            });
-                        });
-                    });
-
-                    this.emit("layout-loaded", { sender: this, name: "layout-loaded", layout: layoutToLoad, layoutName: layoutToLoad.name });
-                    Container.emit("layout-loaded", { name: "layout-loaded", layout: layoutToLoad, layoutName: layoutToLoad.name });
-                    resolve(layoutToLoad);
+        const layoutToLoad = (typeof layout === "string") ? this.getLayoutFromStorage(layout) : layout;
+        if (layoutToLoad?.windows) {
+            const promises: Promise<ContainerWindow>[] = [];
+            for (const window of layoutToLoad.windows) {
+                const options: any = Object.assign(window.options || {}, window.bounds);
+                options.name = window.name;
+                if (window.main) {
+                    this.getMainWindow().setBounds(window.bounds);
+                    promises.push(Promise.resolve(this.getMainWindow()));
                 } else {
-                    reject("Layout does not exist or is invalid");
+                    promises.push(this.createWindow(window.url, options));
+                }
+            }
+            
+            const windows = await Promise.all(promises);
+            
+            const groupMap: Map<ContainerWindow, string[]> = new Map();
+            
+            // de-dupe window grouping
+            windows.forEach(window => {
+                const matchingWindow = layoutToLoad.windows.find(win => win.name === window.name);
+                if (matchingWindow && matchingWindow.state && window.setState) {
+                    window.setState(matchingWindow.state).catch(e => this.log("error", "Error invoking setState: " + e));
+                }
+                
+                let found = false;
+                groupMap.forEach((targets, win) => {
+                    if (!found && targets.indexOf(window.id) >= 0) {
+                        found = true;
+                    }
+                });
+                
+                if (!found) {
+                    const group = matchingWindow ? matchingWindow.group : undefined;
+                    if (group && group.length > 0) {
+                        groupMap.set(window, group.filter(id => id !== window.id));
+                    }
                 }
             });
-        });
+            
+            groupMap.forEach((targets, window) => {
+                targets.forEach(target => {
+                    this.getWindowByName(layoutToLoad.windows.find(win => win.id === target).name).then(targetWin => {
+                        targetWin.joinGroup(window);
+                    });
+                });
+            });
+            
+            
+            this.emit("layout-loaded", { sender: this, name: "layout-loaded", layout: layoutToLoad, layoutName: layoutToLoad.name });
+            Container.emit("layout-loaded", { name: "layout-loaded", layout: layoutToLoad, layoutName: layoutToLoad.name });
+            return layoutToLoad;
+        } else {
+            throw new Error("Layout does not exist or is invalid");
+        }
     }
 
     public abstract buildLayout(): Promise<PersistedWindowLayout>;
 
-    public saveLayout(name: string): Promise<PersistedWindowLayout> {
-        return new Promise<PersistedWindowLayout>((resolve, reject) => {
-            this.buildLayout().then(layout => {
-                this.saveLayoutToStorage(name, layout);
-                resolve(layout);
-            }).catch(reject);
-        });
+    public async saveLayout(name: string) {
+        const layout = await this.buildLayout();
+        this.saveLayoutToStorage(name, layout);
+        return layout;
     }
 
-    public deleteLayout(name: string): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            resolve(this.deleteLayoutFromStorage(name));
-        });
+    public async deleteLayout(name: string) {
+        return this.deleteLayoutFromStorage(name);
     }
 
-    public getLayouts(): Promise<PersistedWindowLayout[]> {
-        return new Promise<PersistedWindowLayout[]>((resolve, reject) => {
-            const rawLayouts = this.storage.getItem(ContainerBase.layoutsPropertyKey);
-            if (rawLayouts) {
-                const layouts = JSON.parse(rawLayouts);
-                resolve(Object.getOwnPropertyNames(layouts).map(key => layouts[key]));
-            }
-
-            resolve(undefined);
-        });
+    public async getLayouts(): Promise<PersistedWindowLayout[]> {
+        const rawLayouts = this.storage.getItem(ContainerBase.layoutsPropertyKey);
+        if (rawLayouts) {
+            const layouts = JSON.parse(rawLayouts);
+            return Object.getOwnPropertyNames(layouts).map(key => layouts[key]);
+        }
     }
 
     /**
@@ -309,32 +297,23 @@ export abstract class ContainerBase extends Container {
      * @param  {"debug" | "info" | "warn" | "error"} level The log level for the entry
      * @param {string} message The log message text
      */
-    public log(level: "debug" | "info" | "warn" | "error", message: string): Promise<void> {
-        return new Promise<void>(resolve => {
-            let logger;
-            switch (level) {
-                case "debug": {
-                    logger = console.debug; // eslint-disable-line no-console
-                    break;
-                }
-                case "warn": {
-                    logger = console.warn; // eslint-disable-line no-console
-                    break;
-                }
-                case "error": {
-                    logger = console.error; // eslint-disable-line no-console
-                    break;
-                }
-                default: {
-                    logger = console.log; // eslint-disable-line no-console
-                }
+    public async log(level: "debug" | "info" | "warn" | "error", message: string) {
+        let logger;
+        switch (level) {
+            case "debug": 
+            case "warn": 
+            case "error": {
+                logger = console[level]; // eslint-disable-line no-console
+                break;
             }
-
-            if (logger) {
-                logger(message);
+            default: {
+                logger = console.log; // eslint-disable-line no-console
             }
-            resolve();
-        });
+        }
+        
+        if (logger) {
+            logger(message);
+        }
     }
 }
 
