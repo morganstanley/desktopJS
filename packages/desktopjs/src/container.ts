@@ -2,7 +2,7 @@
  * @module @morgan-stanley/desktopjs
  */
 
-import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, WindowEventArgs, WindowEventType } from "./window";
+import { ContainerWindowManager, ContainerWindow, PersistedWindowLayout, WindowEventArgs } from "./window";
 import { ScreenManager } from "./screen";
 import { ContainerNotificationManager } from "./notification";
 import { EventEmitter, EventArgs } from "./events";
@@ -12,10 +12,12 @@ import { MenuItem } from "./menu";
 import { Guid } from "./guid";
 import { GlobalShortcutManager } from "./shortcut";
 
-type LayoutEventType = "layout-loaded" | "layout-saved" | "layout-deleted";
-
-export type ContainerEventType = WindowEventType | LayoutEventType;
-
+export type ContainerEventType =
+    "window-created" |
+    "layout-loaded" |
+    "layout-saved" |
+    "layout-deleted";
+    
 export class LayoutEventArgs extends EventArgs {
     public readonly layout?: PersistedWindowLayout;
     public readonly layoutName: string;
