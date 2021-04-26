@@ -94,8 +94,7 @@ describe("DefaultContainerWindow", () => {
 
     describe("setState", () => {
         it("setState undefined", async () => {
-            const mockWindow = new MockWindow();
-            delete mockWindow.setState;
+            const mockWindow = {};
             const win = new Default.DefaultContainerWindow(mockWindow);
             
             await expectAsync(win.setState({})).toBeResolved();

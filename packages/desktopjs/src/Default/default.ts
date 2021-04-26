@@ -104,9 +104,10 @@ export namespace Default {
         }
 
         public async setState(state: any) {
-            this.nativeWindow?.['setState']?.(state);
+            const promise = this.nativeWindow?.['setState']?.(state);
             this.emit("state-changed", <EventArgs> { name: "state-changed", sender: this, state });
             ContainerWindow.emit("state-changed", <WindowEventArgs> { name: "state-changed", windowId: this.id, state } );
+            await promise;
         }
 
         protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
