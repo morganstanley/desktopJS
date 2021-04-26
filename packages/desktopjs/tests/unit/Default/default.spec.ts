@@ -75,8 +75,7 @@ describe("DefaultContainerWindow", () => {
 
     describe("getState", () => {
         it("getState undefined", async () => {
-            const mockWindow = new MockWindow();
-            delete mockWindow.getState;            
+            const mockWindow = {};
             const win = new Default.DefaultContainerWindow(mockWindow);
 
             const state = await win.getState();
