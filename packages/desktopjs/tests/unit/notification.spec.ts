@@ -15,7 +15,11 @@ describe('notification', () => {
         expect (ContainerNotification.permission).toEqual("granted");
     });
 
-    it ("requestPermission invokes callback", async (done) => {
-        await ContainerNotification.requestPermission(done);
+    it ("requestPermission invokes callback", (done) => {
+        ContainerNotification.requestPermission(done);
+    });
+
+    it ("requestPermission resolves the returned Promise", async () => {
+        await ContainerNotification.requestPermission();
     });
 });

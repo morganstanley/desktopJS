@@ -45,11 +45,10 @@ describe("DefaultContainerWindow", () => {
         });
     });
 
-    it ("load invokes underlying location.replace", (done) => {
+    it ("load invokes underlying location.replace", async () => {
         spyOn(mockWindow.location, 'replace').and.callThrough();
-        win.load("url").then(() => {
-            expect(mockWindow.location.replace).toHaveBeenCalledWith("url");
-        }).then(done);
+        await win.load("url");
+        expect(mockWindow.location.replace).toHaveBeenCalledWith("url");
     });
 
     it ("id returns underlying id", () => {
@@ -75,113 +74,87 @@ describe("DefaultContainerWindow", () => {
     });
 
     describe("getState", () => {
-        it("getState undefined", (done) => {
-            const mockWindow = new MockWindow();
-            delete mockWindow.getState;            
+        it("getState undefined", async () => {
+            const mockWindow = {};
             const win = new Default.DefaultContainerWindow(mockWindow);
 
-            win.getState().then(state => {
-                expect(state).toBeUndefined();
-            }).then(done);
+            const state = await win.getState();
+            expect(state).toBeUndefined();
         });
 
-        it("getState defined", (done) => {
+        it("getState defined", async () => {
             const mockState = { value: "Foo" };
             spyOn(win.innerWindow, "getState").and.returnValue(Promise.resolve(mockState));
-            win.getState().then(state => {
-                expect(win.innerWindow.getState).toHaveBeenCalled();
-                expect(state).toEqual(mockState);
-            }).then(done);
+            const state = await win.getState();
+            expect(win.innerWindow.getState).toHaveBeenCalled();
+            expect(state).toEqual(mockState);
         });
     });
 
-    xdescribe("setState", () => {
-        it("setState undefined", (done) => {
-            const mockWindow = new MockWindow();
-            delete mockWindow.setState;            
+    describe("setState", () => {
+        it("setState undefined", async () => {
+            const mockWindow = {};
             const win = new Default.DefaultContainerWindow(mockWindow);
             
-            win.setState({}).then(done);
+            await expectAsync(win.setState({})).toBeResolved();
         });
 
-        it("setState defined", (done) => {
+        it("setState defined", async () => {
             const mockState = { value: "Foo" };
             spyOn(win.innerWindow, "setState").and.returnValue(Promise.resolve());
             
-            win.setState(mockState).then(() => {
-                expect(win.innerWindow.setState).toHaveBeenCalledWith(mockState);
-            }).then(done);      
+            await win.setState(mockState);
+            expect(win.innerWindow.setState).toHaveBeenCalledWith(mockState);
         });
     });
 
-    it("getSnapshot rejects", (done) => {
-        let success = false;
-
-        win.getSnapshot().then(() => {
-            fail();
-        }).catch((error) => {
-            success = true;
-            expect(error).toBeDefined();
-        }).then(() => {
-            expect(success).toEqual(true);
-        }).then(done);
+    it("getSnapshot rejects", async () => {
+        await expectAsync(win.getSnapshot()).toBeRejected();
     });
 
-    it("close", (done) => {
+    it("close", async () => {
         spyOn(win, "close").and.callThrough();
-        win.close().then(() => {
-            expect(win.close).toHaveBeenCalled();
-        }).then(done);
+        await win.close();
+        expect(win.close).toHaveBeenCalled();
     });
 
-    it("minimize", (done) => {
+    it("minimize", async () => {
         const innerWindow = jasmine.createSpyObj("BrowserWindow", ["minimize"]);
-        new Default.DefaultContainerWindow(innerWindow).minimize().then(() => {
-            expect(innerWindow.minimize).toHaveBeenCalledTimes(1);
-        }).then(done);
+        await new Default.DefaultContainerWindow(innerWindow).minimize();
+        expect(innerWindow.minimize).toHaveBeenCalledTimes(1);
     });
 
-    it("maximize", (done) => {
+    it("maximize", async () => {
         const innerWindow = jasmine.createSpyObj("BrowserWindow", ["maximize"]);
-        new Default.DefaultContainerWindow(innerWindow).maximize().then(() => {
-            expect(innerWindow.maximize).toHaveBeenCalledTimes(1);
-        }).then(done);
+        await new Default.DefaultContainerWindow(innerWindow).maximize();
+        expect(innerWindow.maximize).toHaveBeenCalledTimes(1);
     });
     
-    it("restore", (done) => {
+    it("restore", async () => {
         const innerWindow = jasmine.createSpyObj("BrowserWindow", ["restore"]);
-        new Default.DefaultContainerWindow(innerWindow).restore().then(() => {
-            expect(innerWindow.restore).toHaveBeenCalledTimes(1);
-        }).then(done);
+        await new Default.DefaultContainerWindow(innerWindow).restore();
+        expect(innerWindow.restore).toHaveBeenCalledTimes(1);
     });    
 
-    it("getBounds retrieves underlying window position", (done) => {
-        win.getBounds().then(bounds => {
-            expect(bounds).toBeDefined();
-            expect(bounds.x).toEqual(0);
-            expect(bounds.y).toEqual(1);
-            expect(bounds.width).toEqual(2);
-            expect(bounds.height).toEqual(3);
-        }).then(done);
+    it("getBounds retrieves underlying window position", async () => {
+        const bounds = await win.getBounds();
+        expect(bounds).toBeDefined();
+        expect(bounds.x).toEqual(0);
+        expect(bounds.y).toEqual(1);
+        expect(bounds.width).toEqual(2);
+        expect(bounds.height).toEqual(3);
     });
 
-    it("setBounds sets underlying window position", (done) => {
+    it("setBounds sets underlying window position", async () => {
         spyOn(win.innerWindow, "moveTo").and.callThrough()
         spyOn(win.innerWindow, "resizeTo").and.callThrough();
-        win.setBounds(<any>{ x: 0, y: 1, width: 2, height: 3 }).then(() => {
-            expect(win.innerWindow.moveTo).toHaveBeenCalledWith(0, 1);
-            expect(win.innerWindow.resizeTo).toHaveBeenCalledWith(2, 3);
-        }).then(done);
+        await win.setBounds(<any>{ x: 0, y: 1, width: 2, height: 3 });
+        expect(win.innerWindow.moveTo).toHaveBeenCalledWith(0, 1);
+        expect(win.innerWindow.resizeTo).toHaveBeenCalledWith(2, 3);
     });
 
-    it("flash resolves with not supported", (done) => {
-        win.flash(true).then(() => {
-            fail("Reject is not thrown");
-            done();
-        }).catch(reason => {
-            expect(reason).toEqual("Not supported");
-            done();
-        });
+    it("flash resolves with not supported", async () => {
+        await expectAsync(win.flash(true)).toBeRejectedWithError("Not supported");
     });
 
     it("getParent throws no errors", (done) => {
@@ -192,12 +165,11 @@ describe("DefaultContainerWindow", () => {
         expect(() => win.setParent(null).then(done)).not.toThrow();
     });
 
-    it("getOptions", async (done) => {
+    it("getOptions", async () => {
         const win = await new Default.DefaultContainer(<any>new MockWindow()).createWindow("url", { a: "foo" });
-        win.getOptions().then(options => {
-            expect(options).toBeDefined();
-            expect(options).toEqual({ a: "foo"});
-        }).then(done);
+        const options = await win.getOptions();
+        expect(options).toBeDefined();
+        expect(options).toEqual({ a: "foo"});
     });
 
     describe("addListener", () => {
@@ -235,23 +207,18 @@ describe("DefaultContainerWindow", () => {
             expect(new Default.DefaultContainerWindow(null).allowGrouping).toEqual(false);
         });
 
-        it ("getGroup returns empty array", (done) => {
-            new Default.DefaultContainerWindow(null).getGroup().then(windows => {
-                expect(windows).toBeDefined();
-                expect(windows.length).toEqual(0);
-            }).then(done);
+        it ("getGroup returns empty array", async () => {
+            const windows = await new Default.DefaultContainerWindow(null).getGroup();
+            expect(windows).toBeDefined();
+            expect(windows.length).toEqual(0);
         });
 
-        it ("joinGroup not supported", (done) => {
-            new Default.DefaultContainerWindow(null).joinGroup(null).catch(reason => {
-                expect(reason).toEqual("Not supported");
-            }).then(done);
+        it ("joinGroup not supported", async () => {
+            await expectAsync(new Default.DefaultContainerWindow(null).joinGroup(null)).toBeRejectedWithError("Not supported");
         });
 
-        it ("leaveGroup resolves", (done) => {
-            new Default.DefaultContainerWindow(null).leaveGroup().then(() => {
-                done();
-            });
+        it ("leaveGroup resolves", async () => {
+            await expectAsync(new Default.DefaultContainerWindow(null).leaveGroup()).toBeResolved();
         });
     });
 
@@ -275,21 +242,19 @@ describe("DefaultContainer", () => {
         expect(container.hostType).toEqual("Default");
     });
 
-    it ("getInfo returns underlying navigator appversion", (done) => {
+    it ("getInfo returns underlying navigator appversion", async () => {
         const window = new MockWindow();
         window["navigator"] = { appVersion: "useragent" };
         const container: Default.DefaultContainer = new Default.DefaultContainer(<any>window);
-        container.getInfo().then(info => {
-            expect(info).toEqual("useragent");
-        }).then(done);
+        const info = await container.getInfo();
+        expect(info).toEqual("useragent");
     });
 
-    it("getOptions returns autoStartOnLogin as false", (done) => {
+    it("getOptions returns autoStartOnLogin as false", async () => {
         const window = new MockWindow();
         const container: Default.DefaultContainer = new Default.DefaultContainer(<any>window);
-        container.getOptions().then((result: { autoStartOnLogin: boolean }) => { }, (result) => {
-            expect(result.autoStartOnLogin).toBeUndefined();
-        }).then(done);
+        const result = await container.getOptions();
+        expect(result.autoStartOnLogin).toBeUndefined();
     });
 
     describe("createWindow", () => {
@@ -302,19 +267,19 @@ describe("DefaultContainer", () => {
 
         it("Returns a DefaultContainerWindow and invokes underlying window.open", async () => {
             spyOn(window, "open").and.callThrough();
-            const newWin: ContainerWindow = await container.createWindow("url");
+            await container.createWindow("url");
             expect(window.open).toHaveBeenCalledWith("url", "_blank", undefined);
         });
 
         it("Options target property maps to open target parameter", async () => {
             spyOn(window, "open").and.callThrough();
-            const newWin: ContainerWindow = await container.createWindow("url", { target: "MockTarget" });
+            await container.createWindow("url", { target: "MockTarget" });
             expect(window.open).toHaveBeenCalledWith("url", "MockTarget", "target=MockTarget,");
         });
 
         it("Options parameters are converted to features", async () => {
             spyOn(window, "open").and.callThrough();
-            const newWin: ContainerWindow = await container.createWindow("url",
+            await container.createWindow("url",
                 {
                     x: "x0",
                     y: "y0"
@@ -322,25 +287,21 @@ describe("DefaultContainer", () => {
             expect(window.open).toHaveBeenCalledWith("url", "_blank", "left=x0,top=y0,");
         });
 
-        it("Window is added to windows", (done) => {
-            container.createWindow("url").then(win => {
-                const newWin = win.innerWindow;
-                expect(newWin[Default.DefaultContainer.windowUuidPropertyKey]).toBeDefined();
-                expect(newWin[Default.DefaultContainer.windowsPropertyKey]).toBeDefined();
-                expect(newWin[Default.DefaultContainer.windowsPropertyKey][newWin[Default.DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
-                done();
-            });
+        it("Window is added to windows", async () => {
+            const win = await container.createWindow("url");
+            const newWin = win.innerWindow;
+            expect(newWin[Default.DefaultContainer.windowUuidPropertyKey]).toBeDefined();
+            expect(newWin[Default.DefaultContainer.windowsPropertyKey]).toBeDefined();
+            expect(newWin[Default.DefaultContainer.windowsPropertyKey][newWin[Default.DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
         });
 
-        it("Window is removed from windows on close", (done) => {
-            container.createWindow("url").then(win => {
-                const newWin = win.innerWindow;
-                expect(newWin[Default.DefaultContainer.windowsPropertyKey][newWin[Default.DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
-                newWin.listener("beforeunload", {});
-                newWin.listener("unload", {});
-                expect(newWin[Default.DefaultContainer.windowsPropertyKey][newWin[Default.DefaultContainer.windowUuidPropertyKey]]).toBeUndefined();
-                done();
-            });
+        it("Window is removed from windows on close", async () => {
+            const win = await container.createWindow("url");
+            const newWin = win.innerWindow;
+            expect(newWin[Default.DefaultContainer.windowsPropertyKey][newWin[Default.DefaultContainer.windowUuidPropertyKey]]).toBeDefined();
+            newWin.listener("beforeunload", {});
+            newWin.listener("unload", {});
+            expect(newWin[Default.DefaultContainer.windowsPropertyKey][newWin[Default.DefaultContainer.windowUuidPropertyKey]]).toBeUndefined();
         });
 
         it("Window from window.open is removed from windows on close", () => {
@@ -355,6 +316,35 @@ describe("DefaultContainer", () => {
             container.addListener("window-created", () => done());
             container.createWindow("url");
         });
+
+        it("createWindow warns when it cannot propagate properties to the new window", async () => {
+            spyOn(container, "log");
+            spyOn(window, "open").and.callFake(() => {
+                const mockWin = new MockWindow();
+                Object.defineProperty(mockWin, Container.windowOptionsPropertyKey, {
+                    writable: false
+                });
+                return mockWin;
+            });
+            const win = await container.createWindow("url");
+            expect(win).toBeDefined();
+            expect(container.log).toHaveBeenCalledWith("warn", jasmine.any(String));
+        }); 
+    });
+
+    it("window.open logs a warning when it cannot track the new window", () => {
+        window = new MockWindow();
+        spyOn(window, 'open').and.callFake(() => {
+            const win = new MockWindow();
+            Object.defineProperty(win, Default.DefaultContainer.windowsPropertyKey, {
+                writable: false
+            });    
+            return win;
+        });
+        const container = new Default.DefaultContainer(window);
+        spyOn(container, "log");
+        window.open("url");
+        expect(container.log).toHaveBeenCalledWith("warn", jasmine.any(String));
     });
 
     it("getMainWindow returns DefaultContainerWindow wrapping scoped window", () => {
@@ -366,7 +356,7 @@ describe("DefaultContainer", () => {
     });
 
     it("getCurrentWindow returns DefaultContainerWindow wrapping scoped window", () => {
-        const container:Default. DefaultContainer = new Default.DefaultContainer(window);
+        const container: Default.DefaultContainer = new Default.DefaultContainer(window);
         const win: ContainerWindow = container.getCurrentWindow();
         expect(win).toBeDefined();
         expect(win.innerWindow).toEqual(window);
@@ -392,22 +382,31 @@ describe("DefaultContainer", () => {
             container.showNotification("message", {});
             expect(console.warn).toHaveBeenCalledWith("Notifications not permitted");
         });
+
+        it("showNotification calls the Notification API if permitted", () => {
+            const window = jasmine.createSpyObj('notificationWindow', ['Notification']);
+
+            window.Notification.requestPermission = (callback: (permission: string) => void) => { callback("granted"); };
+                
+            const container = new Default.DefaultContainer(<any>window);
+            const options = {};
+            container.showNotification("message", options);
+            expect(window.Notification).toHaveBeenCalledWith("message", options);
+        });
     });
 
     describe("window management", () => {
-        it("getAllWindows returns wrapped native windows", (done) => {
+        it("getAllWindows returns wrapped native windows", async () => {
             window[Default.DefaultContainer.windowsPropertyKey] = {
                 "1": new MockWindow(),
                 "2": new MockWindow()
             };
 
             const container: Default.DefaultContainer = new Default.DefaultContainer(window);
-            container.getAllWindows().then(wins => {
-                expect(wins).not.toBeNull();
-                expect(wins.length).toEqual(2);
-                wins.forEach(win => expect(win instanceof Default.DefaultContainerWindow).toBeTruthy("Window is not of type DefaultContainerWindow"));
-                done();
-            });
+            const wins = await container.getAllWindows()
+            expect(wins).not.toBeNull();
+            expect(wins.length).toEqual(2);
+            wins.forEach(win => expect(win instanceof Default.DefaultContainerWindow).toBeTruthy("Window is not of type DefaultContainerWindow"));
         });
 
         describe("getWindow", () => {
@@ -417,28 +416,24 @@ describe("DefaultContainer", () => {
                 container = new Default.DefaultContainer(window);
             });
 
-            it("getWindowById returns wrapped window", (done) => {
+            it("getWindowById returns wrapped window", async () => {
                 window[Default.DefaultContainer.windowsPropertyKey] = {
                     "1": new MockWindow(),
                     "2": new MockWindow(),
                     "3": new MockWindow()
                 };
 
-                container.getWindowById("1").then(win => {
-                    expect(win).toBeDefined();
-                    expect(win.innerWindow).toEqual(window[Default.DefaultContainer.windowsPropertyKey]["1"]);
-                    done();
-                });
+                const win = await container.getWindowById("1");
+                expect(win).toBeDefined();
+                expect(win.innerWindow).toEqual(window[Default.DefaultContainer.windowsPropertyKey]["1"]);
             });
 
-            it ("getWindowById with unknown id returns null", (done) => {
-                container.getWindowById("DoesNotExist").then(win => {
-                    expect(win).toBeNull();
-                    done();
-                });
+            it ("getWindowById with unknown id returns null", async () => {
+                const win = await container.getWindowById("DoesNotExist");
+                expect(win).toBeNull();
             });
 
-            it("getWindowByName returns wrapped window", (done) => {
+            it("getWindowByName returns wrapped window", async () => {
                 window[Default.DefaultContainer.windowsPropertyKey] = {
                     "1": new MockWindow(),
                     "2": new MockWindow(),
@@ -447,29 +442,25 @@ describe("DefaultContainer", () => {
 
                 window[Default.DefaultContainer.windowsPropertyKey]["1"][Default.DefaultContainer.windowNamePropertyKey] = "Name";
 
-                container.getWindowByName("Name").then(win => {
-                    expect(win).toBeDefined();
-                    expect(win.innerWindow).toEqual(window[Default.DefaultContainer.windowsPropertyKey]["1"]);
-                    done();
-                });
+                const win = await container.getWindowByName("Name");
+                expect(win).toBeDefined();
+                expect(win.innerWindow).toEqual(window[Default.DefaultContainer.windowsPropertyKey]["1"]);
             });
 
-            it ("getWindowByName with unknown name returns null", (done) => {
-                container.getWindowByName("DoesNotExist").then(win => {
-                    expect(win).toBeNull();
-                    done();
-                });
+            it ("getWindowByName with unknown name returns null", async () => {
+                const win = await container.getWindowByName("DoesNotExist");
+                expect(win).toBeNull();
             });
         });
 
-        it("closeAllWindows invokes window.close", (done) => {
+        it("closeAllWindows invokes window.close", async () => {
             const container: Default.DefaultContainer = new Default.DefaultContainer(window);
             spyOn(window, "close").and.callThrough();
-            (<any>container).closeAllWindows().then(done);
+            await (<any>container).closeAllWindows();
             expect(window.close).toHaveBeenCalled();
         });
 
-        it("saveLayout invokes underlying saveLayoutToStorage", (done) => {
+        it("saveLayout invokes underlying saveLayoutToStorage", async () => {
             window[Default.DefaultContainer.windowsPropertyKey] = {
                 "1": new MockWindow(),
                 "2": new MockWindow()
@@ -477,34 +468,61 @@ describe("DefaultContainer", () => {
 
             const container: Default.DefaultContainer = new Default.DefaultContainer(window);
             spyOn<any>(container, "saveLayoutToStorage").and.stub();
-            container.saveLayout("Test")
-                .then(layout => {
-                    expect(layout).toBeDefined();
-                    expect((<any>container).saveLayoutToStorage).toHaveBeenCalledWith("Test", layout);
-                    done();
-                }).catch(error => {
-                    fail(error);
-                    done();
-                });
+            const layout = await container.saveLayout("Test");
+            
+            expect(layout).toBeDefined();
+            expect((<any>container).saveLayoutToStorage).toHaveBeenCalledWith("Test", layout);
         });
 
-        it("buildLayout skips windows with persist false", (done) => {
-            window[Default.DefaultContainer.windowsPropertyKey] = {
-                "1": new MockWindow(),
-                "2": new MockWindow()
-            };
+        describe("buildLayout", () => {
+            let container: Default.DefaultContainer;
 
-            window[Default.DefaultContainer.windowsPropertyKey]["1"][Default.DefaultContainer.windowNamePropertyKey] = "win1";
-            window[Default.DefaultContainer.windowsPropertyKey]["1"][Container.windowOptionsPropertyKey] = { persist: false };
-            window[Default.DefaultContainer.windowsPropertyKey]["2"][Default.DefaultContainer.windowNamePropertyKey] = "win2";
+            beforeEach(() => {
+                container = new Default.DefaultContainer(window);
+            });
 
-            const container: Default.DefaultContainer = new Default.DefaultContainer(window);
-            container.buildLayout().then(layout => {
+            it("skips windows with persist false", async () => {
+                window[Default.DefaultContainer.windowsPropertyKey] = {
+                    "1": new MockWindow(),
+                    "2": new MockWindow()
+                };
+    
+                window[Default.DefaultContainer.windowsPropertyKey]["1"][Default.DefaultContainer.windowNamePropertyKey] = "win1";
+                window[Default.DefaultContainer.windowsPropertyKey]["1"][Container.windowOptionsPropertyKey] = { persist: false };
+                window[Default.DefaultContainer.windowsPropertyKey]["2"][Default.DefaultContainer.windowNamePropertyKey] = "win2";
+
+                const layout = await container.buildLayout();
                 expect(layout).toBeDefined();
                 expect(layout.windows.length).toEqual(1);
                 expect(layout.windows[0].name).toEqual("win2");
-            }).then(done);
+            });
+    
+            it("logs a warning when the options property is not accessible on the native window", async () => {
+                window[Default.DefaultContainer.windowsPropertyKey] = {
+                    "1": new MockWindow()
+                };
+                Object.defineProperty(window[Default.DefaultContainer.windowsPropertyKey]["1"], Container.windowOptionsPropertyKey, {
+                    get: () => { throw new Error('Access not allowed') }
+                });
+    
+                spyOn(<any>container, 'log');
+                
+                await container.buildLayout();
+                expect((<any>container).log).toHaveBeenCalledWith("warn", jasmine.any(String));
+            });
+    
+            it("skips the global window", async () => {
+                window[Default.DefaultContainer.windowsPropertyKey] = {
+                    "1": new MockWindow(),
+                    "2": window
+                };
+
+                const layout = await container.buildLayout();
+    
+                expect(layout?.windows?.length).toBe(1);
+            });
         });
+
     });
 });
 
@@ -521,46 +539,52 @@ describe("DefaultMessageBus", () => {
         bus = new Default.DefaultMessageBus(container);
     });
 
-    it("subscribe invokes underlying subscriber", (done) => {
+    it("subscribe invokes underlying subscriber", async () => {
         spyOn(mockWindow, "addEventListener").and.callThrough();
-        bus.subscribe("topic", callback).then((subscriber) => {
-            expect(subscriber.listener).toEqual(jasmine.any(Function));
-            expect(subscriber.topic).toEqual("topic");
-        }).then(done);
+        const subscriber = await bus.subscribe("topic", callback);
+        expect(subscriber.listener).toEqual(jasmine.any(Function));
+        expect(subscriber.topic).toEqual("topic");
         expect(mockWindow.addEventListener).toHaveBeenCalledWith("message", jasmine.any(Function));
     });
 
-    it("listener callback attached", (done) => {
-        const handler = (e, data) => {
+    it("listener callback attached", async () => {
+        const handler = jasmine.createSpy('handlerSpy', (e, data) => {
             expect(e.topic).toEqual("topic");
             expect(data).toEqual("message");
-            done();
-        };
+        }).and.callThrough();
 
-        bus.subscribe("topic", handler).then((subscriber) => {
-            subscriber.listener({ origin: "origin", data: { source: "desktopJS", topic: "topic", message: "message" } });
-        });
+        const subscriber = await bus.subscribe("topic", handler);
+        subscriber.listener({ origin: "origin", data: { source: "desktopJS", topic: "topic", message: "message" } });
+        expect(handler).toHaveBeenCalled();
     });
 
-    it("unsubscribe invokes underlying unsubscribe", (done) => {
+    
+    it("subscriber does not call listener from a different origin", async () => {
+        const handler = jasmine.createSpy('handlerSpy');
+
+        const subscriber = await bus.subscribe("topic", handler);
+        subscriber.listener({ origin: "not-origin", data: { source: "desktopJS", topic: "topic", message: "message" } });
+        expect(handler).not.toHaveBeenCalled();
+    });
+
+    it("unsubscribe invokes underlying unsubscribe", async () => {
         spyOn(mockWindow, "removeEventListener").and.callThrough();
-        bus.unsubscribe({ topic: "topic", listener: callback }).then(done);
+        await bus.unsubscribe({ topic: "topic", listener: callback });
         expect(mockWindow.removeEventListener).toHaveBeenCalledWith("message", jasmine.any(Function));
     });
 
-    it("publish invokes underling publish", (done) => {
+    it("publish invokes underling publish", async () => {
         const message: any = { data: "data" };
         spyOn(mockWindow, "postMessage").and.callThrough();
-        bus.publish("topic", message).then(() => {
-            expect(mockWindow.postMessage).toHaveBeenCalledWith({ source: "desktopJS", topic: "topic", message: message }, "origin");
-        }).then(done);
+        await bus.publish("topic", message);
+        expect(mockWindow.postMessage).toHaveBeenCalledWith({ source: "desktopJS", topic: "topic", message: message }, "origin");
     });
 
-    it("publish with non matching optional name does not invoke underling send", (done) => {
+    it("publish with non matching optional name does not invoke underling send", async () => {
         const message: any = {};
         spyOn(mockWindow, "postMessage").and.callThrough();
-        bus.publish("topic", message, { name: "target" }).then(done);
-        expect(mockWindow.postMessage).toHaveBeenCalledTimes(0);
+        await bus.publish("topic", message, { name: "target" });
+        expect(mockWindow.postMessage).not.toHaveBeenCalled();
     });
 });
 
@@ -580,35 +604,32 @@ describe("DefaultDisplayManager", () => {
         expect(container.screen).toBeDefined();
     });
 
-    it("getPrimaryMonitor", (done) => {
-        container.screen.getPrimaryDisplay().then(display => {
-            expect(display).toBeDefined();
-            expect(display.id).toBe("Current");
-            expect(display.scaleFactor).toBe(1);
-            
-            expect(display.bounds.x).toBe(2);
-            expect(display.bounds.y).toBe(3);
-            expect(display.bounds.width).toBe(6);
-            expect(display.bounds.height).toBe(7);
-
-            expect(display.workArea.x).toBe(2);
-            expect(display.workArea.y).toBe(3);
-            expect(display.workArea.width).toBe(4);
-            expect(display.workArea.height).toBe(5);
-        }).then(done);
+    it("getPrimaryMonitor", async () => {
+        const display = await container.screen.getPrimaryDisplay();
+        expect(display).toBeDefined();
+        expect(display.id).toBe("Current");
+        expect(display.scaleFactor).toBe(1);
+        
+        expect(display.bounds.x).toBe(2);
+        expect(display.bounds.y).toBe(3);
+        expect(display.bounds.width).toBe(6);
+        expect(display.bounds.height).toBe(7);
+        
+        expect(display.workArea.x).toBe(2);
+        expect(display.workArea.y).toBe(3);
+        expect(display.workArea.width).toBe(4);
+        expect(display.workArea.height).toBe(5);
     });
 
-    it ("getAllDisplays", (done) => {
-        container.screen.getAllDisplays().then(displays => {
-            expect(displays).toBeDefined();
-            expect(displays.length).toBe(1);
-            expect(displays[0].id).toBe("Current");
-        }).then(done);
+    it ("getAllDisplays", async () => {
+        const displays = await container.screen.getAllDisplays();
+        expect(displays).toBeDefined();
+        expect(displays.length).toBe(1);
+        expect(displays[0].id).toBe("Current");
     });
 
-    it ("getMousePosition", (done) => {
-        container.screen.getMousePosition().then(point => {
-            expect(point).toEqual({ x: 1, y: 2});
-        }).then(done);
+    it ("getMousePosition", async () => {
+        const point = await container.screen.getMousePosition();
+        expect(point).toEqual({ x: 1, y: 2});
     });    
 });

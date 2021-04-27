@@ -6,13 +6,15 @@ describe('menu', () => {
 
     describe('id', () => {
         it("Set matches Get", () => {
-            expect(item.id = "ID").toEqual("ID");
+            item.id = "ID";
+            expect(item.id).toEqual("ID");
         });
     });
 
     describe('label', () => {
         it("Set matches Get", () => {
-            expect(item.label = "LABEL").toEqual("LABEL");
+            item.label = "LABEL";
+            expect(item.label).toEqual("LABEL");
         });
     });
 });

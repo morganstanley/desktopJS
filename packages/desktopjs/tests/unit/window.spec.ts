@@ -53,9 +53,9 @@ class MockWindow extends ContainerWindow {
         return;
     }
 
-    public focus(): Promise<void> { return Promise.resolve(); }
-    public minimize(): Promise<void> { return Promise.resolve(); }
-    public restore(): Promise<void> { return Promise.resolve(); }
+    public async focus() { }
+    public async minimize() { }
+    public async restore() { }
 }
 
 describe ("ContainerWindow", () => {
@@ -63,24 +63,20 @@ describe ("ContainerWindow", () => {
         expect(new MockWindow(undefined).nativeWindow).toBeUndefined();
     });
 
-    it("getState returns undefined", (done) => {
-        new MockWindow(undefined).getState().then(state => {
-            expect(state).toBeUndefined();
-        }).then(done);
+    it("getState returns undefined", async () => {
+        const state = await new MockWindow(undefined).getState();
+        expect(state).toBeUndefined();
     });
 
-    it("setState returns", (done) => {
-        new MockWindow(undefined).setState({}).then(() => {
-            expect(true);
-        }).then(done);
+    it("setState returns", async () => {
+        await expectAsync(new MockWindow(undefined).setState({})).toBeResolved();
     });
 
-    it("bringToFront invokes focus by default", (done) => {
+    it("bringToFront invokes focus by default", async () => {
         const win = new MockWindow(undefined)
         spyOn(win, "focus").and.callThrough();
-        win.bringToFront().then(() =>  {
-            expect(win.focus).toHaveBeenCalled();
-        }).then(done);     
+        await win.bringToFront();
+        expect(win.focus).toHaveBeenCalled();
     });
 });
 
@@ -120,23 +116,18 @@ describe("window grouping", () => {
         expect(new MockWindow(null).allowGrouping).toEqual(false);
     });
 
-    it ("getGroup returns empty array", (done) => {
-        new MockWindow(null).getGroup().then(windows => {
-            expect(windows).toBeDefined();
-            expect(windows.length).toEqual(0);
-        }).then(done);
+    it ("getGroup returns empty array", async () => {
+        const windows = await new MockWindow(null).getGroup();
+        expect(windows).toBeDefined();
+        expect(windows.length).toEqual(0);
     });
 
-    it ("joinGroup not supported", (done) => {
-        new MockWindow(null).joinGroup(null).catch(reason => {
-            expect(reason).toEqual("Not supported");
-        }).then(done);
+    it ("joinGroup not supported", async () => {
+        await expectAsync(new MockWindow(null).joinGroup(null)).toBeRejectedWithError("Not supported");
     });
 
-    it ("leaveGroup resolves", (done) => {
-        new MockWindow(null).leaveGroup().then(() => {
-            done();
-        });
+    it ("leaveGroup resolves", async () => {
+        await expectAsync(new MockWindow(null).leaveGroup()).toBeResolved();
     });
 });
 

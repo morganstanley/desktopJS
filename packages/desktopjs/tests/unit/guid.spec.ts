@@ -15,7 +15,7 @@ describe("Guid", () => {
         });
 
         it ("Next not equal to previous", () => {
-            expect(Guid.newGuid()).not.toEqual(guid);            
+            expect(Guid.newGuid()).not.toEqual(guid);
         });
     });
 });

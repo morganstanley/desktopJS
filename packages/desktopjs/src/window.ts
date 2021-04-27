@@ -143,19 +143,19 @@ export abstract class ContainerWindow extends EventEmitter {
         return false;
     }
 
-    public getGroup(): Promise<ContainerWindow[]> {
-        return Promise.resolve([]);
+    public async getGroup(): Promise<ContainerWindow[]> {
+        return [];
     }
 
-    public joinGroup(target: ContainerWindow): Promise<void> {
-        return Promise.reject("Not supported");
+    public async joinGroup(target: ContainerWindow): Promise<void> {
+        throw new Error("Not supported");
     }
 
-    public leaveGroup(): Promise<void> {
-        return Promise.resolve();
+    public async leaveGroup(): Promise<void> {
+        // no default implementation
     }
 
-    public bringToFront(): Promise<void> {
+    public bringToFront() {
         // Provide simple delegation to focus/activate by default
         return this.focus();
     }
@@ -163,13 +163,13 @@ export abstract class ContainerWindow extends EventEmitter {
     public abstract getOptions(): Promise<any>;
 
     /** Retrieves custom window state from underlying native window by invoking 'window.getState()' if defined. */
-    public getState(): Promise<any> {
-        return Promise.resolve(undefined);
+    public async getState(): Promise<any> {
+        // no default implementation
     }
 
     /** Provide custom window state to underlying native window by invoking 'window.setState()' if defined */
-    public setState(state: any): Promise<void> {
-        return Promise.resolve();
+    public async setState(state: any): Promise<void> {
+        // no default implementation
     }
 
     /** Gets the underlying native JavaScript window object. As some containers
@@ -356,40 +356,35 @@ export class GroupWindowManager {
 
     public attach(win?: ContainerWindow) {
         if (win) {
-            win.addListener(isOpenFin() ? <WindowEventType>"minimized" : "minimize", (e) => {
+            win.addListener(isOpenFin() ? <WindowEventType>"minimized" : "minimize", async (e) => {
                 if ((this.windowStateTracking & WindowStateTracking.Main) && this.container.getMainWindow().id === e.sender.id) {
-                    this.container.getAllWindows().then(windows => {
-                        windows.forEach(window => window.minimize());
-                    });
+                    const windows = await this.container.getAllWindows();
+                    windows.forEach(window => window.minimize());
                 }
 
                 if (this.windowStateTracking & WindowStateTracking.Group) {
-                    e.sender.getGroup().then(windows => {
-                        windows.forEach(window => window.minimize());
-                    });
+                    const windows = await (e.sender as ContainerWindow).getGroup();
+                    windows.forEach(window => window.minimize());
                 }
             });
 
-            win.addListener(isOpenFin() ? <WindowEventType>"restored" : "restore", (e) => {
+            win.addListener(isOpenFin() ? <WindowEventType>"restored" : "restore", async (e) => {
                 if ((this.windowStateTracking & WindowStateTracking.Main) && this.container.getMainWindow().id === e.sender.id) {
-                    this.container.getAllWindows().then(windows => {
-                        windows.forEach(window => window.restore());
-                    });
+                    const windows = await this.container.getAllWindows();
+                    windows.forEach(window => window.restore());
                 }
 
                 if (this.windowStateTracking & WindowStateTracking.Group) {
-                    e.sender.getGroup().then(windows => {
-                        windows.forEach(window => window.restore());
-                    });
+                    const windows = await (e.sender as ContainerWindow).getGroup();
+                    windows.forEach(window => window.restore());
                 }
             });
         } else {
             // Attach handlers to any new windows that open
-            ContainerWindow.addListener("window-created", (args) => {
+            ContainerWindow.addListener("window-created", async (args) => {
                 if (this.container && this.container.getWindowById) {
-                    this.container.getWindowById(args.windowId).then(window => {
-                        this.attach(window);
-                    });
+                    const window = await this.container.getWindowById(args.windowId);
+                    this.attach(window);
                 }
             });
 
@@ -466,81 +461,80 @@ export class SnapAssistWindowManager extends GroupWindowManager {
         }
     }
 
-    protected onMoving(e: any) {
+    protected async onMoving(e: any) {
         const id = e.sender.id;
 
         if (this.snappingWindow === id) {
             return;
         }
 
-        e.sender.getOptions().then(senderOptions => {
-            if (senderOptions && typeof (senderOptions.snap) !== "undefined" && senderOptions.snap === false) {
-                return;
+        const sender = e.sender as ContainerWindow;
+
+        const senderOptions = await sender.getOptions();
+        if (senderOptions && typeof (senderOptions.snap) !== "undefined" && senderOptions.snap === false) {
+            return;
+        }
+        
+        const groupedWindows = await sender.getGroup();
+        
+        const bounds = isOpenFin() ? 
+            new Rectangle(e.innerEvent.left, e.innerEvent.top, e.innerEvent.width, e.innerEvent.height) : 
+            await sender.getBounds();
+        
+        // If we are already in a group, don't snap or group with other windows, ungrouped windows need to group to us
+        if (groupedWindows.length > 0) {
+            if (isOpenFin()) {
+                this.moveWindow(sender, bounds);
             }
-
-            e.sender.getGroup().then(groupedWindows => {
-                const getBounds: Promise<Rectangle> = (isOpenFin())
-                    ? Promise.resolve(new Rectangle(e.innerEvent.left, e.innerEvent.top, e.innerEvent.width, e.innerEvent.height))
-                    : e.sender.getBounds();
-
-                getBounds.then(bounds => {
-                    // If we are already in a group, don't snap or group with other windows, ungrouped windows need to group to us
-                    if (groupedWindows.length > 0) {
-                        if (isOpenFin()) {
-                            this.moveWindow(e.sender, bounds);
-                        }
-
-                        return;
-                    }
-
-                    const promises: Promise<{ window: ContainerWindow, bounds: Rectangle, options: any }>[] = [];
-                    this.container.getAllWindows().then(windows => {
-                        windows.filter(window => id !== window.id).forEach(window => {
-                            promises.push(new Promise(resolve => {
-                                window.getOptions().then(targetOptions => {
-                                    window.getBounds().then(targetBounds => resolve({ window: window, bounds: targetBounds, options: targetOptions }));
-                                });
-                            }));
-                        });
-
-                        Promise.all(promises).then(responses => {
-                            let isSnapped = false;
-                            let snapHint;
-
-                            for (const target of responses.filter(response => !(response.options && typeof (response.options.snap) !== "undefined" && response.options.snap === false))) {
-                                snapHint = this.getSnapBounds(snapHint || bounds, target.bounds);
-                                if (snapHint) {
-                                    isSnapped = true;
-                                    this.showGroupingHint(target.window);
-                                    this.moveWindow(e.sender, snapHint);
-                                } else {
-                                    this.hideGroupingHint(target.window);
-                                }
-                            }
-
-                            // If the window wasn't moved as part of snapping, we need to manually move for OpenFin since dragging was disabled
-                            if (!isSnapped && isOpenFin()) {
-                                this.moveWindow(e.sender, bounds);
-                            }
-                        });
-                    });
-                });
-            });
-        });
+            
+            return;
+        }
+        
+        const windows = await this.container.getAllWindows();
+        
+        const promises = windows.filter(window => id !== window.id).map(window => (async () =>
+            ({ window, bounds: await window.getBounds(), options: await window.getOptions() })
+        )());
+        
+        const responses = await Promise.all(promises);
+        let isSnapped = false;
+        let snapHint;
+        
+        for (const target of responses.filter(response => !(response.options && typeof (response.options.snap) !== "undefined" && response.options.snap === false))) {
+            snapHint = this.getSnapBounds(snapHint || bounds, target.bounds);
+            if (snapHint) {
+                isSnapped = true;
+                this.showGroupingHint(target.window);
+                this.moveWindow(e.sender, snapHint);
+            } else {
+                this.hideGroupingHint(target.window);
+            }
+        }
+        
+        // If the window wasn't moved as part of snapping, we need to manually move for OpenFin since dragging was disabled
+        if (!isSnapped && isOpenFin()) {
+            this.moveWindow(e.sender, bounds);
+        }
     }
 
-    protected moveWindow(win: ContainerWindow, bounds: Rectangle) {
+    protected async moveWindow(win: ContainerWindow, bounds: Rectangle) {
         this.snappingWindow = win.id;
-        win.setBounds(bounds).then(() => this.snappingWindow = undefined, () => this.snappingWindow = undefined);
+        try {
+            await win.setBounds(bounds);
+        } catch (e) {
+            // swallow the error
+        }
+        this.snappingWindow = undefined;
     }
 
     protected onMoved(win: ContainerWindow) {
         if (this.autoGrouping) {
             // Get group status of all target windows
-            const groupCallbacks: Promise<WindowGroupStatus>[] = [];
-            this.targetGroup.forEach(target => groupCallbacks.push(new Promise<WindowGroupStatus>(resolve => {
-                target.getGroup().then(windows => resolve({ window: target, isGrouped: windows.length > 0 }));
-            })));
+            const groupCallbacks = Array.from(this.targetGroup, ([_, target]) => 
+                (async () => 
+                    ({ window: target, isGrouped: (await target.getGroup()).length > 0 } as WindowGroupStatus)
+                )()
+            );
 
             Promise.all(groupCallbacks).then(responses => {
                 // Group the dragging window to the first snapped group target
@@ -563,18 +557,12 @@ export class SnapAssistWindowManager extends GroupWindowManager {
     }
 
     protected showGroupingHint(win: ContainerWindow) {
-        if (win.innerWindow && win.innerWindow.updateOptions) {
-            win.innerWindow.updateOptions({ opacity: 0.75 });
-        }
-
+        win.innerWindow?.updateOptions?.({ opacity: 0.75 });
         this.targetGroup.set(win.id, win);
     }
 
     protected hideGroupingHint(win: ContainerWindow) {
-        if (win.innerWindow && win.innerWindow.updateOptions) {
-            win.innerWindow.updateOptions({ opacity: 1.0 });
-        }
-
+        win.innerWindow?.updateOptions?.({ opacity: 1.0 });
         this.targetGroup.delete(win.id);
     }
 

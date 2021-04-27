@@ -23,9 +23,6 @@ export namespace Default {
      * @augments ContainerWindow
      */
     export class DefaultContainerWindow extends ContainerWindow {
-        public constructor(wrap: any) {
-            super(wrap);
-        }
 
         public get id(): string {
             return this.innerWindow[DefaultContainer.windowUuidPropertyKey];
@@ -35,111 +32,82 @@ export namespace Default {
             return this.innerWindow[DefaultContainer.windowNamePropertyKey];
         }
 
-        public load(url: string, options?: any): Promise<void> {
-            return new Promise<void>(resolve => {
-                this.innerWindow.location.replace(url);
-                resolve();
-            });
+        public async load(url: string, options?: any) {
+            this.innerWindow.location.replace(url);
         }
 
-        public focus(): Promise<void> {
+        public async focus() {
             this.innerWindow.focus();
-            return Promise.resolve();
         }
 
-        public show(): Promise<void> {
-            return Promise.resolve();
+        public async show() {
+            // no implementation in a browser
         }
 
-        public hide(): Promise<void> {
-            return Promise.resolve();
+        public async hide() {
+            // no implementation in a browser
         }
 
-        public close(): Promise<void> {
+        public async close() {
             this.innerWindow.close();
-            return Promise.resolve();
         }
 
-        public minimize(): Promise<void> {
-            return new Promise<void>(resolve => {
-                this.innerWindow.minimize();
-                resolve();
-            });
+        public async minimize() {
+            this.innerWindow.minimize();
         }
 
-        public maximize(): Promise<void> {
-            return new Promise<void>(resolve => {
-                this.innerWindow.maximize();
-                resolve();
-            });
+        public async maximize() {
+            this.innerWindow.maximize();
         }
 
-        public restore(): Promise<void> {
-            return new Promise<void>(resolve => {
-                this.innerWindow.restore();
-                resolve();
-            });
+        public async restore() {
+            this.innerWindow.restore();
         }
 
-        public isShowing(): Promise<boolean> {
+        public async isShowing() {
             // https://github.com/ai/visibilityjs ?
-            return Promise.resolve(true);
+            return true;
         }
 
-        public getSnapshot(): Promise<string> {
-            return Promise.reject("getSnapshot requires an implementation.");
+        public async getSnapshot(): Promise<string> {
+            throw new Error("getSnapshot requires an implementation.");
         }
 
-        public flash(enable: boolean, options?: any): Promise<void> {
-            return Promise.reject("Not supported");
+        public async flash(enable: boolean, options?: any) {
+            throw new Error("Not supported");
         }
 
-        public getParent(): Promise<ContainerWindow> {
+        public async getParent(): Promise<ContainerWindow> {
             // on the web, there's no parent
-            return Promise.resolve(null);
+            return null;
         }
 
-        public setParent(parent: ContainerWindow): Promise<void> {
-            return Promise.resolve();
+        public async setParent(parent: ContainerWindow) {
+            // no implementation in a browser
         }
 
-        public getBounds(): Promise<Rectangle> {
-            return new Promise<Rectangle>(resolve => {
-                resolve(new Rectangle(this.innerWindow.screenX, this.innerWindow.screenY, this.innerWindow.outerWidth, this.innerWindow.outerHeight));
-            });
+        public async getBounds() {
+            return new Rectangle(this.innerWindow.screenX, this.innerWindow.screenY, this.innerWindow.outerWidth, this.innerWindow.outerHeight);
         }
 
-        public setBounds(bounds: Rectangle): Promise<void> {
-            return new Promise<void>(resolve => {
-                this.innerWindow.moveTo(bounds.x, bounds.y);
-                this.innerWindow.resizeTo(bounds.width, bounds.height);
-                resolve();
-            });
+        public async setBounds(bounds: Rectangle) {
+            this.innerWindow.moveTo(bounds.x, bounds.y);
+            this.innerWindow.resizeTo(bounds.width, bounds.height);
         }
 
-        public getOptions(): Promise<any> {
-            return new Promise<any>((resolve) => {
-                resolve(this.innerWindow[Container.windowOptionsPropertyKey]);
-            });
+        public async getOptions() {
+            return this.innerWindow[Container.windowOptionsPropertyKey];
         }
 
-        public getState(): Promise<any> {
-            return new Promise<any>(resolve => {
-                (this.nativeWindow && (<any>this.nativeWindow).getState) ? resolve((<any>this.nativeWindow).getState()) : resolve(undefined);
-            });
+        public async getState() {
+            return this.nativeWindow?.['getState']?.();
         }
 
-        public setState(state: any): Promise<void> {
-            return new Promise<void>(resolve => {
-                if (this.nativeWindow && (<any>this.nativeWindow).setState) {
-                    (<any>this.nativeWindow).setState(state);
-                }
-
-                resolve();
-            }).then(() => {
-                this.emit("state-changed", <EventArgs> { name: "state-changed", sender: this, state: state });
-                ContainerWindow.emit("state-changed", <WindowEventArgs> { name: "state-changed", windowId: this.id, state: state } );
-            });
+        public async setState(state: any) {
+            const promise = this.nativeWindow?.['setState']?.(state);
+            this.emit("state-changed", <EventArgs> { name: "state-changed", sender: this, state });
+            ContainerWindow.emit("state-changed", <WindowEventArgs> { name: "state-changed", windowId: this.id, state } );
+            await promise;
         }
 
         protected attachListener(eventName: string, listener: (...args: any[]) => void): void {
@@ -166,56 +134,50 @@ export namespace Default {
             this.container = container;
         }
 
-        subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
-            return new Promise<MessageBusSubscription>((resolve) => {
-                const subscription: MessageBusSubscription = new MessageBusSubscription(topic, (event: any) => {
-                    // Only allow same origin
-                    if (event.origin !== this.container.globalWindow.location.origin) {
-                        return;
-                    }
-
-                    // Make sure topic received matches the one that was subscribed
-                    const { source, "topic": receivedTopic, message } = event.data;
-
-                    if (source === DefaultMessageBus.messageSource && topic === receivedTopic) {
-                        listener({ topic: topic }, message);
-                    }
-                });
-
-                if (this.container.globalWindow && this.container.globalWindow.addEventListener) {
-                    this.container.globalWindow.addEventListener("message", subscription.listener);
+        async subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions) {
+            const subscription: MessageBusSubscription = new MessageBusSubscription(topic, (event: any) => {
+                // Only allow same origin
+                if (event.origin !== this.container.globalWindow.location.origin) {
+                    return;
                 }
-
-                resolve(subscription);
+                
+                // Make sure topic received matches the one that was subscribed
+                const { source, "topic": receivedTopic, message } = event.data;
+                
+                if (source === DefaultMessageBus.messageSource && topic === receivedTopic) {
+                    listener({ topic }, message);
+                }
             });
+            
+            this.container.globalWindow?.addEventListener?.("message", subscription.listener);
+            
+            return subscription;
         }
 
-        unsubscribe(subscription: MessageBusSubscription): Promise<void> {
-            return Promise.resolve(this.container.globalWindow.removeEventListener("message", subscription.listener));
+        async unsubscribe(subscription: MessageBusSubscription) {
+            return this.container.globalWindow.removeEventListener("message", subscription.listener);
         }
 
-        publish<T>(topic: string, message: T, options?: MessageBusOptions): Promise<void> {
+        async publish<T>(topic: string, message: T, options?: MessageBusOptions) {
             // Get list of windows from global (set by opener on creation) or fallback to opener global in case
             // there is a race condition of getting here before the opener set the global for us
             const windows: Window[] = (this.container.globalWindow)
                 ? this.container.globalWindow[DefaultContainer.windowsPropertyKey]
-                || (this.container.globalWindow.opener && this.container.globalWindow.opener[DefaultContainer.windowsPropertyKey])
+                || this.container.globalWindow.opener?.[DefaultContainer.windowsPropertyKey]
                 : [];
 
             if (windows) {
                 for (const key in windows) {
                     const win = windows[key];
 
-                    if (options && options.name && options.name !== win[DefaultContainer.windowNamePropertyKey]) {
+                    if (options?.name && options.name !== win[DefaultContainer.windowNamePropertyKey]) {
                         continue;
                     }
 
                     const targetOrigin = options?.targetOrigin || this.container.globalWindow.location.origin;
-                    win.postMessage({ source: DefaultMessageBus.messageSource, topic: topic, message: message }, targetOrigin);
+                    win.postMessage({ source: DefaultMessageBus.messageSource, topic, message }, targetOrigin);
                 }
             }
-
-            return Promise.resolve();
         }
     }
 
@@ -261,13 +223,13 @@ export namespace Default {
             // noop. Any override to be done in overriding containers.
         }
 
-        public getOptions(): Promise<any> {
+        public async getOptions(): Promise<any> {
             // noop. Any override to be done in overriding containers.
-            return Promise.resolve({});
+            return {};
         }
 
-        public getInfo(): Promise<string | undefined> {
-            return Promise.resolve(this.globalWindow.navigator.appVersion);
+        public async getInfo(): Promise<string | undefined> {
+            return this.globalWindow.navigator.appVersion;
         }
 
         public getMainWindow(): ContainerWindow {
@@ -320,7 +282,7 @@ export namespace Default {
             return window;
         }
 
-        public createWindow(url: string, options?: any): Promise<ContainerWindow> {
+        public async createWindow(url: string, options?: any): Promise<ContainerWindow> {
             let features: string;
             let target = "_blank";
 
@@ -352,7 +314,7 @@ export namespace Default {
             const newWindow = this.wrapWindow(window);
             this.emit("window-created", { sender: this, name: "window-created", window: newWindow, windowId: windowReachable ? newWindow.id : undefined, windowName: newOptions.name });
 
-            return Promise.resolve(newWindow);
+            return newWindow;
         }
 
         public showNotification(title: string, options?: NotificationOptions) {
@@ -370,96 +332,79 @@ export namespace Default {
             });
         }
 
-        protected closeAllWindows(excludeSelf?: boolean): Promise<void> {
-            return new Promise<void>((resolve) => {
-                const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
-                for (const key in windows) {
-                    const win = windows[key];
-                    if (!excludeSelf || this.globalWindow !== win) {
-                        win.close();
-                    }
+        protected async closeAllWindows(excludeSelf = false) {
+            const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+            for (const key in windows) {
+                const win = windows[key];
+                if (!excludeSelf || this.globalWindow !== win) {
+                    win.close();
                 }
-                resolve();
-            });
+            }
         }
 
-        public getAllWindows(): Promise<ContainerWindow[]> {
-            return new Promise<ContainerWindow[]>((resolve) => {
-                const windows: ContainerWindow[] = [];
-                const trackedWindows = this.globalWindow[DefaultContainer.windowsPropertyKey];
-                for (const key in trackedWindows) {
-                    windows.push(this.wrapWindow(trackedWindows[key]));
+        public async getAllWindows() {
+            const windows: ContainerWindow[] = [];
+            const trackedWindows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+            for (const key in trackedWindows) {
+                windows.push(this.wrapWindow(trackedWindows[key]));
+            }
+            return windows;
+        }
+
+        public async getWindowById(id: string): Promise<ContainerWindow | null> {
+            const win = this.globalWindow[DefaultContainer.windowsPropertyKey][id];
+            return win ? this.wrapWindow(win) : null;
+        }
+
+        public async getWindowByName(name: string): Promise<ContainerWindow | null> {
+            const trackedWindows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+            for (const key in trackedWindows) {
+                if (trackedWindows[key][DefaultContainer.windowNamePropertyKey] === name) {
+                    return this.wrapWindow(trackedWindows[key]);
                 }
-                resolve(windows);
-            });
+            }
+            
+            return null;
         }
 
-        public getWindowById(id: string): Promise<ContainerWindow | null> {
-            return new Promise<ContainerWindow>((resolve) => {
-                const win = this.globalWindow[DefaultContainer.windowsPropertyKey][id];
-                resolve(win ? this.wrapWindow(win) : null);
-            });
-        }
+        public async buildLayout() {
+            const layout = new PersistedWindowLayout();
+            const promises: Promise<void>[] = [];
 
-        public getWindowByName(name: string): Promise<ContainerWindow | null> {
-            return new Promise<ContainerWindow>((resolve) => {
-                const trackedWindows = this.globalWindow[DefaultContainer.windowsPropertyKey];
-                for (const key in trackedWindows) {
-                    if (trackedWindows[key][DefaultContainer.windowNamePropertyKey] === name) {
-                        resolve(this.wrapWindow(trackedWindows[key]));
+            const windows = await this.getAllWindows();
+            windows.forEach(window => {
+                const nativeWin = window.nativeWindow;
+
+                try {
+                    const options = nativeWin[Container.windowOptionsPropertyKey];
+                    if (options && "persist" in options && !options.persist) {
                         return;
                     }
-                }
 
-                resolve(null);
-            });
-        }
-
-        public buildLayout(): Promise<PersistedWindowLayout> {
-            const layout = new PersistedWindowLayout();
-
-            return new Promise<PersistedWindowLayout>((resolve, reject) => {
-                const promises: Promise<void>[] = [];
-
-                this.getAllWindows().then(windows => {
-                    windows.forEach(window => {
-                        const nativeWin = window.nativeWindow;
-
-                        try {
-                            const options = nativeWin[Container.windowOptionsPropertyKey];
-                            if (options && "persist" in options && !options.persist) {
-                                return;
-                            }
-
-                            // eslint-disable-next-line no-async-promise-executor
-                            promises.push(new Promise<void>(async (innerResolve) => {
-                                if (this.globalWindow !== nativeWin) {
-                                    layout.windows.push(
-                                        {
-                                            name: window.name,
-                                            url: (nativeWin && nativeWin.location) ? nativeWin.location.toString() : undefined,
-                                            id: window.id,
-                                            bounds: { x: nativeWin.screenX, y: nativeWin.screenY, width: nativeWin.innerWidth, height: nativeWin.innerHeight },
-                                            options: options,
-                                            state: await window.getState()
-                                        }
-                                    );
+                    promises.push((async () => {
+                        if (this.globalWindow !== nativeWin) {
+                            layout.windows.push(
+                                {
+                                    name: window.name,
+                                    url: (nativeWin && nativeWin.location) ? nativeWin.location.toString() : undefined,
+                                    id: window.id,
+                                    bounds: { x: nativeWin.screenX, y: nativeWin.screenY, width: nativeWin.innerWidth, height: nativeWin.innerHeight },
+                                    options: options,
+                                    state: await window.getState()
                                 }
-                                innerResolve();
-                            }));
-                        } catch (e) {
-                            // An error can happen if the window is not same origin and due to async loading we were able to
-                            // add tracking to it before the content was loaded so we have a window with tracking in which we
-                            // can't access properties any more so we will skip it with warning
-                            this.log('warn', `Error while accessing window so skipping, '${e.message}'`);
+                            );
                         }
-                    });
-
-                    Promise.all(promises).then(() => {
-                        resolve(layout);
-                    }).catch(reject);
-                });
+                    })());
+                } catch (e) {
+                    // An error can happen if the window is not same origin and due to async loading we were able to
+                    // add tracking to it before the content was loaded so we have a window with tracking in which we
+                    // can't access properties any more so we will skip it with warning
+                    this.log('warn', `Error while accessing window so skipping, '${e.message}'`);
+                }
             });
+
+            await Promise.all(promises);
+            return layout;
         }
     }
 
@@ -471,36 +416,30 @@ export namespace Default {
             this.window = window;
         }
 
-        public getPrimaryDisplay(): Promise<Display> {
-            return new Promise<Display>(resolve => {
-                const display = new Display();
-                display.scaleFactor = this.window.devicePixelRatio;
-                display.id = "Current";
-
-                display.bounds = new Rectangle((<any>this.window.screen).availLeft,
-                    (<any>this.window.screen).availTop,
-                    this.window.screen.width,
-                    this.window.screen.height);
-
-                display.workArea = new Rectangle((<any>this.window.screen).availLeft,
-                    (<any>this.window.screen).availTop,
-                    this.window.screen.availWidth,
-                    this.window.screen.availHeight);
-
-                resolve(display);
-            });
+        public async getPrimaryDisplay() {
+            const display = new Display();
+            display.scaleFactor = this.window.devicePixelRatio;
+            display.id = "Current";
+            
+            display.bounds = new Rectangle((<any>this.window.screen).availLeft,
+            (<any>this.window.screen).availTop,
+            this.window.screen.width,
+            this.window.screen.height);
+            
+            display.workArea = new Rectangle((<any>this.window.screen).availLeft,
+            (<any>this.window.screen).availTop,
+            this.window.screen.availWidth,
+            this.window.screen.availHeight);
+            
+            return display;
         }
 
-        public getAllDisplays(): Promise<Display[]> {
-            return new Promise<Display[]>(resolve => {
-                this.getPrimaryDisplay().then(display => resolve([display]));
-            });
+        public async getAllDisplays() {
+            return [await this.getPrimaryDisplay()];
         }
 
-        public getMousePosition(): Promise<Point> {
-            return new Promise<Point>((resolve) => {
-                resolve({ x: (<any>this.window.event).screenX, y: (<any>this.window.event).screenY });
-            });
+        public async getMousePosition() {
+            return <Point>{ x: (<any>this.window.event).screenX, y: (<any>this.window.event).screenY };
         }
     }
 }

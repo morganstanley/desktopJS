@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ElectronContainer, ElectronContainerWindow, ElectronMessageBus, ElectronWindowManager } from "../src/electron";
 import { ContainerWindow, Container } from "@morgan-stanley/desktopjs";
+import {} from 'jasmine';
 
 class MockEventEmitter {
     private eventListeners: Map<string, any> = new Map();
@@ -118,200 +119,167 @@ describe("ElectronContainerWindow", () => {
     });
 
     describe("Window members", () => {
-        it("load", (done) => {
+        it("load", async () => {
             spyOn(innerWin, "loadURL").and.callThrough();
-            win.load("url").then(() => {
-                expect(innerWin.loadURL).toHaveBeenCalledWith("url");
-            }).then(done);
+            await win.load("url");
+            expect(innerWin.loadURL).toHaveBeenCalledWith("url");
         });
 
-        it("load with options", (done) => {
+        it("load with options", async () => {
             spyOn(innerWin, "loadURL").and.callThrough();
             const options = { prop: "value" };
-            win.load("url", options).then(() => {
-                expect(innerWin.loadURL).toHaveBeenCalledWith("url", options);
-            }).then(done);
+            await win.load("url", options);
+            expect(innerWin.loadURL).toHaveBeenCalledWith("url", options);
         });
 
-        it("focus", (done) => {
+        it("focus", async () => {
             spyOn(innerWin, "focus").and.callThrough();
-            win.focus().then(() => {
-                expect(innerWin.focus).toHaveBeenCalled();
-            }).then(done);
+            await win.focus();
+            expect(innerWin.focus).toHaveBeenCalled();
         });
 
-        it("show", (done) => {
+        it("show", async () => {
             spyOn(innerWin, "show").and.callThrough();
-            win.show().then(() => {
-                expect(innerWin.show).toHaveBeenCalled();
-            }).then(done);
+            await win.show();
+            expect(innerWin.show).toHaveBeenCalled();
         });
 
-        it("hide", (done) => {
+        it("hide", async () => {
             spyOn(innerWin, "hide").and.callThrough();
-            win.hide().then(() => {
-                expect(innerWin.hide).toHaveBeenCalled();
-            }).then(done);
+            await win.hide();
+            expect(innerWin.hide).toHaveBeenCalled();
         });
 
-        it("close", (done) => {
+        it("close", async () => {
             spyOn(innerWin, "close").and.callThrough();
-            win.close().then(() => {
-                expect(innerWin.close).toHaveBeenCalled();
-            }).then(done);
+            await win.close();
+            expect(innerWin.close).toHaveBeenCalled();
         });
 
-        it("minimize", (done) => {
+        it("minimize", async () => {
             const browserWindow = jasmine.createSpyObj("BrowserWindow", ["minimize"]);
-            new ElectronContainerWindow(browserWindow, null).minimize().then(() => {
-                expect(browserWindow.minimize).toHaveBeenCalledTimes(1);
-            }).then(done);
+            await new ElectronContainerWindow(browserWindow, null).minimize();
+            expect(browserWindow.minimize).toHaveBeenCalledTimes(1);
         });
 
-        it("maximize", (done) => {
+        it("maximize", async () => {
             const browserWindow = jasmine.createSpyObj("BrowserWindow", ["maximize"]);
-            new ElectronContainerWindow(browserWindow, null).maximize().then(() => {
-                expect(browserWindow.maximize).toHaveBeenCalledTimes(1);
-            }).then(done);
+            await new ElectronContainerWindow(browserWindow, null).maximize();
+            expect(browserWindow.maximize).toHaveBeenCalledTimes(1);
         });
         
-        it("restore", (done) => {
+        it("restore", async () => {
             const browserWindow = jasmine.createSpyObj("BrowserWindow", ["restore"]);
-            new ElectronContainerWindow(browserWindow, null).restore().then(() => {
-                expect(browserWindow.restore).toHaveBeenCalledTimes(1);
-            }).then(done);
+            await new ElectronContainerWindow(browserWindow, null).restore();
+            expect(browserWindow.restore).toHaveBeenCalledTimes(1);
         });
 
-        it("isShowing", (done) => {
+        it("isShowing", async () => {
             spyOn(innerWin, "isVisible").and.callThrough();
-            let success = false;
 
-            win.isShowing().then((showing) => {
-                success = true;
-                expect(showing).toBeDefined();
-                expect(showing).toEqual(true);
-            }).then(() => {
-                expect(success).toEqual(true);
-                expect(innerWin.isVisible).toHaveBeenCalled();
-            }).then(done);
+            const showing = await win.isShowing()
+            expect(showing).toBeDefined();
+            expect(showing).toEqual(true);
+            expect(innerWin.isVisible).toHaveBeenCalled();
         });
 
         describe("getState", () => {
-            it("getState undefined", (done) => {
+            it("getState undefined", async () => {
                 const mockWindow = new MockWindow();
                 mockWindow.webContents = null;
                 const win = new ElectronContainerWindow(mockWindow, container);
 
-                win.getState().then(state => {
-                    expect(state).toBeUndefined();
-                }).then(done);
+                const state = await win.getState();
+                expect(state).toBeUndefined();
             });
 
-            it("getState defined", (done) => {
+            it("getState defined", async () => {
                 const mockState = { value: "Foo" };
                 spyOn(innerWin.webContents, "executeJavaScript").and.returnValue(Promise.resolve(mockState));
                 
-                win.getState().then(state => {
-                    expect(innerWin.webContents.executeJavaScript).toHaveBeenCalled();
-                    expect(state).toEqual(mockState);
-                }).then(done);
+                const state = await win.getState();
+                expect(innerWin.webContents.executeJavaScript).toHaveBeenCalled();
+                expect(state).toEqual(mockState);
             });
         });        
     
         describe("setState", () => {
-            it("setState undefined", (done) => {
+            it("setState undefined", async () => {
                 const mockWindow = new MockWindow();
                 mockWindow.webContents = null;
                 const win = new ElectronContainerWindow(mockWindow, container);
 
-                win.setState({}).then(done);
+                await expectAsync(win.setState({})).toBeResolved();
             });
 
-            it("setState defined", (done) => {
+            it("setState defined", async () => {
                 const mockState = { value: "Foo" };
                 spyOn(innerWin.webContents, "executeJavaScript").and.returnValue(Promise.resolve());
 
-                win.setState(mockState).then(() => {
-                    expect(innerWin.webContents.executeJavaScript).toHaveBeenCalled();
-                }).then(done);  
+                await win.setState(mockState);
+                expect(innerWin.webContents.executeJavaScript).toHaveBeenCalled();
             });
         });
 
-        it("getSnapshot", (done) => {
+        it("getSnapshot", async () => {
             spyOn(innerWin, "capturePage").and.callThrough();
-            let success = false;
 
-            win.getSnapshot().then((snapshot) => {
-                success = true;
-                expect(snapshot).toBeDefined();
-                expect(snapshot).toEqual("data:image/png;base64,Mock");
-            }).then(() => {
-                expect(success).toEqual(true);
-                expect(innerWin.capturePage).toHaveBeenCalled();
-            }).then(done);
+            const snapshot = await win.getSnapshot()
+            expect(snapshot).toBeDefined();
+            expect(snapshot).toEqual("data:image/png;base64,Mock");
+            expect(innerWin.capturePage).toHaveBeenCalled();
         });
 
-        it("getBounds retrieves underlying window position", (done) => {
-            win.getBounds().then(bounds => {
-                expect(bounds).toBeDefined();
-                expect(bounds.x).toEqual(0);
-                expect(bounds.y).toEqual(1);
-                expect(bounds.width).toEqual(2);
-                expect(bounds.height).toEqual(3);
-            }).then(done);
+        it("getBounds retrieves underlying window position", async () => {
+            const bounds = await win.getBounds();
+            expect(bounds).toBeDefined();
+            expect(bounds.x).toEqual(0);
+            expect(bounds.y).toEqual(1);
+            expect(bounds.width).toEqual(2);
+            expect(bounds.height).toEqual(3);
         });
 
-        it("setBounds sets underlying window position", (done) => {
+        it("setBounds sets underlying window position", async () => {
             spyOn(win.innerWindow, "setBounds").and.callThrough()
             const bounds = { x: 0, y: 1, width: 2, height: 3 };
-            win.setBounds(<any>bounds).then(() => {
-                expect(win.innerWindow.setBounds).toHaveBeenCalledWith(bounds);
-            }).then(done);
+            await win.setBounds(<any>bounds);
+            expect(win.innerWindow.setBounds).toHaveBeenCalledWith(bounds);
         });
 
-        it("flash enable invokes underlying flash", (done) => {
+        it("flash enable invokes underlying flash", async () => {
             spyOn(win.innerWindow, "flashFrame").and.callThrough();
-            win.flash(true).then(() => {
-                expect(win.innerWindow.flashFrame).toHaveBeenCalledWith(true);
-                done();
-            });
+            await win.flash(true);
+            expect(win.innerWindow.flashFrame).toHaveBeenCalledWith(true);
         });
 
-        it("flash disable invokes underlying stopFlashing", (done) => {
+        it("flash disable invokes underlying stopFlashing", async () => {
             spyOn(win.innerWindow, "flashFrame").and.callThrough();
-            win.flash(false).then(() => {
-                expect(win.innerWindow.flashFrame).toHaveBeenCalledWith(false);
-                done();
-            });
+            await win.flash(false);
+            expect(win.innerWindow.flashFrame).toHaveBeenCalledWith(false);
         });
 
-        it("getParent calls underlying getParentWindow", (done) => {
+        it("getParent calls underlying getParentWindow", async () => {
             spyOn(win.innerWindow, "getParentWindow");
-            win.getParent().then(() => {
-                expect(win.innerWindow.getParentWindow).toHaveBeenCalled();
-                done();
-            });
+            await win.getParent();
+            expect(win.innerWindow.getParentWindow).toHaveBeenCalled();
         });
 
-        it("setParent calls underlying setParentWindow", (done) => {
+        it("setParent calls underlying setParentWindow", async () => {
             const mockParent = { innerWindow: new MockWindow() };
             spyOn(win.innerWindow, "setParentWindow");
-            win.setParent(<any>mockParent).then(() => {
-                expect(win.innerWindow.setParentWindow).toHaveBeenCalledWith(mockParent.innerWindow);
-                done();
-            });
+            await win.setParent(<any>mockParent);
+            expect(win.innerWindow.setParentWindow).toHaveBeenCalledWith(mockParent.innerWindow);
         });
 
-        it ("getOptions sends synchronous ipc message", (done) => {
+        it ("getOptions sends synchronous ipc message", async () => {
             spyOn(container.internalIpc, "sendSync").and.returnValue({ foo: "bar"});
             spyOnProperty(win, "id", "get").and.returnValue(5);
             spyOn(container, "wrapWindow").and.returnValue(new MockWindow() as any);
             spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
 
-            win.getOptions().then(options => {
-                expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getOptions", { source: 5});
-                expect(options).toEqual({ foo: "bar" });
-            }).then(done);
+            const options = await win.getOptions();
+            expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getOptions", { source: 5});
+            expect(options).toEqual({ foo: "bar" });
         });
 
         describe("addListener", () => {
@@ -359,17 +327,16 @@ describe("ElectronContainerWindow", () => {
             expect(win.allowGrouping).toEqual(true);
         });
 
-        it ("getGroup sends synchronous ipc message", (done) => {
+        it ("getGroup sends synchronous ipc message", async () => {
             spyOn(container.internalIpc, "sendSync").and.returnValue([ 1, 5, 2 ]);
             spyOnProperty(win, "id", "get").and.returnValue(5);
             spyOn(container, "wrapWindow").and.returnValue(new MockWindow() as any);
             spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
 
-            win.getGroup().then(windows => {
-                expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getGroup", { source: 5});
-                expect(container.wrapWindow).toHaveBeenCalledTimes(2);
-                expect(windows.length).toEqual(3);
-            }).then(done);
+            const windows = await win.getGroup();
+            expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getGroup", { source: 5});
+            expect(container.wrapWindow).toHaveBeenCalledTimes(2);
+            expect(windows.length).toEqual(3);
         });
 
         it ("getGroup invokes method directly in main process", () => {
@@ -381,26 +348,24 @@ describe("ElectronContainerWindow", () => {
             expect((<any>container).windowManager.getGroup).toHaveBeenCalled();
         });
 
-        it ("joinGroup sends ipc message", (done) => {
+        it ("joinGroup sends ipc message", async () => {
             spyOn(container.internalIpc, "send").and.callThrough();
             spyOnProperty(win, "id", "get").and.returnValue(1);
             const targetWin = new ElectronContainerWindow(innerWin, container);
             spyOnProperty(targetWin, "id", "get").and.returnValue(2);
 
-            win.joinGroup(targetWin).then(() => {
-                expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-joinGroup", { source: 1, target: 2 });
-            }).then(done);
+            await win.joinGroup(targetWin);
+            expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-joinGroup", { source: 1, target: 2 });
         });
 
-        it ("joinGroup with source == target does not send ipc message", (done) => {
+        it ("joinGroup with source == target does not send ipc message", async () => {
             spyOn(container.internalIpc, "send").and.callThrough();
             spyOnProperty(win, "id", "get").and.returnValue(1);
             const targetWin = new ElectronContainerWindow(innerWin, container);
             spyOnProperty(targetWin, "id", "get").and.returnValue(1);
 
-            win.joinGroup(targetWin).then(() => {
-                expect(container.internalIpc.send).toHaveBeenCalledTimes(0);
-            }).then(done);
+            await win.joinGroup(targetWin);
+            expect(container.internalIpc.send).toHaveBeenCalledTimes(0);
         });
 
         it ("joinGroup invokes method directly in main process", () => {
@@ -413,28 +378,26 @@ describe("ElectronContainerWindow", () => {
             expect((<any>container).windowManager.groupWindows).toHaveBeenCalled();
         });
 
-        it ("leaveGroup sends ipc message", (done) => {
+        it ("leaveGroup sends ipc message", async () => {
             spyOn(container.internalIpc, "send").and.callThrough();
             spyOnProperty(win, "id", "get").and.returnValue(5);
-            win.leaveGroup().then(() => {
-                expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-leaveGroup", { source: 5});
-            }).then(done);
+            await win.leaveGroup();
+            expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-leaveGroup", { source: 5});
         });
 
-        it ("leaveGroup invokes method directly in main process", () => {
+        it ("leaveGroup invokes method directly in main process", async () => {
             container = new ElectronContainer({ BrowserWindow: { fromId(): any {  } } }, new MockMainIpc(), {});
             win = new ElectronContainerWindow(innerWin, container);
             (<any>container).windowManager = jasmine.createSpyObj("WindowManager", ["ungroupWindows"]);
-            win.leaveGroup();
+            await win.leaveGroup();
             expect((<any>container).windowManager.ungroupWindows).toHaveBeenCalled();
         });
     });
 
-    it ("bringToFront invokes underlying moveTop", (done) => {
+    it ("bringToFront invokes underlying moveTop", async () => {
         spyOn(win.innerWindow, "moveTop").and.callThrough()
-        win.bringToFront().then(() => {
-            expect(innerWin.moveTop).toHaveBeenCalled();
-        }).then(done);
+        await win.bringToFront();
+        expect(innerWin.moveTop).toHaveBeenCalled();
     });
 });
 
@@ -483,10 +446,9 @@ describe("ElectronContainer", () => {
         expect(container.hostType).toEqual("Electron");
     });
 
-    it ("getInfo invokes underlying version info", (done) => {
-        container.getInfo().then(info => {
-            expect(info).toEqual("Electron/1 Chrome/2");
-        }).then(done);
+    it ("getInfo invokes underlying version info", async () => {
+        const info = await container.getInfo();
+        expect(info).toEqual("Electron/1 Chrome/2");
     });
 
 
@@ -549,9 +511,9 @@ describe("ElectronContainer", () => {
         expect(win.innerWindow).toEqual(innerWin);
     });
 
-    it("createWindow", (done) => {
+    it("createWindow", async () => {
         spyOn<any>(container, "browserWindow").and.callThrough();
-        container.createWindow("url", { x: "x", taskbar: false, node: true }).then(done);
+        await container.createWindow("url", { x: "x", taskbar: false, node: true });
         expect((<any>container).browserWindow).toHaveBeenCalledWith({ x: "x", skipTaskbar: true, webPreferences: { nodeIntegration: true } });
     });
 
@@ -566,29 +528,27 @@ describe("ElectronContainer", () => {
         electron.app.emit("browser-window-created", {}, { webContents: {id: "id"}});
     });
 
-    it("createWindow on main process invokes ElectronWindowManager.initializeWindow", (done) => {
+    it("createWindow on main process invokes ElectronWindowManager.initializeWindow", async () => {
         (<any>container).isRemote = false;
         (<any>container).windowManager = new ElectronWindowManager({}, new MockMainIpc(), { fromId(): any {}, getAllWindows(): any {} })
         spyOn((<any>container).windowManager, "initializeWindow").and.callThrough();
         const options = { name: "name" };
-        container.createWindow("url", options).then(done);
+        await container.createWindow("url", options);
         expect((<any>container).windowManager.initializeWindow).toHaveBeenCalledWith(jasmine.any(Object), "name", options);
     });
 
-    it("createWindow pulls nodeIntegration default from container", (done) => {
+    it("createWindow pulls nodeIntegration default from container", async () => {
         const container = new ElectronContainer(electron, new MockIpc(), globalWindow, { node: true });
         spyOn<any>(container, "browserWindow").and.callThrough();
-        container.createWindow("url", { }).then(() => {
-            expect(container.browserWindow).toHaveBeenCalledWith({ webPreferences: { nodeIntegration: true }});
-        }).then(done);
+        await container.createWindow("url", { });
+        expect(container.browserWindow).toHaveBeenCalledWith({ webPreferences: { nodeIntegration: true }});
     });
 
-    it("createWindow with node specified ignores container default", (done) => {
+    it("createWindow with node specified ignores container default", async () => {
         const container = new ElectronContainer(electron, new MockIpc(), globalWindow, { node: true });
         spyOn<any>(container, "browserWindow").and.callThrough();
-        container.createWindow("url", { node: false }).then(() => {
-            expect(container.browserWindow).toHaveBeenCalledWith({ webPreferences: { nodeIntegration: false }});
-        }).then(done);
+        await container.createWindow("url", { node: false });
+        expect(container.browserWindow).toHaveBeenCalledWith({ webPreferences: { nodeIntegration: false }});
     });
 
     it("addTrayIcon", () => {
@@ -604,10 +564,10 @@ describe("ElectronContainer", () => {
             expect(electron.Notification).toHaveBeenCalledWith({ title: "title", onClick: jasmine.any(Function), notification: jasmine.any(Object) });
         });
 
-        it("requestPermission granted", (done) => {
-            globalWindow["Notification"].requestPermission((permission) => {
+        it("requestPermission granted", async () => {
+            await globalWindow["Notification"].requestPermission((permission) => {
                 expect(permission).toEqual("granted");
-            }).then(done);
+            });
         });
 
         it("notification api delegates to showNotification", () => {
@@ -646,23 +606,20 @@ describe("ElectronContainer", () => {
             expect(console.error).toHaveBeenCalledTimes(1);
         });
     
-        it("getOptions returns autoStartOnLogin status", (done) => {
+        it("getOptions returns autoStartOnLogin status", async () => {
             electron.app.getLoginItemSettings = jasmine.createSpy().and.returnValue({ openAtLogin: true });
-            container.getOptions().then((result: any) => {
-                expect(electron.app.getLoginItemSettings).toHaveBeenCalled();
-                expect(result.autoStartOnLogin).toEqual(true);
-            }).then(done);
+            const result = await container.getOptions();
+            expect(electron.app.getLoginItemSettings).toHaveBeenCalled();
+            expect(result.autoStartOnLogin).toEqual(true);
         });
     
-        it("getOptions error out while fetching auto start info", (done) => {
+        it("getOptions error out while fetching auto start info", async () => {
             electron.app.getLoginItemSettings = jasmine.createSpy().and.callFake(() => {
                 throw new Error("something went wrong");
             });
-            container.getOptions().then(() => { }, (err) => {
-                expect(electron.app.getLoginItemSettings).toHaveBeenCalled();
-                expect(err).toEqual(new Error("Error getting Container options. Error: something went wrong"));
-            }).then(done);
-        });            
+            await expectAsync(container.getOptions()).toBeRejectedWithError("Error getting Container options. Error: something went wrong");
+            expect(electron.app.getLoginItemSettings).toHaveBeenCalled();
+        });
     });
 
     describe("window management", () => {
@@ -675,70 +632,57 @@ describe("ElectronContainer", () => {
             container = new ElectronContainer(electron, new MockIpc());
         });
 
-        it("getAllWindows returns wrapped native windows", (done) => {
-            container.getAllWindows().then(wins => {
-                expect(wins).not.toBeNull();
-                expect(wins.length).toEqual(windows.length);
-                done();
-            });
+        it("getAllWindows returns wrapped native windows", async () => {
+            const wins = await container.getAllWindows();
+            expect(wins).not.toBeNull();
+            expect(wins.length).toEqual(windows.length);
         });
 
         describe("getWindow", () => {
-            it("getWindowById returns wrapped window", (done) => {
+            it("getWindowById returns wrapped window", async () => {
                 spyOn(electron.BrowserWindow, "fromId").and.returnValue(new MockWindow());
-                container.getWindowById("1").then(win => {
-                    expect(electron.BrowserWindow.fromId).toHaveBeenCalledWith("1");
-                    expect(win).toBeDefined();
-                    done();
-                });
+                const win = await container.getWindowById("1");
+                expect(electron.BrowserWindow.fromId).toHaveBeenCalledWith("1");
+                expect(win).toBeDefined();
             });
 
-            it ("getWindowById with unknown id returns null", (done) => {
-                container.getWindowById("DoesNotExist").then(win => {
-                    expect(win).toBeNull();
-                    done();
-                });
+            it ("getWindowById with unknown id returns null", async () => {
+                const win = await container.getWindowById("DoesNotExist");
+                expect(win).toBeNull();
             });
 
-            it("getWindowByName returns wrapped window", (done) => {
-                container.getWindowByName("Name").then(win => {
-                    expect(win).toBeDefined();
-                    done();
-                });
+            it("getWindowByName returns wrapped window", async () => {
+                const win = await container.getWindowByName("Name");
+                expect(win).toBeDefined();
             });
 
-            it ("getWindowByName with unknown name returns null", (done) => {
-                container.getWindowByName("DoesNotExist").then(win => {
-                    expect(win).toBeNull();
-                    done();
-                });
+            it ("getWindowByName with unknown name returns null", async () => {
+                const win = await container.getWindowByName("DoesNotExist");
+                expect(win).toBeNull();
             });
         });
 
-        it("closeAllWindows excluding self skips current window", (done) => {
+        it("closeAllWindows excluding self skips current window", async () => {
             spyOn(electron, "getCurrentWindow").and.callThrough();
             spyOn(windows[0], "close").and.callThrough();
             spyOn(windows[1], "close").and.callThrough();
-            (<any>container).closeAllWindows(true).then(done).catch(error => {
-                fail(error);
-                done();
-            });
+            await (<any>container).closeAllWindows(true);
             expect(electron.getCurrentWindow).toHaveBeenCalled();
             expect(windows[0].close).not.toHaveBeenCalled();
             expect(windows[1].close).toHaveBeenCalled();
         });
 
-        it("closeAllWindows including self closes all", (done) => {
+        it("closeAllWindows including self closes all", async () => {
             spyOn(electron, "getCurrentWindow").and.callThrough();
             spyOn(windows[0], "close").and.callThrough();
             spyOn(windows[1], "close").and.callThrough();
-            (<any>container).closeAllWindows().then(done);
+            await (<any>container).closeAllWindows();
             expect(electron.getCurrentWindow).not.toHaveBeenCalled();
             expect(windows[0].close).toHaveBeenCalled();
             expect(windows[1].close).toHaveBeenCalled();
         });
 
-        it("saveLayout invokes underlying saveLayoutToStorage", (done) => {
+        it("saveLayout invokes underlying saveLayoutToStorage", async () => {
             container.browserWindow = {
                 getAllWindows(): MockWindow[] { return windows; },
                 fromId(): any { return {}; }
@@ -747,18 +691,12 @@ describe("ElectronContainer", () => {
             spyOn<any>(container.internalIpc, "sendSync").and.returnValue([ 1, 5, 2 ]);
             spyOn<any>(container, "saveLayoutToStorage").and.stub();
             spyOn<any>(container, "getMainWindow").and.returnValue(new MockWindow());
-            container.saveLayout("Test")
-                .then(layout => {
-                    expect(layout).toBeDefined();
-                    expect((<any>container).saveLayoutToStorage).toHaveBeenCalledWith("Test", layout);
-                    done();
-                }).catch(error => {
-                    fail(error);
-                    done();
-                });
+            const layout = await container.saveLayout("Test");
+            expect(layout).toBeDefined();
+            expect((<any>container).saveLayoutToStorage).toHaveBeenCalledWith("Test", layout);
         });
 
-        it("buildLayout skips windows with persist false", (done) => {
+        it("buildLayout skips windows with persist false", async () => {
             const win1 = jasmine.createSpyObj(["getOptions", "getGroup", "getState"]);
             Object.defineProperty(win1, "innerWindow", {
                 value: { name: "win1", "desktopJS-options": { main: true }, "webContents": { getURL() { return "" } }, getBounds() { return undefined } }
@@ -773,11 +711,10 @@ describe("ElectronContainer", () => {
             win2.getState.and.returnValue(Promise.resolve(undefined));
             spyOn(container, "getMainWindow").and.returnValue(win1);
             spyOn(container, "getAllWindows").and.returnValue(Promise.resolve([win1, win2]));
-            container.buildLayout().then(layout => {
-                expect(layout).toBeDefined();
-                expect(layout.windows.length).toEqual(1);
-                expect(layout.windows[0].name === "win1")
-            }).then(done);
+            const layout = await container.buildLayout();
+            expect(layout).toBeDefined();
+            expect(layout.windows.length).toEqual(1);
+            expect(layout.windows[0].name === "win1")
         });
     });
 });
@@ -795,49 +732,47 @@ describe("ElectronMessageBus", () => {
         bus = new ElectronMessageBus(mockIpc, mockWindow);
     });
 
-    it("subscribe invokes underlying subscribe", (done) => {
+    it("subscribe invokes underlying subscribe", async () => {
         spyOn(mockIpc, "on").and.callThrough();
-        bus.subscribe("topic", callback).then((subscriber) => {
-            expect(subscriber.listener).toEqual(jasmine.any(Function));
-            expect(subscriber.topic).toEqual("topic");
-        }).then(done);
+        const subscriber = await bus.subscribe("topic", callback);
+        expect(subscriber.listener).toEqual(jasmine.any(Function));
+        expect(subscriber.topic).toEqual("topic");
         expect(mockIpc.on).toHaveBeenCalledWith("topic", jasmine.any(Function));
     });
 
-    it("subscribe listener attached", (done) => {
-        bus.subscribe("topic", callback).then((subscriber) => {
-            spyOn(subscriber, "listener").and.callThrough();
-            subscriber.listener();
-            expect(subscriber.listener).toHaveBeenCalled();
-        }).then(done);
+    it("subscribe listener attached", async () => {
+        const subscriber = await bus.subscribe("topic", callback);
+        spyOn(subscriber, "listener").and.callThrough();
+        subscriber.listener();
+        expect(subscriber.listener).toHaveBeenCalled();
     });
 
-    it("unsubscribe invokes underlying unsubscribe", (done) => {
+    it("unsubscribe invokes underlying unsubscribe", async () => {
         spyOn(mockIpc, "removeListener").and.callThrough();
-        bus.unsubscribe({ topic: "topic", listener: callback }).then(done);
+        await bus.unsubscribe({ topic: "topic", listener: callback });
         expect(mockIpc.removeListener).toHaveBeenCalledWith("topic", jasmine.any(Function));
     });
 
-    it("publish invokes underling publish", (done) => {
+    it("publish invokes underling publish", async () => {
         const message: any = {};
         spyOn(mockIpc, "send").and.callThrough();
         spyOn(mockWindow.webContents, "send").and.callThrough();
-        bus.publish("topic", message).then(done);
+        await bus.publish("topic", message);
         expect(mockIpc.send).toHaveBeenCalledWith("topic", message);
     });
 
-    it("publish in main invokes callback in main", () => {
+    it("publish in main invokes callback in main", async () => {
         const message: any = {};
         const ipc = new MockMainIpc();
         spyOn(ipc, "listeners").and.callThrough();
         const localBus = new ElectronMessageBus(<any> ipc, mockWindow);
-        localBus.publish("topic", message);
+        await localBus.publish("topic", message);
         expect(ipc.listeners).toHaveBeenCalledWith("topic");
     });
 
-    it("publish with optional name invokes underling send", (done) => {
+    it("publish with optional name invokes underling send", async () => {
         const message: any = {};
-        bus.publish("topic", message, { name: "target" }).then(done);
+        await bus.publish("topic", message, { name: "target" });
     });
 });
 
@@ -878,7 +813,7 @@ describe("ElectronWindowManager", () => {
     });
 
     describe("main ipc handlers", () => {
-        it ("setname sets and returns supplied name", ()=> {
+        it ("setname sets and returns supplied name", () => {
             const win: MockWindow = new MockWindow();
             spyOn((<any>mgr).browserWindow, "fromId").and.returnValue(win);
             const event: any = {};
@@ -999,7 +934,7 @@ describe("ElectronWindowManager", () => {
 
         it("move updates other grouped window bounds", () => {
             mgr.groupWindows(target, win1, win2);
-            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
+            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);
             win1.setBounds({ x: 10, y: 1, width: 2, height: 3});
 
             expect(target.getBounds().x).toEqual(10);
@@ -1023,7 +958,7 @@ describe("ElectronWindowManager", () => {
             expect(win1.group).toBeDefined();
             expect(win2.group).toBeDefined();
 
-            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
+            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);
             mgr.ungroupWindows(win1, win2);
 
             expect(win1.group).toBeNull();
@@ -1032,7 +967,7 @@ describe("ElectronWindowManager", () => {
 
         it ("unhooks orphanded grouped window", () => {
             mgr.groupWindows(target, win1, win2);
-            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);            
+            spyOn((<any>mgr).browserWindow, "getAllWindows").and.returnValue([target, win1, win2]);
             spyOn(target, "removeListener").and.callThrough();
 
             mgr.ungroupWindows(win1, win2);
@@ -1085,37 +1020,34 @@ describe("ElectronDisplayManager", () => {
         expect(container.screen).toBeDefined();
     });
 
-    it("getPrimaryMonitor", (done) => {
-        container.screen.getPrimaryDisplay().then(display => {
-            expect(display).toBeDefined();
-            expect(display.id).toBe("primary");
-            expect(display.scaleFactor).toBe(1);
-            
-            expect(display.bounds.x).toBe(2);
-            expect(display.bounds.y).toBe(3);
-            expect(display.bounds.width).toBe(4);
-            expect(display.bounds.height).toBe(5);
-
-            expect(display.workArea.x).toBe(6);
-            expect(display.workArea.y).toBe(7);
-            expect(display.workArea.width).toBe(8);
-            expect(display.workArea.height).toBe(9);
-        }).then(done);
+    it("getPrimaryMonitor", async () => {
+        const display = await container.screen.getPrimaryDisplay();
+        expect(display).toBeDefined();
+        expect(display.id).toBe("primary");
+        expect(display.scaleFactor).toBe(1);
+        
+        expect(display.bounds.x).toBe(2);
+        expect(display.bounds.y).toBe(3);
+        expect(display.bounds.width).toBe(4);
+        expect(display.bounds.height).toBe(5);
+        
+        expect(display.workArea.x).toBe(6);
+        expect(display.workArea.y).toBe(7);
+        expect(display.workArea.width).toBe(8);
+        expect(display.workArea.height).toBe(9);
     });
 
-    it ("getAllDisplays", (done) => {
-        container.screen.getAllDisplays().then(displays => {
-            expect(displays).toBeDefined();
-            expect(displays.length).toBe(2);
-            expect(displays[0].id).toBe("primary");
-            expect(displays[1].id).toBe("secondary");
-        }).then(done);
+    it ("getAllDisplays", async () => {
+        const displays = await container.screen.getAllDisplays();
+        expect(displays).toBeDefined();
+        expect(displays.length).toBe(2);
+        expect(displays[0].id).toBe("primary");
+        expect(displays[1].id).toBe("secondary");
     });
 
-    it ("getMousePosition", (done) => {
-        container.screen.getMousePosition().then(point => {
-            expect(point).toEqual({ x: 1, y: 2});
-        }).then(done);
+    it ("getMousePosition", async () => {
+        const point = await container.screen.getMousePosition();
+        expect(point).toEqual({ x: 1, y: 2});
     });    
 });
 
