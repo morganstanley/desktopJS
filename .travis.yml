@@ -15,9 +15,6 @@ script:
   - npm test
   - npm run docs
 
-after_success:
-  - "./node_modules/.bin/codecov -f ./build/coverage/*.json"
-
 cache:
   directories:
     - node_modules
