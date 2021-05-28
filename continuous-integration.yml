@@ -1,0 +1,42 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 15.x, 16x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm run bootstrap
+    - run: npm run lint
+    - run: npm run build
+    - run: npm run test
+    - run: npm run docs
+    
+    - name: GitHub Pages
+      if: ${{ github.event_name == 'push' }}
+      uses: crazy-max/ghaction-github-pages@v2.4.1
+      with:
+        commit_message: Deploy morganstanley/desktopJS to github.com/morganstanley/desktopJS:gh-pages
+        build_dir: docs/
+        jekyll: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
