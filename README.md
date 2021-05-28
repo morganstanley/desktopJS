@@ -1,7 +1,7 @@
 ![desktopJS](https://raw.githubusercontent.com/wiki/MorganStanley/desktopJS/images/logo.png)
 ==========
 [![npm version](https://badge.fury.io/js/%40morgan-stanley%2Fdesktopjs.svg)](https://www.npmjs.com/package/@morgan-stanley/desktopjs)
-[![Build Status](https://travis-ci.com/MorganStanley/desktopJS.svg?branch=main)](https://travis-ci.com/MorganStanley/desktopJS?branch=main)
+![Build Status](https://github.com/MorganStanley/desktopJS/actions/workflows/continuous-integration.yml/badge.svg?event=push)
 [![codecov](https://codecov.io/gh/MorganStanley/desktopJS/branch/main/graph/badge.svg)](https://codecov.io/gh/MorganStanley/desktopJS)
 
 desktopJS is a common API across multiple HTML5 containers. By programming to a
