@@ -32,9 +32,8 @@ jobs:
     - name: Publish
       if: success()
       run: ./deploy.sh
-      with:
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     - name: GitHub Pages
       if: success()
@@ -43,5 +42,5 @@ jobs:
         commit_message: Deploy morganstanley/desktopJS
         build_dir: docs/
         jekyll: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
