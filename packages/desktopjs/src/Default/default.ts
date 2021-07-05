@@ -386,9 +386,9 @@ export namespace Default {
                             layout.windows.push(
                                 {
                                     name: window.name,
-                                    url: (nativeWin && nativeWin.location) ? nativeWin.location.toString() : undefined,
+                                    url: nativeWin?.location?.toString(),
                                     id: window.id,
-                                    bounds: { x: nativeWin.screenX, y: nativeWin.screenY, width: nativeWin.innerWidth, height: nativeWin.innerHeight },
+                                    bounds: await window.getBounds(),
                                     options: options,
                                     state: await window.getState()
                                 }
