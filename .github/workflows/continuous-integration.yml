@@ -30,7 +30,7 @@ jobs:
     - run: npm run docs
 
     - name: Codecov
-      uses: codecov/codecov-action@v1.5.0
+      uses: codecov/codecov-action@v2.1.0
       with:
         directory: ./build/coverage
         flags: unittests
