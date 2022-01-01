@@ -41,7 +41,7 @@
     "husky": "^7.0.2",
     "jasmine": "^3.7.0",
     "lerna": "^4.0.0",
-    "lint-staged": "^11.1.1",
+    "lint-staged": "^12.1.4",
     "merge2": "^1.4.1",
     "remap-istanbul": "^0.13.0",
     "rollup": "^2.13.0",
