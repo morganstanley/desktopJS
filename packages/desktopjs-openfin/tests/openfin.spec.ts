@@ -352,12 +352,12 @@ describe("OpenFinContainerWindow", () => {
             expect(win.innerWindow.stopFlashing).toHaveBeenCalled();
         });
 
-        it("getParent does not throw", (done) => {
-            expect(() => win.getParent().then(done)).not.toThrow();
+        it("getParent does not throw", async () => {
+            expect(() => win.getParent().then()).not.toThrow();
         });
 
-        it("setParent does not throw", (done) => {
-            expect(() => win.setParent(null).then(done)).not.toThrow();
+        it("setParent does not throw", async () => {
+            expect(() => win.setParent(null).then()).not.toThrow();
         });
 
         describe("getOptions", () => {

@@ -5,22 +5,21 @@
   "license": "Apache-2.0",
   "author": "Morgan Stanley",
   "scripts": {
-    "bootstrap": "lerna bootstrap",
-    "postinstall": "npm run bootstrap",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --quiet --fix",
-    "clean": "lerna run clean",
-    "build": "lerna run build:lerna --stream",
+    "clean": "npm run clean --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
     "test": "gulp test",
     "start": "gulp server",
     "docs": "typedoc",
-    "watch": "lerna run --parallel watch",
-    "deploy": "lerna run deploy"
+    "deploy": "npm run deploy --workspaces --if-present",
+    "version": "npx lerna version --no-push --no-git-tag-version"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-typescript": "^8.2.1",
+    "@types/jasmine": "^4.0.2",
     "@types/node": "^15.0.1",
     "@typescript-eslint/eslint-plugin": "^4.6.1",
     "@typescript-eslint/parser": "^4.6.1",
@@ -40,7 +39,6 @@
     "gulp-uglify": "^3.0.2",
     "husky": "^7.0.2",
     "jasmine": "^4.0.2",
-    "lerna": "^4.0.0",
     "lint-staged": "^12.1.4",
     "merge2": "^1.4.1",
     "remap-istanbul": "^0.13.0",
@@ -60,5 +58,11 @@
     "*.{js,ts,tsx}": [
       "eslint --quiet"
     ]
-  }
+  },
+  "workspaces": [
+    "packages/desktopjs",
+    "packages/desktopjs-electron",
+    "packages/desktopjs-openfin",
+    "examples/electron"
+  ]
 }

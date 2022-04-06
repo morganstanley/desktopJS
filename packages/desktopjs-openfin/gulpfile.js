@@ -26,7 +26,7 @@ gulp.task('test', gulp.series(['build:staging'], require('../../.gulp/tasks/test
 gulp.task('dts', require('../../.gulp/tasks/dts')(gulp, pkg.name, gulpConfig.staging.dest + "/src/openfin.d.ts", "../../" + pkg.types));
 gulp.task('compress', gulp.parallel(require('../../.gulp/tasks/compress')(gulp, pkg.main, gulpConfig.dest), require('../../.gulp/tasks/compress')(gulp, gulpConfig.dest + "/iffe/desktopjs-openfin.js", gulpConfig.dest + "/iffe")));
 gulp.task('build', gulp.series('clean', gulp.parallel(['build:main', 'test']), gulp.parallel(['dts', 'compress'])));
-gulp.task('build:lerna', gulp.series('clean', gulp.parallel(['build:main', 'build:staging']), gulp.parallel(['dts', 'compress'])));
+gulp.task('build:workspaces', gulp.series('clean', gulp.parallel(['build:main', 'build:staging']), gulp.parallel(['dts', 'compress'])));
 gulp.task('watch', () => gulp.watch(['src/**/*.*', 'tests/**/*.*', '*.json', '*.js', 'node_modules/@morgan-stanley/desktopjs/dist/desktop.js'], { ignoreInitial: true, delay: 1000 }, gulp.series(gulp.parallel(['build:main', 'test']), gulp.parallel(['dts', 'compress']))));
 gulp.task('bundle', gulp.series(['build']));
 gulp.task('default', gulp.series(['bundle']));
