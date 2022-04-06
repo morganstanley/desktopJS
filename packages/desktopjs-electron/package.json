@@ -10,7 +10,10 @@
   "types": "dist/desktopjs-electron.d.ts",
   "license": "Apache-2.0",
   "author": "Morgan Stanley",
-  "repository": "https://github.com/MorganStanley/desktopJS/tree/main/packages/desktopjs-electron",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MorganStanley/desktopJS.git#main"
+  },
   "bugs": {
     "url": "https://github.com/MorganStanley/desktopJS/issues"
   },
@@ -25,15 +28,13 @@
   ],
   "scripts": {
     "clean": "gulp clean",
-    "build:lerna": "gulp build:lerna",
+    "build:workspaces": "gulp build:workspaces",
     "build": "gulp build",
     "test": "gulp test",
-    "watch": "gulp watch",
     "deploy": "npm publish"
   },
+  "homepage": "https://github.com/MorganStanley/desktopJS/tree/main#readme",
   "devDependencies": {
-    "@morgan-stanley/desktopjs": "^3.12.0",
-    "@types/jasmine": "^3.5.11",
-    "gulp": "^4.0.2"
+    "@morgan-stanley/desktopjs": "file:packages/desktopjs"
   }
 }

@@ -12,7 +12,7 @@
   "author": "Morgan Stanley",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MorganStanley/desktopJS.git"
+    "url": "git+https://github.com/MorganStanley/desktopJS.git"
   },
   "bugs": {
     "url": "https://github.com/MorganStanley/desktopJS/issues"
@@ -30,16 +30,13 @@
   ],
   "scripts": {
     "clean": "gulp clean",
-    "build:lerna": "gulp build:lerna",
+    "build:workspaces": "gulp build:workspaces",
     "build": "gulp build",
     "test": "gulp test",
-    "watch": "gulp watch",
     "deploy": "npm publish",
     "prepublishOnly": "copyfiles ../../README.md . -u 2"
   },
   "devDependencies": {
-    "@types/jasmine": "^3.5.11",
-    "copyfiles": "^2.3.0",
-    "gulp": "^4.0.2"
-  }
+  },
+  "homepage": "https://github.com/MorganStanley/desktopJS#readme"
 }

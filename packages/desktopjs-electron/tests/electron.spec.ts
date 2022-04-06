@@ -287,12 +287,12 @@ describe("ElectronContainerWindow", () => {
 
         it ("getOptions sends synchronous ipc message", async () => {
             spyOn(container.internalIpc, "sendSync").and.returnValue({ foo: "bar"});
-            spyOnProperty(win, "id", "get").and.returnValue(5);
+            spyOnProperty(win, "id", "get").and.returnValue("5");
             spyOn(container, "wrapWindow").and.returnValue(new MockWindow() as any);
             spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
 
             const options = await win.getOptions();
-            expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getOptions", { source: 5});
+            expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getOptions", { source: "5"});
             expect(options).toEqual({ foo: "bar" });
         });
 
@@ -317,7 +317,7 @@ describe("ElectronContainerWindow", () => {
                     const window = jasmine.createSpyObj("window", ["addEventListener"]);
                     spyOn(container, "getCurrentWindow").and.returnValue({ id: "2"} as any);
                     win = new ElectronContainerWindow(innerWin, container, window);
-                    spyOnProperty(win, "id", "get").and.returnValue(1);
+                    spyOnProperty(win, "id", "get").and.returnValue("1");
                     expect(() => {win.addListener("beforeunload", () => {})}).toThrowError("Event handler for 'beforeunload' can only be added on current window");
                 });
             });
@@ -343,13 +343,13 @@ describe("ElectronContainerWindow", () => {
 
         it ("getGroup sends synchronous ipc message", async () => {
             spyOn(container.internalIpc, "sendSync").and.returnValue([ 1, 5, 2 ]);
-            spyOnProperty(win, "id", "get").and.returnValue(5);
+            spyOnProperty(win, "id", "get").and.returnValue("5");
             spyOn(container, "wrapWindow").and.returnValue(new MockWindow() as any);
             spyOn(container.browserWindow, "fromId").and.returnValue(innerWin);
 
             const windows = await win.getGroup();
-            expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getGroup", { source: 5});
-            expect(container.wrapWindow).toHaveBeenCalledTimes(2);
+            expect(container.internalIpc.sendSync).toHaveBeenCalledWith("desktopJS.window-getGroup", { source: "5"});
+            expect(container.wrapWindow).toHaveBeenCalledTimes(3);
             expect(windows.length).toEqual(3);
         });
 
@@ -364,19 +364,19 @@ describe("ElectronContainerWindow", () => {
 
         it ("joinGroup sends ipc message", async () => {
             spyOn(container.internalIpc, "send").and.callThrough();
-            spyOnProperty(win, "id", "get").and.returnValue(1);
+            spyOnProperty(win, "id", "get").and.returnValue("1");
             const targetWin = new ElectronContainerWindow(innerWin, container);
-            spyOnProperty(targetWin, "id", "get").and.returnValue(2);
+            spyOnProperty(targetWin, "id", "get").and.returnValue("2");
 
             await win.joinGroup(targetWin);
-            expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-joinGroup", { source: 1, target: 2 });
+            expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-joinGroup", { source: "1", target: "2" });
         });
 
         it ("joinGroup with source == target does not send ipc message", async () => {
             spyOn(container.internalIpc, "send").and.callThrough();
-            spyOnProperty(win, "id", "get").and.returnValue(1);
+            spyOnProperty(win, "id", "get").and.returnValue("1");
             const targetWin = new ElectronContainerWindow(innerWin, container);
-            spyOnProperty(targetWin, "id", "get").and.returnValue(1);
+            spyOnProperty(targetWin, "id", "get").and.returnValue("1");
 
             await win.joinGroup(targetWin);
             expect(container.internalIpc.send).toHaveBeenCalledTimes(0);
@@ -387,16 +387,16 @@ describe("ElectronContainerWindow", () => {
             win = new ElectronContainerWindow(innerWin, container);
             (<any>container).windowManager = jasmine.createSpyObj("WindowManager", ["groupWindows"]);
             const targetWin = new ElectronContainerWindow(innerWin, container);
-            spyOnProperty(targetWin, "id", "get").and.returnValue(2);
+            spyOnProperty(targetWin, "id", "get").and.returnValue("2");
             win.joinGroup(targetWin);
             expect((<any>container).windowManager.groupWindows).toHaveBeenCalled();
         });
 
         it ("leaveGroup sends ipc message", async () => {
             spyOn(container.internalIpc, "send").and.callThrough();
-            spyOnProperty(win, "id", "get").and.returnValue(5);
+            spyOnProperty(win, "id", "get").and.returnValue("5");
             await win.leaveGroup();
-            expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-leaveGroup", { source: 5});
+            expect(container.internalIpc.send).toHaveBeenCalledWith("desktopJS.window-leaveGroup", { source: "5"});
         });
 
         it ("leaveGroup invokes method directly in main process", async () => {
