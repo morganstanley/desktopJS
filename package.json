@@ -49,6 +49,13 @@
     "typedoc": "^0.22.7",
     "typescript": "^4.3.2"
   },
+  "overrides": {
+    "minimist@<1.2.6": "1.2.6",
+    "qs@<6.8.1": "6.8.1",
+    "lodash.template@<4.5.0": "4.5.0",
+    "tar@<4.4.18": "4.4.18",
+    "glob-parent@<5.1.2": "5.1.2"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
