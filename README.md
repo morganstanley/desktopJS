@@ -1,5 +1,6 @@
 ![desktopJS](https://raw.githubusercontent.com/wiki/MorganStanley/desktopJS/images/logo.png)
 ==========
+![Lifecycle Active](https://badgen.net/badge/Lifecycle/Active/green)
 [![npm version](https://badge.fury.io/js/%40morgan-stanley%2Fdesktopjs.svg)](https://www.npmjs.com/package/@morgan-stanley/desktopjs)
 [![Build Status](https://github.com/MorganStanley/desktopJS/actions/workflows/continuous-integration.yml/badge.svg?event=push)](https://github.com/MorganStanley/desktopJS/actions/workflows/continuous-integration.yml)
 [![codecov](https://codecov.io/gh/MorganStanley/desktopJS/branch/main/graph/badge.svg)](https://codecov.io/gh/MorganStanley/desktopJS)
