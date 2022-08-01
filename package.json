@@ -16,7 +16,7 @@
     "version": "npx lerna version --no-push --no-git-tag-version"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^21.0.1",
+    "@rollup/plugin-commonjs": "^22.0.1",
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-typescript": "^8.3.3",
     "@types/jasmine": "^4.0.2",
