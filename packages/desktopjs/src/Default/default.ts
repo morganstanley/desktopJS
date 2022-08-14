@@ -322,7 +322,7 @@ export namespace Default {
                 window[DefaultContainer.windowNamePropertyKey] = newOptions.name;
             } catch (e) {
                 windowReachable = false;
-                this.log("warn",`Error proprogating properties to new window, '${e.message}'`);
+                this.log("warn",`Error propagating properties to new window, '${e.message}'`);
             }
 
             const newWindow = this.wrapWindow(window);
