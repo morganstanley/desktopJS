@@ -269,29 +269,33 @@ export namespace Default {
 
         protected onOpen(open: (...args: any[]) => Window, ...args: any[]): Window {
             const window = open.apply(this.globalWindow, args);
-            const uuid = Guid.newGuid();
 
-            try {
-                const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
-                windows[uuid] = window;
-                window[DefaultContainer.windowUuidPropertyKey] = uuid;
+            if (window)
+             {
+                const uuid = Guid.newGuid();
 
-                // Attach event handlers on window to cleanup reference on global windows object.  beforeunload -> unload to prevent
-                // unload being called on open within Chrome.
-                window.addEventListener("beforeunload", () => {
-                    window.addEventListener("unload", () => {
-                        delete windows[uuid];
+                try {
+                    const windows = this.globalWindow[DefaultContainer.windowsPropertyKey];
+                    windows[uuid] = window;
+                    window[DefaultContainer.windowUuidPropertyKey] = uuid;
+
+                    // Attach event handlers on window to cleanup reference on global windows object.  beforeunload -> unload to prevent
+                    // unload being called on open within Chrome.
+                    window.addEventListener("beforeunload", () => {
+                        window.addEventListener("unload", () => {
+                            delete windows[uuid];
+                        });
                     });
-                });
 
-                // Propagate the global windows object to the new window
-                window[DefaultContainer.windowsPropertyKey] = windows;
-            } catch (e) {
-                this.log("warn", `Error tracking new window, '${e.message}'`);
+                    // Propagate the global windows object to the new window
+                    window[DefaultContainer.windowsPropertyKey] = windows;
+                } catch (e) {
+                    this.log("warn", `Error tracking new window, '${e.message}'`);
+                }
+
+                Container.emit("window-created", { name: "window-created", windowId: uuid });
+                ContainerWindow.emit("window-created", { name: "window-created", windowId: uuid });
             }
-
-            Container.emit("window-created", { name: "window-created", windowId: uuid });
-            ContainerWindow.emit("window-created", { name: "window-created", windowId: uuid });
 
             return window;
         }
