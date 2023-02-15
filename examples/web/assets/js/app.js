@@ -70,6 +70,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		$("#button-joingroup").prop("disabled", !container.getCurrentWindow().allowGrouping);
 		$("#button-leavegroup").prop("disabled", !container.getCurrentWindow().allowGrouping);
 
+		$("#button-notification").prop("disabled", isOpenFin());
+
 		container.addListener("window-created", (e) => container.log("info", "Window created: " + e.window + ", " + e.windowId + ", " + e.windowName));
 		container.addListener("layout-loaded", (e) => container.log("info", "Layout loaded"));
 		container.addListener("layout-saved", (e) => container.log("info", "Layout saved"));
@@ -90,13 +92,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 		// Enable popovers
 		$('[data-toggle="popover"]').popover();
-
-		if (container.getCurrentWindow().id === "desktopJS") {
-			snapAssist = new desktopJS.SnapAssistWindowManager(container,
-				{
-					windowStateTracking: desktopJS.WindowStateTracking.Main | desktopJS.WindowStateTracking.Group
-				});
-		}
 	});
 });
 
@@ -222,4 +217,9 @@ function getState() {
 /** Invoked by window layout loading to restore state specific to this window */
 function setState(state) {
 	this.container.log("info", state);
+}
+
+function isOpenFin() {
+	const pattern = /OpenFin/;
+	return pattern.test(window.navigator.userAgent);
 }
