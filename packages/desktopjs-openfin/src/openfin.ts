@@ -152,22 +152,6 @@ export class OpenFinContainerWindow extends ContainerWindow {
         });
     }
 
-    public get allowGrouping() {
-        return false;
-    }
-
-    public getGroup(): Promise<ContainerWindow[]> {
-        return Promise.reject(new Error("Not supported"));
-    }
-
-    public joinGroup(target: ContainerWindow): Promise<void> {
-        return Promise.reject(new Error("Not supported"));
-    }
-
-    public leaveGroup(): Promise<void> {
-        return Promise.reject(new Error("Not supported"));
-    }
-
     public bringToFront(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.innerWindow.bringToFront(resolve, reject);
@@ -536,10 +520,6 @@ export class OpenFinContainer extends WebContainerBase {
                 resolve(this.wrapWindow(ofWin));
             }, reject);
         });
-    }
-
-    public showNotification(title: string, options?: NotificationOptions) {
-        throw new Error("Not supported");
     }
 
     protected getMenuHtml() {

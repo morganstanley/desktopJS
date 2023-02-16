@@ -424,24 +424,6 @@ describe("OpenFinContainerWindow", () => {
         });
     });
 
-    describe("window grouping", () => {
-        it("allowGrouping is true", () => {
-            expect(win.allowGrouping).toEqual(false);
-        });
-
-        it ("getGroup not supported", async () => {
-            await expectAsync(win.getGroup()).toBeRejectedWithError("Not supported");
-        });
-
-        it ("joinGroup not supported", async () => {
-            await expectAsync(win.joinGroup(null)).toBeRejectedWithError("Not supported");
-        });
-
-        it ("leaveGroup not supported", async () => {
-            await expectAsync(win.leaveGroup()).toBeRejectedWithError("Not supported");
-        });
-    });
-
     it("bringToFront invokes underlying bringToFront", async () => {
         spyOn(innerWin, "bringToFront").and.callThrough();
         await win.bringToFront();
@@ -712,10 +694,6 @@ describe("OpenFinContainer", () => {
     });
 
     describe("notifications", () => {
-        it("showNotification not supported", () => {
-            expect(() => container.showNotification("title", { body: "Test message", url: "notification.html" })).toThrowError("Not supported");
-        });
-
         it("requestPermission not supported", async () => {
             await expectAsync(globalWindow["Notification"].requestPermission()).toBeRejectedWithError("Not supported");
         });
