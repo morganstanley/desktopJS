@@ -92,6 +92,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
 		// Enable popovers
 		$('[data-toggle="popover"]').popover();
+
+		if (!isOpenFin() && container.getCurrentWindow().id === "desktopJS") {
+			snapAssist = new desktopJS.SnapAssistWindowManager(container,
+				{
+					windowStateTracking: desktopJS.WindowStateTracking.Main | desktopJS.WindowStateTracking.Group
+				});
+		}
 	});
 });
 
