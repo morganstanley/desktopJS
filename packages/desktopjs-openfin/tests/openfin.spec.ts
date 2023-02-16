@@ -40,7 +40,6 @@ class MockDesktop {
     main(callback): any { callback(); }
     GlobalHotkey: any = { };
     Window: any = MockWindow;
-    Notification(): any { return {}; }
     InterApplicationBus: any = new MockInterApplicationBus();
     Application: any = {
         getCurrent() {
@@ -163,13 +162,6 @@ class MockWindow {
         callback({ url: "url", customData: this.customData });
         return {};
     }
-
-    getGroup(callback: any, errorCallback: any) {
-        callback([ MockWindow.singleton]);
-    }
-
-    joinGroup(target: any, callback: any, errorCallback: any) { }
-    leaveGroup(callback: any, errorCallback: any) { }
 
     bringToFront(callback:any, errorCallback: any) {
         callback();
@@ -429,42 +421,6 @@ describe("OpenFinContainerWindow", () => {
             spyOn(win.innerWindow, "removeEventListener").and.callThrough()
             win.removeListener(unmappedEvent, () => { });
             expect(win.innerWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, jasmine.any(Function));
-        });
-    });
-
-    describe("window grouping", () => {
-        it("allowGrouping is true", () => {
-            expect(win.allowGrouping).toEqual(true);
-        });
-
-        it ("getGroup invokes underlying getGroup", async () => {
-            spyOn(innerWin, "getGroup").and.callFake(resolve => {
-                resolve([ win ] );
-            });
-
-            const windows = await win.getGroup();
-            expect(innerWin.getGroup).toHaveBeenCalled();
-            expect(windows).toBeDefined();
-            expect(windows.length).toEqual(1);
-        });
-
-        it ("joinGroup invokes underlying joinGroup", async () => {
-            spyOn(innerWin, "joinGroup").and.callFake((target, resolve) => resolve());
-            const window = new OpenFinContainerWindow(new MockWindow("Fake"));
-            await win.joinGroup(window);
-            expect(innerWin.joinGroup).toHaveBeenCalledWith(window.innerWindow, jasmine.any(Function), jasmine.any(Function));
-        });
-
-        it ("joinGroup with source == target does not invoke joinGroup", async () => {
-            spyOn(innerWin, "joinGroup").and.callFake((target, resolve) => resolve());
-            await win.joinGroup(win);
-            expect(innerWin.joinGroup).toHaveBeenCalledTimes(0);
-        });
-
-        it ("leaveGroup invokes underlying leaveGroup", async () => {
-            spyOn(innerWin, "leaveGroup").and.callFake(resolve => resolve());
-            await win.leaveGroup();
-            expect(innerWin.leaveGroup).toHaveBeenCalled();
         });
     });
 
@@ -738,22 +694,12 @@ describe("OpenFinContainer", () => {
     });
 
     describe("notifications", () => {
-        it("showNotification passes message and invokes underlying notification api", () => {
-            spyOn(desktop, "Notification").and.stub();
-            container.showNotification("title", { body: "Test message", url: "notification.html" });
-            expect(desktop.Notification).toHaveBeenCalledWith({ url: "notification.html", message: "Test message" });
+        it("requestPermission not supported", async () => {
+            await expectAsync(globalWindow["Notification"].requestPermission()).toBeRejectedWithError("Not supported");
         });
 
-        it("requestPermission granted", async () => {
-            await globalWindow["Notification"].requestPermission((permission) => {
-                expect(permission).toEqual("granted");
-            });
-        });
-
-        it("notification api delegates to showNotification", () => {
-            spyOn(container, "showNotification");
-            new globalWindow["Notification"]("title", { body: "Test message" });
-            expect(container.showNotification).toHaveBeenCalled();
+        it("notification api not supported", () => {
+            expect(() => new globalWindow["Notification"]("title", { body: "Test message" })).toThrowError("Not supported");
         });
     });
 

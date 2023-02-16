@@ -18,7 +18,7 @@
 
 import {
     registerContainer, ContainerWindow, PersistedWindowLayout, Rectangle, Container, WebContainerBase,
-    ScreenManager, Display, Point, ObjectTransform, PropertyMap, NotificationOptions, ContainerNotification,
+    ScreenManager, Display, Point, ObjectTransform, PropertyMap, NotificationOptions,
     TrayIconDetails, MenuItem, Guid, MessageBus, MessageBusSubscription, MessageBusOptions, EventArgs,
     GlobalShortcutManager, WindowEventArgs
 } from "@morgan-stanley/desktopjs";
@@ -149,40 +149,6 @@ export class OpenFinContainerWindow extends ContainerWindow {
     public setBounds(bounds: Rectangle): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.innerWindow.setBounds(bounds.x, bounds.y, bounds.width, bounds.height, resolve, reject);
-        });
-    }
-
-    public get allowGrouping() {
-        return true;
-    }
-
-    public getGroup(): Promise<ContainerWindow[]> {
-        return new Promise<ContainerWindow[]>((resolve, reject) => {
-            this.innerWindow.getGroup(windows => {
-                resolve(windows.map(window => new OpenFinContainerWindow(window)));
-            }, reject);
-        });
-    }
-
-    public joinGroup(target: ContainerWindow): Promise<void> {
-        if (!target || target.id === this.id) {
-            return Promise.resolve();
-        }
-
-        return new Promise<void>((resolve, reject) => {
-            this.innerWindow.joinGroup(target.innerWindow, () => {
-                ContainerWindow.emit("window-joinGroup", { name: "window-joinGroup", windowId: this.id, targetWindowId: target.id } );
-                resolve();
-            }, reject);
-        });
-    }
-
-    public leaveGroup(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            this.innerWindow.leaveGroup(() => {
-                ContainerWindow.emit("window-leaveGroup", { name: "window-leaveGroup", windowId: this.id } );
-                resolve();
-            }, reject);
         });
     }
 
@@ -332,8 +298,6 @@ export class OpenFinContainer extends WebContainerBase {
     private static readonly trayIconMenuLeftOffset: number = 4;
     private static readonly trayIconMenuTopOffset: number = 23;
 
-    private static readonly notificationGuid: string = "A21B62E0-16B1-4B10-8BE3-BBB6B489D862";
-
     /**
      * Gets or sets whether to replace the native web Notification API with OpenFin notifications.
      * @type {boolean}
@@ -352,12 +316,6 @@ export class OpenFinContainer extends WebContainerBase {
     };
 
     public windowOptionsMap: PropertyMap = OpenFinContainer.windowOptionsMap;
-
-    public static readonly notificationOptionsMap: PropertyMap = {
-        body: { target: "message" }
-    };
-
-    public notificationOptionsMap: PropertyMap = OpenFinContainer.notificationOptionsMap;
 
     public static menuHtml =
         `<html>
@@ -478,21 +436,13 @@ export class OpenFinContainer extends WebContainerBase {
 
     protected registerNotificationsApi() {
         if (typeof this.globalWindow !== "undefined" && this.globalWindow) {
-            // Define owningContainer for closure to inner class
-            // eslint-disable-next-line @typescript-eslint/no-this-alias
-            const owningContainer: OpenFinContainer = this;
-
-            this.globalWindow["Notification"] = class OpenFinNotification extends ContainerNotification {
+            this.globalWindow["Notification"] = class OpenFinNotification {
                 constructor(title: string, options?: NotificationOptions) {
-                    super(title, options);
+                    throw new Error("Not supported");
+                }
 
-                    options["notification"] = this;
-
-                    // Forward OpenFin notification events back to Notification API
-                    options["onClick"] = (event) => { if (this.onclick) { this.onclick(event); } };
-                    options["onError"] = (event) => { if (this.onerror) { this.onerror(event); } };
-
-                    owningContainer.showNotification(this.title, this.options);
+                static async requestPermission(callback?: NotificationPermissionCallback): Promise<string> { 
+                    throw new Error("Not supported");
                 }
             };
         }
@@ -570,10 +520,6 @@ export class OpenFinContainer extends WebContainerBase {
                 resolve(this.wrapWindow(ofWin));
             }, reject);
         });
-    }
-
-    public showNotification(title: string, options?: NotificationOptions) {
-        const msg = new this.desktop.Notification(ObjectTransform.transformProperties(options, this.notificationOptionsMap));
     }
 
     protected getMenuHtml() {
@@ -714,7 +660,7 @@ export class OpenFinContainer extends WebContainerBase {
             const mainWindow = this.getMainWindow();
             const promises: Promise<void>[] = [];
 
-            windows.filter(window => window.name !== "queueCounter" && !window.name.startsWith(OpenFinContainer.notificationGuid))
+            windows.filter(window => window.name !== "queueCounter")
                 .forEach(djsWindow => {
                     // eslint-disable-next-line no-async-promise-executor
                     promises.push(new Promise<void>(async (innerResolve, innerReject) => {
@@ -728,7 +674,6 @@ export class OpenFinContainer extends WebContainerBase {
                                     innerResolve();
                                 } else {
                                     delete (<any>options).show; // show is an undocumented option that interferes with the createWindow mapping of show -> autoShow
-                                    window.getGroup(group => {
                                         layout.windows.push(
                                             {
                                                 name: window.name,
@@ -737,11 +682,9 @@ export class OpenFinContainer extends WebContainerBase {
                                                 main: (mainWindow && (mainWindow.name === window.name)),
                                                 options: options,
                                                 state: state,
-                                                bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height },
-                                                group: group.map(win => win.name)
+                                                bounds: { x: bounds.left, y: bounds.top, width: bounds.width, height: bounds.height }
                                             });
                                         innerResolve();
-                                    }, innerReject);
                                 }
                             }, innerReject);
                         }, innerReject);
