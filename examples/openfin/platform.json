@@ -1,0 +1,28 @@
+{
+    "devtools_port": 9090,
+    "platform": {
+        "name": "desktopJS Platform Demo",
+        "description": "desktopJS Platform Demo",
+        "uuid": "desktopJS-platform",
+        "autoShow": false,
+        "icon": "http://localhost:8000/favicon.ico"
+    },
+    "snapshot": {
+        "windows": [
+            {
+                "defaultWidth": 850,
+                "defaultHeight": 500,
+                "saveWindowState": false,
+                "defaultCentered": true,
+                "url": "http://localhost:8000/index.html"
+            }
+        ]
+    },
+    "runtime": {
+        "arguments": "",
+        "version": "22.94.65.4"
+    },
+    "shortcut": {
+        "target": []
+    }
+}
