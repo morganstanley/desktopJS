@@ -20,7 +20,13 @@ class MockDesktop {
     public static application: any = {
         eventListeners: new Map(),
         uuid: "uuid",
-        getChildWindows(callback) { callback([MockWindow.singleton, new MockWindow("Window2", JSON.stringify({ persist: false }))]); },
+        getChildWindows(callback) {
+            callback([
+                MockWindow.singleton,
+                new MockWindow("Window2", JSON.stringify({ persist: false })),
+                MockWindow.internalGeneratedWindow
+            ]);
+        },
         setTrayIcon() { },
         setShortcuts(config) { },
         getShortcuts(callback) { callback(); },
@@ -74,6 +80,7 @@ class MockInterApplicationBus {
 
 class MockWindow {
     static singleton: MockWindow = new MockWindow("Singleton");
+    static internalGeneratedWindow = new MockWindow("internal-generated-window-8c00892a-8e15-4f6f-9674-ef58ed552e4a");
     public nativeWindow: Window = jasmine.createSpyObj("window", ["location", "getState", "setState"]);
     private customData: string;
 
@@ -611,7 +618,7 @@ describe("OpenFinContainer", () => {
         it("getAllWindows returns wrapped native windows", async () => {
             const windows = await container.getAllWindows();
             expect(windows).not.toBeNull();
-            expect(windows.length).toEqual(3);
+            expect(windows.length).toEqual(4);
             expect(windows[0].innerWindow).toEqual(MockWindow.singleton);
         });
 
@@ -645,6 +652,12 @@ describe("OpenFinContainer", () => {
             expect(MockWindow.singleton.close).toHaveBeenCalled();
         });
 
+        it(`closeAllWindows doesnt invokes window.close which includes 'internal-generated-window' in its name`, async () => {
+            spyOn(MockWindow.internalGeneratedWindow, "close");
+            await (<any>container).closeAllWindows();
+            expect(MockWindow.internalGeneratedWindow.close).not.toHaveBeenCalled();
+        });
+
         it("saveLayout invokes underlying saveLayoutToStorage", async () => {
             spyOn<any>(container, "saveLayoutToStorage").and.stub();
             const layout = await container.saveLayout("Test");
@@ -652,11 +665,12 @@ describe("OpenFinContainer", () => {
             expect((<any>container).saveLayoutToStorage).toHaveBeenCalledWith("Test", layout);
         });
 
-        it("buildLayout skips windows with persist false", async () => {
+        it(`buildLayout skips windows with persist false and which includes 'internal-generated-window' in its name`, async () => {
             const layout = await container.buildLayout();
             expect(layout).toBeDefined();
             expect(layout.windows.length).toEqual(2);
             expect(layout.windows[0].name === "Singleton");
+            expect(layout.windows[1].name === "Window2");
         });
 
         it("setOptions allows the auto startup settings to be turned on", () => {

@@ -620,7 +620,9 @@ export class OpenFinContainer extends WebContainerBase {
 
             this.desktop.Application.getCurrent().getChildWindows(windows => {
                 windows.forEach(window => {
-                    windowClosing.push(new Promise<void>((innerResolve, innerReject) => window.close(true, innerResolve, innerReject)));
+                    if (!window.name.includes('internal-generated-window')) {
+                        windowClosing.push(new Promise<void>((innerResolve, innerReject) => window.close(true, innerResolve, innerReject)));
+                    }
                 });
 
                 Promise.all(windowClosing).then(() => resolve());
@@ -660,7 +662,7 @@ export class OpenFinContainer extends WebContainerBase {
             const mainWindow = this.getMainWindow();
             const promises: Promise<void>[] = [];
 
-            windows.filter(window => window.name !== "queueCounter")
+            windows.filter(window => window.name !== "queueCounter" && !window.name.includes('internal-generated-window'))
                 .forEach(djsWindow => {
                     // eslint-disable-next-line no-async-promise-executor
                     promises.push(new Promise<void>(async (innerResolve, innerReject) => {
