@@ -20,7 +20,7 @@
     },
     "runtime": {
         "arguments": "",
-        "version": "22.94.65.4"
+        "version": "stable"
     },
     "shortcut": {
         "target": []
