@@ -20,13 +20,7 @@ class MockDesktop {
     public static application: any = {
         eventListeners: new Map(),
         uuid: "uuid",
-        getChildWindows(callback) {
-            callback([
-                MockWindow.singleton,
-                new MockWindow("Window2", JSON.stringify({ persist: false })),
-                MockWindow.internalGeneratedWindow
-            ]);
-        },
+        getChildWindows(callback) { callback([MockWindow.singleton, new MockWindow("Window2", JSON.stringify({ persist: false }))]); },
         setTrayIcon() { },
         setShortcuts(config) { },
         getShortcuts(callback) { callback(); },
@@ -41,7 +35,8 @@ class MockDesktop {
             for (const listener of this.listeners(eventName)) {
                 listener(...eventArgs);
             }
-        }
+        },
+        getManifest(callback) { callback(); }
     }
     main(callback): any { callback(); }
     GlobalHotkey: any = { };
@@ -80,7 +75,6 @@ class MockInterApplicationBus {
 
 class MockWindow {
     static singleton: MockWindow = new MockWindow("Singleton");
-    static internalGeneratedWindow = new MockWindow("internal-generated-window-8c00892a-8e15-4f6f-9674-ef58ed552e4a");
     public nativeWindow: Window = jasmine.createSpyObj("window", ["location", "getState", "setState"]);
     private customData: string;
 
@@ -463,10 +457,38 @@ describe("OpenFinContainer", () => {
         expect(info).toEqual("RVM/1 Runtime/2");
     });
 
-    it("ready invokes underlying main", async () => {
-        spyOn(desktop, "main").and.callThrough();
-        await container.ready();
-        expect(desktop.main).toHaveBeenCalled();
+    describe("ready", () => {
+        it("invokes underlying main (non platform manifest)", async () => {
+            spyOn<any>(container, "getIsPlatform").and.returnValue(Promise.resolve(false));
+            spyOn<any>(container, "getSnapshotWindow");
+            spyOn(desktop, "main").and.callThrough();
+
+            await container.ready();
+
+            expect(desktop.main).toHaveBeenCalled();
+
+            const win = container.getMainWindow();
+            expect(win).toBeDefined();
+            expect(win.innerWindow).toEqual(MockWindow.singleton);
+            expect((container as any).getSnapshotWindow).not.toHaveBeenCalled();
+        });
+
+        it("invokes underlying main (platform manifest)", async () => {
+            const windowName = "internal-generated-window-9e13a861-9a94-4ef7-b116-5e493a344304";
+            const mockWindow = new MockWindow(windowName);
+
+            spyOn<any>(container, "getIsPlatform").and.returnValue(Promise.resolve(true));
+            spyOn<any>(container, "getSnapshotWindow").and.returnValue(Promise.resolve(container.wrapWindow(mockWindow)));
+            spyOn(desktop, "main").and.callThrough();
+
+            await container.ready();
+
+            expect(desktop.main).toHaveBeenCalled();
+
+            const win = container.getMainWindow();
+            expect(win).toBeDefined();
+            expect(win.innerWindow).toEqual(mockWindow);
+        });
     });
 
     describe("ctor options", () => {
@@ -540,10 +562,27 @@ describe("OpenFinContainer", () => {
         });
     });
 
-    it("getMainWindow returns wrapped inner window", async () => {
-        const win: ContainerWindow = await container.getMainWindow();
-        expect(win).toBeDefined();
-        expect(win.innerWindow).toEqual(MockWindow.singleton);
+    describe("getMainWindow", () => {
+        it("getMainWindow returns wrapped inner window (non platform manifest)", async () => {
+            await container.ready();
+            const win: ContainerWindow = container.getMainWindow();
+            expect(win).toBeDefined();
+            expect(win.innerWindow).toEqual(MockWindow.singleton);
+        });
+
+        it("getMainWindow returns wrapped inner window (platform manifest)", async () => {
+            const windowName = "internal-generated-window-9e13a861-9a94-4ef7-b116-5e493a344304";
+            const mockWindow = new MockWindow(windowName);
+
+            spyOn<any>(container, "getIsPlatform").and.returnValue(Promise.resolve(true));
+            spyOn<any>(container, "getSnapshotWindow").and.returnValue(Promise.resolve(container.wrapWindow(mockWindow)));
+
+            await container.ready();
+
+            const win: ContainerWindow = container.getMainWindow();
+            expect(win).toBeDefined();
+            expect(win.innerWindow).toEqual(mockWindow);
+        });
     });
 
     it("getCurrentWindow returns wrapped inner window", async () => {
@@ -618,7 +657,7 @@ describe("OpenFinContainer", () => {
         it("getAllWindows returns wrapped native windows", async () => {
             const windows = await container.getAllWindows();
             expect(windows).not.toBeNull();
-            expect(windows.length).toEqual(4);
+            expect(windows.length).toEqual(3);
             expect(windows[0].innerWindow).toEqual(MockWindow.singleton);
         });
 
@@ -646,16 +685,41 @@ describe("OpenFinContainer", () => {
             });
         });
 
-        it("closeAllWindows invokes window.close", async () => {
-            spyOn(MockWindow.singleton, "close").and.callThrough();
-            await (<any>container).closeAllWindows();
-            expect(MockWindow.singleton.close).toHaveBeenCalled();
-        });
+        describe("closeAllWindows", () => {
+            let app, current;
+            beforeEach(() => {
+                app = desktop.Application;
+                current = app.getCurrent();
+            });
 
-        it(`closeAllWindows doesnt invokes window.close which includes 'internal-generated-window' in its name`, async () => {
-            spyOn(MockWindow.internalGeneratedWindow, "close");
-            await (<any>container).closeAllWindows();
-            expect(MockWindow.internalGeneratedWindow.close).not.toHaveBeenCalled();
+            it("invokes window.close on child (non platform manifest)", async () => {
+                const mockWindow = new MockWindow("window-name");
+
+                spyOn(current, "getChildWindows").and.callFake((callback) => callback([mockWindow]));
+                spyOn(mockWindow, "close").and.callThrough();
+                spyOn(MockWindow.singleton, "close");
+
+                await container.ready();
+                await (<any>container).closeAllWindows();
+
+                expect(mockWindow.close).toHaveBeenCalled();
+                expect(MockWindow.singleton.close).not.toHaveBeenCalled();
+            });
+
+            it("doesn't invokes window.close on snapshot window which is the main window (platform manifest)", async () => {
+                const windowName = "internal-generated-window-9e13a861-9a94-4ef7-b116-5e493a344304";
+                const mockWindow = new MockWindow(windowName);
+
+                spyOn(current, "getChildWindows").and.callFake((callback) => callback([MockWindow.singleton, mockWindow]));
+                spyOn(container, "getMainWindow").and.returnValue(container.wrapWindow(mockWindow));
+                spyOn(MockWindow.singleton, "close").and.callThrough();
+                spyOn(mockWindow, "close");
+
+                await (<any>container).closeAllWindows();
+
+                expect(MockWindow.singleton.close).toHaveBeenCalled();
+                expect(mockWindow.close).not.toHaveBeenCalled();
+            });
         });
 
         it("saveLayout invokes underlying saveLayoutToStorage", async () => {
@@ -665,12 +729,48 @@ describe("OpenFinContainer", () => {
             expect((<any>container).saveLayoutToStorage).toHaveBeenCalledWith("Test", layout);
         });
 
-        it(`buildLayout skips windows with persist false and which includes 'internal-generated-window' in its name`, async () => {
-            const layout = await container.buildLayout();
-            expect(layout).toBeDefined();
-            expect(layout.windows.length).toEqual(2);
-            expect(layout.windows[0].name === "Singleton");
-            expect(layout.windows[1].name === "Window2");
+        describe("buildLayout", () => {
+            let app, current;
+            beforeEach(() => {
+                app = desktop.Application;
+                current = app.getCurrent();
+            });
+
+            it("skips windows with persist false (non platform manifest)", async () => {
+                await container.ready();
+                const layout = await container.buildLayout();
+
+                expect(layout).toBeDefined();
+                expect(layout.windows.length).toEqual(2);
+                expect(layout.windows[0].name).toBe(MockWindow.singleton.name);
+                expect(layout.windows[0].main).toBeTrue();
+            });
+
+            it("skips provider window (platform manifest)", async () => {
+                const mainWindowName = "snapshot-window-name";
+                const mockMainWindow = new MockWindow(mainWindowName);
+
+                // provider window has uuid and name = uuid
+                const mockProviderWindow = new MockWindow("uuid");
+
+                spyOn<any>(container, "getIsPlatform").and.returnValue(Promise.resolve(true));
+                spyOn<any>(container, "getSnapshotWindow").and.returnValue(Promise.resolve(container.wrapWindow(mockMainWindow)));
+                spyOn(current, "getWindow").and.returnValue(mockProviderWindow);
+                spyOn(current, "getChildWindows").and.callFake((callback) => callback([MockWindow.singleton, mockMainWindow]));
+
+                // this will set the isPlatform = true and mainWindow = snapshot window
+                await container.ready();
+
+                const layout = await container.buildLayout();
+
+                expect(layout).toBeDefined();
+                expect(layout.windows.length).toEqual(2);
+                expect(layout.windows[0].name).toBe("Singleton");
+                expect(layout.windows[0].main).toBeFalse();
+
+                expect(layout.windows[1].name).toBe(mainWindowName);
+                expect(layout.windows[1].main).toBeTrue();
+            });
         });
 
         it("setOptions allows the auto startup settings to be turned on", () => {
@@ -737,6 +837,128 @@ describe("OpenFinContainer", () => {
         spyOn(MockDesktop.application, "setTrayIcon").and.stub();
         container.addTrayIcon({ icon: 'icon', text: 'Text' }, () => { });
         expect(MockDesktop.application.setTrayIcon).toHaveBeenCalledWith("icon", jasmine.any(Function), jasmine.any(Function), jasmine.any(Function));
+    });
+
+    describe("getIsPlatform", () => {
+        it("return true", async () => {
+            const platformConfig = { platform: {} };
+            spyOn<any>(container, "getManifest").and.returnValue(Promise.resolve(platformConfig));
+            const result = await (container as any).getIsPlatform();
+            expect(result).toEqual(true);
+        });
+
+        it("return false", async () => {
+            const nonPlatformConfig = { startup_app: {} };
+            spyOn<any>(container, "getManifest").and.returnValue(Promise.resolve(nonPlatformConfig));
+            const result = await (container as any).getIsPlatform();
+            expect(result).toEqual(false);
+        });
+
+        it("throws error", async () => {
+            spyOn<any>(container, "getManifest").and.returnValue(Promise.reject(new Error("something went wrong")));
+            await expectAsync((container as any).getIsPlatform()).toBeRejectedWithError("something went wrong");
+        })
+    });
+
+    describe("getManifest", () => {
+        let app, current;
+
+        beforeEach(() => {
+            app = desktop.Application;
+            current = app.getCurrent();
+        });
+
+        it("returns manifest", async () => {
+            const sampleManifest = { runtime: { version: "stable" }, platform: {}, snapshot: { windows: [] } };
+            spyOn(current, "getManifest").and.callFake((callback) => callback(sampleManifest));
+
+            const result = await (container as any).getManifest();
+
+            expect(result).toBeDefined();
+            expect(result).toEqual(sampleManifest);
+        });
+
+        it("throws error", async () => {
+            spyOn(current, "getManifest").and.callFake(() => {
+                throw new Error("something went wrong");
+            });
+
+            await expectAsync((container as any).getManifest()).toBeRejectedWithError("something went wrong");
+        });
+    });
+
+    describe("getSnapshotWindowName", () => {
+        it("returns null if window name is not provided in manifest's snapshot windows", async () => {
+            const platformConfig = { platform: { }, snapshot: { windows: [{ url: "url" }] } };
+            spyOn<any>(container, "getManifest").and.returnValue(Promise.resolve(platformConfig));
+            const result = await (container as any).getSnapshotWindowName();
+            expect(result).toBeNull();
+        });
+
+        it("returns snapshot window name", async () => {
+            const windowName = "window-name";
+            const platformConfig = { platform: { }, snapshot: { windows: [{ name: windowName, url: "url" }] } };
+            spyOn<any>(container, "getManifest").and.returnValue(Promise.resolve(platformConfig));
+            const result = await (container as any).getSnapshotWindowName();
+            expect(result).toEqual(windowName);
+        });
+
+        describe("throws error", () => {
+            it("getManifest", async () => {
+                spyOn<any>(container, "getManifest").and.returnValue(Promise.reject(new Error("something went wrong")));
+                await expectAsync((container as any).getSnapshotWindowName()).toBeRejectedWithError("something went wrong");
+            });
+
+            it("windows property not provided in manifest's snapshot", async () => {
+                const platformConfig = { platform: { }, snapshot: { } };
+                spyOn<any>(container, "getManifest").and.returnValue(Promise.resolve(platformConfig));
+                await expectAsync((container as any).getSnapshotWindowName()).toBeRejectedWithError("Valid snapshot window not found");
+            });
+
+            it("invalid windows property provided in manifest's snapshot", async () => {
+                const platformConfig = { platform: { }, snapshot: { windows: 'invalid windows property' } };
+                spyOn<any>(container, "getManifest").and.returnValue(Promise.resolve(platformConfig));
+                await expectAsync((container as any).getSnapshotWindowName()).toBeRejectedWithError("Valid snapshot window not found");
+            });
+
+            it("snapshot windows array empty", async () => {
+                const platformConfig = { platform: { }, snapshot: { windows: [] } };
+                spyOn<any>(container, "getManifest").and.returnValue(Promise.resolve(platformConfig));
+                await expectAsync((container as any).getSnapshotWindowName()).toBeRejectedWithError("Valid snapshot window not found");
+            });
+        });
+
+    });
+
+    describe("getSnapshotWindow", () => {
+        it("returns main window", async () => {
+            const snapshotWindowName = "snapshot-window-name";
+            const mockSnapshotWindow = new MockWindow(snapshotWindowName);
+            const getAllWindowsResponse = [container.wrapWindow(MockWindow.singleton), container.wrapWindow(mockSnapshotWindow)];
+
+            spyOn(container, "getAllWindows").and.returnValue(Promise.resolve(getAllWindowsResponse));
+            spyOn<any>(container, "getSnapshotWindowName").and.returnValue(Promise.resolve(snapshotWindowName));
+
+            const result = await (container as any).getSnapshotWindow();
+            expect(result.name).toBe(snapshotWindowName);
+        });
+
+        describe("throws error", () => {
+            it("getAllWindows", async () => {
+                spyOn(container, "getAllWindows").and.returnValue(Promise.reject(new Error("something went wrong")));
+                await expectAsync((container as any).getSnapshotWindow()).toBeRejectedWithError("something went wrong");
+            });
+
+            it("getSnapshotWindowName", async () => {
+                spyOn<any>(container, "getSnapshotWindowName").and.returnValue(Promise.reject(new Error("something went wrong")));
+                await expectAsync((container as any).getSnapshotWindow()).toBeRejectedWithError("something went wrong");
+            });
+
+            it("null snapshot window name", async () => {
+                spyOn<any>(container, "getSnapshotWindowName").and.returnValue(Promise.resolve(null));
+                await expectAsync((container as any).getSnapshotWindow()).toBeRejectedWithError("Error getting snapshot window");
+            });
+        });
     });
 });
 
