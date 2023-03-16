@@ -489,6 +489,25 @@ describe("OpenFinContainer", () => {
             expect(win).toBeDefined();
             expect(win.innerWindow).toEqual(mockWindow);
         });
+
+        describe("throws error", () => {
+            it("getIsPlatform", async () => {
+                spyOn(desktop, "main").and.callThrough();
+                spyOn<any>(container, "getIsPlatform").and.returnValue(Promise.reject(new Error("something went wrong")));
+
+                await expectAsync(container.ready()).toBeRejectedWithError("something went wrong");
+                expect(desktop.main).toHaveBeenCalled();
+            });
+
+            it("getSnapshotWindow", async () => {
+                spyOn(desktop, "main").and.callThrough();
+                spyOn<any>(container, "getIsPlatform").and.returnValue(Promise.resolve(true));
+                spyOn<any>(container, "getSnapshotWindow").and.returnValue(Promise.reject(new Error("something went wrong")));
+
+                await expectAsync(container.ready()).toBeRejectedWithError("something went wrong");
+                expect(desktop.main).toHaveBeenCalled();
+            });
+        });
     });
 
     describe("ctor options", () => {

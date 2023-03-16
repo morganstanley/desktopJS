@@ -471,14 +471,20 @@ export class OpenFinContainer extends WebContainerBase {
     }
 
     public ready(): Promise<void> {
-        return new Promise(async (resolve) => {
-            this.isPlatform = await this.getIsPlatform();
+        return new Promise((resolve, reject) => {
+            this.desktop.main(async () => {
+                try {
+                    this.isPlatform = await this.getIsPlatform();
 
-            this.mainWindow = this.isPlatform ? 
-                await this.getSnapshotWindow() as OpenFinContainerWindow :
-                this.wrapWindow(this.desktop.Application.getCurrent().getWindow());
-
-            this.desktop.main(resolve);
+                    this.mainWindow = this.isPlatform ? 
+                        await this.getSnapshotWindow() as OpenFinContainerWindow :
+                        this.wrapWindow(this.desktop.Application.getCurrent().getWindow());
+    
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            });
         });
     }
 
@@ -712,15 +718,9 @@ export class OpenFinContainer extends WebContainerBase {
         });
     }
 
-    private getIsPlatform(): Promise<boolean> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const manifest = await this.getManifest();
-                resolve(!!manifest?.platform);
-            } catch(err) {
-                reject(err);
-            }
-        });
+    private async getIsPlatform(): Promise<boolean> {
+        const manifest = await this.getManifest();
+        return !!manifest?.platform;
     }
 
     private getManifest(): Promise<any> {
@@ -732,42 +732,29 @@ export class OpenFinContainer extends WebContainerBase {
     }
 
     // Get name of the window defined in manifest snapshot. Only will consider the first window
-    private getSnapshotWindowName(): Promise<string | null> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const { snapshot: { windows } }: { snapshot: { windows: any[] } } = await this.getManifest();
-                if (!windows || !Array.isArray(windows) || windows.length === 0) {
-                    reject(new Error("Valid snapshot window not found"));
-                    return;
-                }
-                const { name } = windows[0];
-                resolve(!!name ? name : null);
-            } catch(err) {
-                reject(err);
-            }
-        });
+    private async getSnapshotWindowName(): Promise<string | null> {
+        const { snapshot: { windows } }: { snapshot: { windows: any[] } } = await this.getManifest();
+        if (!windows || !Array.isArray(windows) || windows.length === 0) {
+            throw new Error("Valid snapshot window not found");
+        }
+        const { name } = windows[0];
+        return name ? name : null;
     }
 
     // Get the window defined in manifest snapshot. Only relevant in Platform
-    private getSnapshotWindow(): Promise<ContainerWindow> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const windows = await this.getAllWindows();
-                const snapshotWindowName = await this.getSnapshotWindowName();
-                let containerWindow: ContainerWindow = windows?.find((window) => 
-                    window.name === snapshotWindowName ||
-                    window.name.includes(OpenFinContainer.INTERNAL_GENERATED_WINDOW)
-                );
+    private async getSnapshotWindow(): Promise<ContainerWindow> {
+        const windows = await this.getAllWindows();
+        const snapshotWindowName = await this.getSnapshotWindowName();
+        const containerWindow: ContainerWindow = windows?.find((window) => 
+            window.name === snapshotWindowName ||
+            window.name.includes(OpenFinContainer.INTERNAL_GENERATED_WINDOW)
+        );
 
-                if (!containerWindow) {
-                    reject(new Error("Error getting snapshot window"));
-                }
+        if (!containerWindow) {
+            throw new Error("Error getting snapshot window");
+        }
 
-                resolve(containerWindow);
-            } catch(err) {
-                reject(err);
-            }
-        });
+        return containerWindow;
     }
 }
 
