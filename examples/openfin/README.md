@@ -13,3 +13,9 @@ on the path.
 
 For convenience within Visual Studio Code, there is a task provided - "Launch OpenFin" in which
 you can execute from the command palete or define a keybinding.
+
+Platform configuration example:
+
+<blockquote>
+   [examples/openfin] $ openfin -l -c platform.json
+</blockquote>
