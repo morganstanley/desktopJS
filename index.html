@@ -1,0 +1,116 @@
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>desktopJS</title><meta name="description" content="Documentation for desktopJS"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container">
+<div class="table-cell" id="tsd-search" data-base=".">
+<div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
+<div class="field">
+<div id="tsd-toolbar-links"></div></div>
+<ul class="results">
+<li class="state loading">Preparing search index...</li>
+<li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">desktopJS</a></div>
+<div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
+<div class="container container-main">
+<div class="col-8 col-content">
+<div class="tsd-page-title">
+<h2>desktopJS</h2></div>
+<div class="tsd-panel tsd-typography">
+<a href="#" id="" style="color: inherit; text-decoration: none;">
+  <h1><img src="https://raw.githubusercontent.com/wiki/MorganStanley/desktopJS/images/logo.png" alt="desktopJS"></h1>
+</a>
+<p><img src="https://badgen.net/badge/Lifecycle/Active/green" alt="Lifecycle Active">
+<a href="https://www.npmjs.com/package/@morgan-stanley/desktopjs"><img src="https://badge.fury.io/js/%40morgan-stanley%2Fdesktopjs.svg" alt="npm version"></a>
+<a href="https://github.com/MorganStanley/desktopJS/actions/workflows/continuous-integration.yml"><img src="https://github.com/MorganStanley/desktopJS/actions/workflows/continuous-integration.yml/badge.svg?event=push" alt="Build Status"></a>
+<a href="https://codecov.io/gh/MorganStanley/desktopJS"><img src="https://codecov.io/gh/MorganStanley/desktopJS/branch/main/graph/badge.svg" alt="codecov"></a></p>
+<p>desktopJS is a common API across multiple HTML5 containers. By programming to a
+common API, applications can target multiple HTML5 containers without change. Detecting
+what container in which you are hosted, desktopJS provides shims and polyfills to
+bridge the common API to the underlying container.  The goal is to help applications be
+container agnostic and provide portability when multiple container deployments are desired.</p>
+
+<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
+  <h2>Usage</h2>
+</a>
+<p>The first step is to simply <a href="http://opensource.morganstanley.com/desktopJS/modules/_desktopjs_src_registry_.html#resolvecontainer">resolve</a> the current <a href="http://opensource.morganstanley.com/desktopJS/classes/_desktopjs_src_container_.container.html">container</a>. This enumerates
+all registered containers (including your own custom container or derived custom implementations) and
+returns the container implementation that matches.</p>
+<pre><code><span class="hl-0">var</span><span class="hl-1"> </span><span class="hl-2">container</span><span class="hl-1"> = </span><span class="hl-2">desktopJS</span><span class="hl-1">.</span><span class="hl-3">resolveContainer</span><span class="hl-1">();</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-3">log</span><span class="hl-1">(</span><span class="hl-4">&quot;Container: &quot;</span><span class="hl-1"> + </span><span class="hl-2">container</span><span class="hl-1">.</span><span class="hl-2">hostType</span><span class="hl-1">);</span>
+</code></pre>
+<p>Interact with the <a href="http://opensource.morganstanley.com/desktopJS/classes/_desktopjs_src_container_.container.html">container</a> via a single api instead of having conditional code or applications
+based on deployment.</p>
+<pre><code><span class="hl-2">container</span><span class="hl-1">.</span><span class="hl-3">addTrayIcon</span><span class="hl-1">({ </span><span class="hl-2">icon:</span><span class="hl-1"> </span><span class="hl-4">&#39;assets/img/application.png&#39;</span><span class="hl-1">, </span><span class="hl-2">text:</span><span class="hl-1"> </span><span class="hl-4">&#39;Example&#39;</span><span class="hl-1"> }, () </span><span class="hl-0">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">    </span><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-3">log</span><span class="hl-1">(</span><span class="hl-4">&quot;Icon clicked&quot;</span><span class="hl-1">);</span><br/><span class="hl-1">});</span>
+</code></pre>
+
+<a href="#building" id="building" style="color: inherit; text-decoration: none;">
+  <h2>Building</h2>
+</a>
+<p>The library uses gulp and rollup for building.  All build dependencies are included as
+devDependencies and are installed during npm install.</p>
+<pre><code><span class="hl-2">$</span><span class="hl-1"> </span><span class="hl-2">npm</span><span class="hl-1"> </span><span class="hl-2">install</span>
+</code></pre>
+<p>Build the project.  This runs static analysis, unit tests and bundles the output with
+rollup.</p>
+<pre><code><span class="hl-2">$</span><span class="hl-1"> </span><span class="hl-2">npm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">build</span><span class="hl-1"> &amp;&amp; </span><span class="hl-2">npm</span><span class="hl-1"> </span><span class="hl-2">test</span>
+</code></pre>
+<p>For those using <a href="https://code.visualstudio.com/">Visual Studio Code</a>, tasks.json has a build task.</p>
+
+<a href="#development" id="development" style="color: inherit; text-decoration: none;">
+  <h2>Development</h2>
+</a>
+
+<a href="#local-hosting" id="local-hosting" style="color: inherit; text-decoration: none;">
+  <h3>Local Hosting</h3>
+</a>
+<p>To run the examples or to manually test scenarios in each container, there is a gulp task providing
+a local server with live reload.  This can be run directly via gulp or through npm.</p>
+<pre><code><span class="hl-2">$</span><span class="hl-1"> </span><span class="hl-2">npm</span><span class="hl-1"> </span><span class="hl-2">start</span>
+</code></pre>
+<p>This is configured to listen at <a href="http://localhost:8000">http://localhost:8000</a> and will reload upon
+any change to the project build output under /dist or the web example under /examples/web.  All of the
+included examples make use of this example application to showcase the portability of one
+codebase.</p>
+
+<a href="#unit-tests" id="unit-tests" style="color: inherit; text-decoration: none;">
+  <h3>Unit tests</h3>
+</a>
+<p>The tests can be run independent of the build.</p>
+<pre><code><span class="hl-2">$</span><span class="hl-1"> </span><span class="hl-2">npm</span><span class="hl-1"> </span><span class="hl-2">test</span>
+</code></pre>
+<p>A task is provided for <a href="https://code.visualstudio.com/">Visual Studio Code</a> users that can be launched
+from the command palette via</p>
+<pre><code><span class="hl-1">&gt;</span><span class="hl-5">Tasks</span><span class="hl-1">: </span><span class="hl-2">Run</span><span class="hl-1"> </span><span class="hl-2">Test</span><span class="hl-1"> </span><span class="hl-2">Task</span>
+</code></pre>
+<p>or it is recommended to define a custom keyboard binding.</p>
+<pre><code><span class="hl-1">{</span><br/><span class="hl-1">    </span><span class="hl-4">&quot;key&quot;</span><span class="hl-1">: </span><span class="hl-4">&quot;ctrl+shift+t&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-4">&quot;command&quot;</span><span class="hl-1">: </span><span class="hl-4">&quot;workbench.action.tasks.test&quot;</span><br/><span class="hl-1">}</span>
+</code></pre>
+
+<a href="#examples" id="examples" style="color: inherit; text-decoration: none;">
+  <h2>Examples</h2>
+</a>
+<p>Examples showcasing usage of desktopJS for various containers and scenarios can be found under
+the <a href="https://github.com/MorganStanley/desktopJS/tree/main/examples">examples</a> directory.</p>
+</div></div>
+<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+<div class="tsd-navigation settings">
+<details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg> Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility">
+<h4 class="uppercase">Member Visibility</h4><form>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li></ul></form></div>
+<div class="tsd-theme-toggle">
+<h4 class="uppercase">Theme</h4><select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<nav class="tsd-navigation primary">
+<details class="tsd-index-accordion" open><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg> Modules</h3></summary>
+<div class="tsd-accordion-details">
+<ul>
+<li class="current selected"><a href="modules.html">desktopJS</a>
+<ul>
+<li class="tsd-kind-module"><a href="modules/_morgan_stanley_desktopjs.html">@morgan-<wbr/>stanley/desktopjs</a>
+<ul>
+<li class="tsd-kind-namespace tsd-parent-kind-module"><a href="modules/_morgan_stanley_desktopjs.Default.html">Default</a></li>
+<li class="tsd-kind-namespace tsd-parent-kind-module"><a href="modules/_morgan_stanley_desktopjs.ObjectTransform.html">Object<wbr/>Transform</a></li></ul></li>
+<li class="tsd-kind-module"><a href="modules/_morgan_stanley_desktopjs_electron.html">@morgan-<wbr/>stanley/desktopjs-<wbr/>electron</a></li>
+<li class="tsd-kind-module"><a href="modules/_morgan_stanley_desktopjs_openfin.html">@morgan-<wbr/>stanley/desktopjs-<wbr/>openfin</a></li></ul></li></ul></div></details></nav></div></div>
+<div class="overlay"></div><script src="assets/main.js"></script></body></html>
