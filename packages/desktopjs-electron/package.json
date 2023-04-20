@@ -31,7 +31,7 @@
     "build:workspaces": "gulp build:workspaces",
     "build": "gulp build",
     "test": "gulp test",
-    "deploy": "npm publish"
+    "deploy": "npm publish --provenance"
   },
   "homepage": "https://github.com/MorganStanley/desktopJS/tree/main#readme",
   "devDependencies": {
