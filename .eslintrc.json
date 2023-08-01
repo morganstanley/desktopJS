@@ -9,7 +9,9 @@
     ],
     "rules": {
       "@typescript-eslint/no-inferrable-types": ["error", { "ignoreProperties": true, "ignoreParameters": true}],
-      "no-console": "error"
+      "@typescript-eslint/no-unused-vars" : "off",
+      "@typescript-eslint/no-explicit-any" : "off",
+      "no-console": "error",
     },
     "overrides": [
       {
