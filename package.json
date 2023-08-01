@@ -21,7 +21,7 @@
     "@rollup/plugin-typescript": "^11.0.0",
     "@types/jasmine": "^4.0.2",
     "@types/node": "^18.11.18",
-    "@typescript-eslint/eslint-plugin": "^5.30.5",
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
     "@typescript-eslint/parser": "^5.30.5",
     "copyfiles": "^2.4.1",
     "dts-bundle": "^0.7.3",
