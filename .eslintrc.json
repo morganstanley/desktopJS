@@ -11,7 +11,7 @@
       "@typescript-eslint/no-inferrable-types": ["error", { "ignoreProperties": true, "ignoreParameters": true}],
       "@typescript-eslint/no-unused-vars" : "off",
       "@typescript-eslint/no-explicit-any" : "off",
-      "no-console": "error",
+      "no-console": "error"
     },
     "overrides": [
       {
