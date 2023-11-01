@@ -39,7 +39,7 @@
     "gulp-uglify": "^3.0.2",
     "husky": "^8.0.1",
     "jasmine": "^5.0.0",
-    "lint-staged": "^14.0.1",
+    "lint-staged": "^15.0.2",
     "merge2": "^1.4.1",
     "remap-istanbul": "^0.13.0",
     "rollup": "^3.9.0",
