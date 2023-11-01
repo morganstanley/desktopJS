@@ -39,7 +39,7 @@ jobs:
 
     - name: GitHub Pages
       if: success()
-      uses: crazy-max/ghaction-github-pages@v2
+      uses: crazy-max/ghaction-github-pages@v4
       with:
         commit_message: Deploy morganstanley/desktopJS
         build_dir: docs/
