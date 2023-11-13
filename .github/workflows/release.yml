@@ -11,13 +11,14 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     env:
-      NODE_VERSION: '16'
+      NODE_VERSION: '20'
 
     steps:
     - name: Checkout
