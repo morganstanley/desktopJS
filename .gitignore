@@ -9,4 +9,4 @@ build/
 docs/
 .DS_Store
 lerna-debug.log
-package-lock.json
+
