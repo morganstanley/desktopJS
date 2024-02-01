@@ -34,3 +34,6 @@ jobs:
         directory: ./build/coverage
         flags: unittests
         fail_ci_if_error: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  
