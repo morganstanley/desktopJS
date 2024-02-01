@@ -29,8 +29,11 @@ jobs:
     - run: npm run docs
 
     - name: Codecov
-      uses: codecov/codecov-action@v3.1.4
+      uses: codecov/codecov-action@v4.0.0
       with:
         directory: ./build/coverage
         flags: unittests
         fail_ci_if_error: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  
