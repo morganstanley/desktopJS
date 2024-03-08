@@ -8,6 +8,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
@@ -17,9 +20,9 @@ jobs:
       NODE_VERSION: '20'
 
     steps:
-    - uses: actions/checkout@v4.1.1
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Use Node.js ${{ env.NODE_VERSION }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
       with:
         node-version: ${{ env.NODE_VERSION }}
     - run: npm i
@@ -29,7 +32,7 @@ jobs:
     - run: npm run docs
 
     - name: Codecov
-      uses: codecov/codecov-action@v4.1.0
+      uses: codecov/codecov-action@54bcd8715eee62d40e33596ef5e8f0f48dbbccab # v4.1.0
       with:
         directory: ./build/coverage
         flags: unittests
