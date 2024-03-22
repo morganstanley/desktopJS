@@ -3,6 +3,7 @@
 ![Lifecycle Active](https://badgen.net/badge/Lifecycle/Active/green)
 [![npm version](https://badge.fury.io/js/%40morgan-stanley%2Fdesktopjs.svg)](https://www.npmjs.com/package/@morgan-stanley/desktopjs)
 [![Build Status](https://github.com/MorganStanley/desktopJS/actions/workflows/continuous-integration.yml/badge.svg?event=push)](https://github.com/MorganStanley/desktopJS/actions/workflows/continuous-integration.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/morganstanley/desktopJS/badge)](https://securityscorecards.dev/viewer/?uri=github.com/morganstanley/desktopJS)
 [![codecov](https://codecov.io/gh/MorganStanley/desktopJS/branch/main/graph/badge.svg)](https://codecov.io/gh/MorganStanley/desktopJS)
 
 desktopJS is a common API across multiple HTML5 containers. By programming to a
