@@ -8,6 +8,7 @@
   },
   "main": "dist/desktop.js",
   "types": "dist/desktopjs.d.ts",
+  "type": "module",
   "license": "Apache-2.0",
   "author": "Morgan Stanley",
   "repository": {
@@ -29,9 +30,11 @@
     "dist"
   ],
   "scripts": {
-    "clean": "gulp clean",
-    "build:workspaces": "gulp build:workspaces",
-    "build": "gulp build",
+    "clean:dist": "rimraf dist",
+    "clean:build": "rimraf build",
+    "clean": "npm run clean:dist && npm run clean:build",
+    "bundle": "rollup -c",
+    "build": "npm run clean && tsc && npm run bundle",
     "test": "gulp test",
     "deploy": "npm publish --provenance --access public",
     "prepublishOnly": "copyfiles ../../README.md . -u 2"
