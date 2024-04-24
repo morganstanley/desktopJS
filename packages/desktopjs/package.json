@@ -35,7 +35,8 @@
     "clean": "npm run clean:dist && npm run clean:build",
     "bundle": "rollup -c",
     "build": "npm run clean && tsc && npm run bundle",
-    "test": "gulp test",
+    "test1": "gulp test",
+    "test": "jasmine --config=./jasmine.json",
     "deploy": "npm publish --provenance --access public",
     "prepublishOnly": "copyfiles ../../README.md . -u 2"
   },
