@@ -73,9 +73,6 @@
     ]
   },
   "workspaces": [
-    "packages/desktopjs",
-    "packages/desktopjs-electron",
-    "packages/desktopjs-openfin",
-    "examples/electron"
+    "packages/desktopjs"
   ]
 }
