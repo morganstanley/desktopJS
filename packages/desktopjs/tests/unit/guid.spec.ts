@@ -12,7 +12,7 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
+import { describe, it, expect } from 'vitest';
 import { Guid } from "../../src/guid";
 
 describe("Guid", () => {
@@ -23,13 +23,13 @@ describe("Guid", () => {
             expect(guid).toBeDefined();
         });
 
-        it ("Is correct format", () => {
-            expect(guid.length).toEqual(36);
-            expect(guid.charAt(14)).toEqual("4"); // Guid v4
+        it("Is correct format", () => {
+            expect(guid.length).toBe(36);
+            expect(guid.charAt(14)).toBe("4"); // Guid v4
         });
 
-        it ("Next not equal to previous", () => {
-            expect(Guid.newGuid()).not.toEqual(guid);
+        it("Next not equal to previous", () => {
+            expect(Guid.newGuid()).not.toBe(guid);
         });
     });
 });

@@ -60,6 +60,13 @@ export default defineConfig(({ mode }) => {
       },
       minify: false,
       outDir: 'dist'
+    },
+    test: {
+      include: ['tests/**/*.spec.ts'],
+      coverage: {
+        reporter: ['text', 'json', 'html'],
+        reportsDirectory: './build/coverage'
+      },
     }
   };
 });

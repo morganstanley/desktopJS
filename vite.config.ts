@@ -25,10 +25,10 @@ export default defineConfig({
   },
   test: {
     coverage: {
-      provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['src/**/*.ts'],
+      include: ['packages/**/*.ts'],
       exclude: ['**/*.d.ts', '**/*.test.ts', '**/*.spec.ts'],
+      reportsDirectory: './build/coverage'
     },
   }
 });

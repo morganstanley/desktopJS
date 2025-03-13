@@ -12,11 +12,11 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
+import { describe, it, expect } from 'vitest';
 import * as desktopJS from "../../src/desktop";
 
 describe("desktop", () => {
-    it ("module exports", () => {
+    it("module exports", () => {
         expect(desktopJS.registerContainer).toBeDefined();
         expect(desktopJS.version).toBeDefined();
     });

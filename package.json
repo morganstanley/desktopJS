@@ -9,7 +9,7 @@
     "postbuild": "copyfiles -f packages/**/dist/*.*.js packages/**/dist/*.*.js.map examples/web/assets/build",
     "clean": "npm run clean --workspaces --if-present",
     "postclean": "rimraf examples/web/assets/build",
-    "test": "npm run test --workspaces --if-present",
+    "test": "vitest run --coverage",
     "start": "vite serve examples/web",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --quiet --fix",
