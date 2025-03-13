@@ -26,7 +26,7 @@ export default defineConfig({
   test: {
     coverage: {
       reporter: ['text', 'json', 'html'],
-      include: ['packages/**/*.ts'],
+      include: ['packages/**/src/**/*.ts'],
       exclude: ['**/*.d.ts', '**/*.test.ts', '**/*.spec.ts'],
       reportsDirectory: './build/coverage'
     },
