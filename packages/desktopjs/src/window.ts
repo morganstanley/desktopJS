@@ -284,7 +284,7 @@ export interface ContainerWindowManager {
 
     /**
      * Loads a window layout
-     * @param {string | PersistedWindowLayout} name - Name of the window layout to load or the layout itself
+     * @param {string | PersistedWindowLayout} layout - Name of the window layout to load or the layout itself
      * @returns {Promise<PersistedWindowLayout>} - A promise that returns {@link PersistedWindowLayout} that is loaded
      */
     loadLayout(layout: string | PersistedWindowLayout): Promise<PersistedWindowLayout>;

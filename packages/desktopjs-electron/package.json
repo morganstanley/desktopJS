@@ -6,8 +6,19 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "dist/desktopjs-electron.js",
-  "types": "dist/desktopjs-electron.d.ts",
+  "main": "./dist/desktopjs-electron.umd.js",
+  "types": "./dist/desktopjs-electron.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rimraf dist && rimraf build",
+    "build": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "deploy": "npm publish --provenance --access public"
+  },
   "license": "Apache-2.0",
   "author": "Morgan Stanley",
   "repository": {
@@ -23,16 +34,6 @@
     "desktop",
     "electron"
   ],
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "clean": "gulp clean",
-    "build:workspaces": "gulp build:workspaces",
-    "build": "gulp build",
-    "test": "gulp test",
-    "deploy": "npm publish --provenance --access public"
-  },
   "homepage": "https://github.com/MorganStanley/desktopJS/tree/main#readme",
   "devDependencies": {
     "@morgan-stanley/desktopjs": "file:packages/desktopjs"

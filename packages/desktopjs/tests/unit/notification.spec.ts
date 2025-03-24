@@ -12,7 +12,7 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
+import { describe, it, expect, vi } from 'vitest';
 import { ContainerNotification } from "../../src/notification";
 
 class TestNotification extends ContainerNotification {
@@ -26,14 +26,17 @@ describe('notification', () => {
     });
 
     it("permission defaulted to granted", () => {
-        expect (ContainerNotification.permission).toEqual("granted");
+        expect(ContainerNotification.permission).toBe("granted");
     });
 
-    it ("requestPermission invokes callback", (done) => {
-        ContainerNotification.requestPermission(done);
+    it("requestPermission invokes callback", async () => {
+        const callback = vi.fn();
+        await ContainerNotification.requestPermission(callback);
+        expect(callback).toHaveBeenCalled();
     });
 
-    it ("requestPermission resolves the returned Promise", async () => {
-        await ContainerNotification.requestPermission();
+    it("requestPermission resolves the returned Promise", async () => {
+        const result = await ContainerNotification.requestPermission();
+        expect(result).toBe("granted");
     });
 });

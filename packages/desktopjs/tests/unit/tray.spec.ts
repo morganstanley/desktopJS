@@ -12,11 +12,11 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
+import { describe, it, expect } from 'vitest';
 import { TrayIconDetails } from "../../src/tray";
 
 describe("tray", () => {
-    it ("create", () => {
+    it("create", () => {
         expect(new TrayIconDetails()).toBeDefined();
     });
 });
