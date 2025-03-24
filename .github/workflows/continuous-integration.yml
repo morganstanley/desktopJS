@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     env:
       NODE_VERSION: '20'
