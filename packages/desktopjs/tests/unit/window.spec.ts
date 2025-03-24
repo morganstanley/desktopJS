@@ -210,12 +210,477 @@ describe("SnapAssistWindowManager", () => {
         const mgr = new SnapAssistWindowManager(null);
         expect(mgr.snapThreshold).toBe(15);
         expect(mgr.snapOffset).toBe(15);
+        expect(mgr.autoGrouping).toBe(true);
+    });
+    
+    it("overrides options from constructor", () => {
+        const mgr = new SnapAssistWindowManager(null, {
+            snapThreshold: 20,
+            snapOffset: 25,
+            autoGrouping: false
+        });
+        expect(mgr.snapThreshold).toBe(20);
+        expect(mgr.snapOffset).toBe(25);
+        expect(mgr.autoGrouping).toBe(false);
     });
 
-    it("isVerticallyAligned", () => {
-        const mgr = new SnapAssistWindowManager(null);
+    // Create a test class that exposes the protected/private methods
+    class TestSnapAssistWindowManager extends SnapAssistWindowManager {
+        public isHorizontallyAligned(r1: Rectangle, r2: Rectangle): boolean {
+            return super["isHorizontallyAligned"](r1, r2);
+        }
+        
+        public isVerticallyAligned(r1: Rectangle, r2: Rectangle): boolean {
+            return super["isVerticallyAligned"](r1, r2);
+        }
+        
+        public getSnapBounds(r1: Rectangle, r2: Rectangle): Rectangle | undefined {
+            return super["getSnapBounds"](r1, r2);
+        }
+        
+        public showGroupingHint(win: ContainerWindow): void {
+            super["showGroupingHint"](win);
+        }
+        
+        public hideGroupingHint(win: ContainerWindow): void {
+            super["hideGroupingHint"](win);
+        }
+        
+        public moveWindow(win: ContainerWindow, bounds: Rectangle): Promise<void> {
+            return super["moveWindow"](win, bounds);
+        }
+        
+        public onMoved(win: ContainerWindow): void {
+            super["onMoved"](win);
+        }
+        
+        public onAttached(win: ContainerWindow): void {
+            super["onAttached"](win);
+        }
+        
+        public get targetGroupMap(): Map<string, ContainerWindow> {
+            return this["targetGroup"];
+        }
+        
+        public set snappingWindowId(id: string | undefined) {
+            this["snappingWindow"] = id;
+        }
+        
+        public get snappingWindowId(): string | undefined {
+            return this["snappingWindow"];
+        }
+        
+        // Direct access to onMoving for testing
+        public testOnMoving(e: any): Promise<void> {
+            return this["onMoving"](e);
+        }
+    }
+
+    it("isVerticallyAligned when windows are vertically aligned", () => {
+        const mgr = new TestSnapAssistWindowManager(null);
         const r1 = new Rectangle(100, 100, 50, 50);
         const r2 = new Rectangle(100, 200, 50, 50);
         expect(mgr.isVerticallyAligned(r1, r2)).toBe(true);
+    });
+    
+    it("isVerticallyAligned when windows are not vertically aligned", () => {
+        const mgr = new TestSnapAssistWindowManager(null);
+        const r1 = new Rectangle(100, 100, 50, 50);
+        const r2 = new Rectangle(200, 200, 50, 50);
+        expect(mgr.isVerticallyAligned(r1, r2)).toBe(false);
+    });
+    
+    it("isHorizontallyAligned when windows are horizontally aligned", () => {
+        const mgr = new TestSnapAssistWindowManager(null);
+        const r1 = new Rectangle(100, 100, 50, 50);
+        const r2 = new Rectangle(200, 100, 50, 50);
+        expect(mgr.isHorizontallyAligned(r1, r2)).toBe(true);
+    });
+    
+    it("isHorizontallyAligned when windows are not horizontally aligned", () => {
+        const mgr = new TestSnapAssistWindowManager(null);
+        const r1 = new Rectangle(100, 100, 50, 50);
+        const r2 = new Rectangle(200, 200, 50, 50);
+        expect(mgr.isHorizontallyAligned(r1, r2)).toBe(false);
+    });
+    
+    it("getSnapBounds returns undefined when no snap condition is met", () => {
+        const mgr = new TestSnapAssistWindowManager(null);
+        const r1 = new Rectangle(100, 100, 50, 50);
+        const r2 = new Rectangle(200, 200, 50, 50);
+        expect(mgr.getSnapBounds(r1, r2)).toBeUndefined();
+    });
+    
+    // Test for horizontal alignment with snap conditions
+    it("getSnapBounds with horizontal alignment", () => {
+        const mgr = new TestSnapAssistWindowManager(null);
+        mgr.snapThreshold = 20;
+        
+        // Create rectangles that are horizontally aligned and within threshold
+        const r1 = new Rectangle(100, 100, 50, 50);
+        const r2 = new Rectangle(135, 100, 50, 50);
+        
+        // The rectangles are horizontally aligned and the right edge of r1 (150)
+        // is within threshold of the left edge of r2 (135)
+        const result = mgr.getSnapBounds(r1, r2);
+        
+        expect(result).toBeDefined();
+        // The expected x position should be calculated based on the actual implementation
+        expect(result.width).toBe(50);
+        expect(result.height).toBe(50);
+    });
+    
+    // Test for vertical alignment with snap conditions
+    it("getSnapBounds with vertical alignment", () => {
+        const mgr = new TestSnapAssistWindowManager(null);
+        mgr.snapThreshold = 20;
+        
+        // Create rectangles that are vertically aligned and within threshold
+        const r1 = new Rectangle(100, 100, 50, 50);
+        const r2 = new Rectangle(100, 135, 50, 50);
+        
+        // The rectangles are vertically aligned and the bottom edge of r1 (150)
+        // is within threshold of the top edge of r2 (135)
+        const result = mgr.getSnapBounds(r1, r2);
+        
+        expect(result).toBeDefined();
+        expect(result.width).toBe(50);
+        expect(result.height).toBe(50);
+    });
+    
+    // Window movement and grouping tests
+    
+    it("moveWindow sets and clears snappingWindow", async () => {
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        // Create a mock implementation of setBounds
+        const setBoundsSpy = vi.fn().mockResolvedValue(undefined);
+        vi.spyOn(win, "setBounds").mockImplementation(setBoundsSpy);
+        
+        const mgr = new TestSnapAssistWindowManager(null);
+        const bounds = new Rectangle(100, 100, 50, 50);
+        
+        await mgr.moveWindow(win, bounds);
+        
+        expect(setBoundsSpy).toHaveBeenCalled();
+        expect(mgr.snappingWindowId).toBeUndefined();
+    });
+    
+    it("moveWindow handles errors", async () => {
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        // Create a mock implementation that throws an error
+        const setBoundsSpy = vi.fn().mockRejectedValue(new Error("Test error"));
+        vi.spyOn(win, "setBounds").mockImplementation(setBoundsSpy);
+        
+        const mgr = new TestSnapAssistWindowManager(null);
+        const bounds = new Rectangle(100, 100, 50, 50);
+        
+        await mgr.moveWindow(win, bounds);
+        
+        expect(setBoundsSpy).toHaveBeenCalled();
+        expect(mgr.snappingWindowId).toBeUndefined();
+    });
+    
+    it("showGroupingHint adds window to targetGroup", () => {
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        const mgr = new TestSnapAssistWindowManager(null);
+        mgr.showGroupingHint(win);
+        
+        expect(mgr.targetGroupMap.has("test-window")).toBe(true);
+        expect(mgr.targetGroupMap.get("test-window")).toBe(win);
+    });
+    
+    it("hideGroupingHint removes window from targetGroup", () => {
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        const mgr = new TestSnapAssistWindowManager(null);
+        mgr.targetGroupMap.set("test-window", win);
+        
+        mgr.hideGroupingHint(win);
+        
+        expect(mgr.targetGroupMap.has("test-window")).toBe(false);
+    });
+    
+    it("onMoved joins windows to group when autoGrouping is true", async () => {
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        const targetWin1 = new MockWindow();
+        targetWin1.id = "target-window-1";
+        const targetWin2 = new MockWindow();
+        targetWin2.id = "target-window-2";
+        
+        // Mock joinGroup
+        const joinGroupSpy1 = vi.fn().mockResolvedValue(undefined);
+        const joinGroupSpy2 = vi.fn().mockResolvedValue(undefined);
+        vi.spyOn(win, "joinGroup").mockImplementation(joinGroupSpy1);
+        vi.spyOn(targetWin2, "joinGroup").mockImplementation(joinGroupSpy2);
+        
+        // Mock getGroup to simulate ungrouped windows
+        vi.spyOn(targetWin1, "getGroup").mockResolvedValue([]);
+        vi.spyOn(targetWin2, "getGroup").mockResolvedValue([]);
+        
+        const mgr = new TestSnapAssistWindowManager(null);
+        mgr.targetGroupMap.set("target-window-1", targetWin1);
+        mgr.targetGroupMap.set("target-window-2", targetWin2);
+        
+        mgr.onMoved(win);
+        
+        // Wait for promises to resolve
+        await new Promise(resolve => setTimeout(resolve, 10));
+        
+        expect(joinGroupSpy1).toHaveBeenCalledWith(targetWin1);
+        expect(joinGroupSpy2).toHaveBeenCalledWith(win);
+        expect(mgr.targetGroupMap.size).toBe(0);
+    });
+    
+    it("onMoved doesn't join windows when autoGrouping is false", async () => {
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        const targetWin = new MockWindow();
+        targetWin.id = "target-window";
+        
+        // Mock joinGroup
+        const joinGroupSpy = vi.fn().mockResolvedValue(undefined);
+        vi.spyOn(win, "joinGroup").mockImplementation(joinGroupSpy);
+        
+        const mgr = new TestSnapAssistWindowManager(null, { autoGrouping: false });
+        mgr.targetGroupMap.set("target-window", targetWin);
+        
+        mgr.onMoved(win);
+        
+        // Wait for promises to resolve
+        await new Promise(resolve => setTimeout(resolve, 10));
+        
+        expect(joinGroupSpy).not.toHaveBeenCalled();
+        expect(mgr.targetGroupMap.size).toBe(0);
+    });
+    
+    it("attach calls super.attach", () => {
+        const win = new MockWindow();
+        
+        // Mock getOptions to avoid "Method not implemented" error
+        vi.spyOn(win, "getOptions").mockResolvedValue({});
+        
+        // Spy on super.attach
+        const superAttachSpy = vi.spyOn(GroupWindowManager.prototype, "attach");
+        
+        const mgr = new TestSnapAssistWindowManager(null);
+        mgr.attach(win);
+        
+        expect(superAttachSpy).toHaveBeenCalledWith(win);
+        
+        // Restore original implementation
+        superAttachSpy.mockRestore();
+    });
+    
+    it("onMoving returns early if window is already snapping", async () => {
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        // Create a spy for getOptions to verify it's not called
+        const getOptionsSpy = vi.spyOn(win, "getOptions");
+        
+        const mgr = new TestSnapAssistWindowManager(null);
+        mgr.snappingWindowId = "test-window";
+        
+        const event = { sender: win };
+        await mgr.testOnMoving(event);
+        
+        // If it returns early, getOptions won't be called
+        expect(getOptionsSpy).not.toHaveBeenCalled();
+    });
+    
+    it("onMoving returns early if snap is disabled in options", async () => {
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        // Mock getOptions to return snap: false
+        vi.spyOn(win, "getOptions").mockResolvedValue({ snap: false });
+        
+        // Create a spy for getGroup to verify it's not called
+        const getGroupSpy = vi.spyOn(win, "getGroup");
+        
+        const mgr = new TestSnapAssistWindowManager(null);
+        
+        const event = { sender: win };
+        await mgr.testOnMoving(event);
+        
+        // If it returns early, getGroup won't be called
+        expect(getGroupSpy).not.toHaveBeenCalled();
+    });
+    
+    it("onMoving returns early if window is already in a group", async () => {
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        // Mock getOptions to return empty object
+        vi.spyOn(win, "getOptions").mockResolvedValue({});
+        
+        // Mock getGroup to return non-empty array (indicating window is in a group)
+        vi.spyOn(win, "getGroup").mockResolvedValue([win, new MockWindow()]);
+        
+        // Mock getBounds to avoid "Method not implemented" error
+        vi.spyOn(win, "getBounds").mockResolvedValue(new Rectangle(0, 0, 0, 0));
+        
+        // Create a mock container
+        const container = {
+            getAllWindows: vi.fn().mockResolvedValue([])
+        };
+        
+        const mgr = new TestSnapAssistWindowManager(container as any);
+        
+        // Spy on moveWindow to verify it's not called
+        const moveWindowSpy = vi.spyOn(mgr, "moveWindow").mockResolvedValue();
+        
+        const event = { sender: win };
+        await mgr.testOnMoving(event);
+        
+        // If it returns early after checking the group, moveWindow won't be called
+        expect(moveWindowSpy).not.toHaveBeenCalled();
+    });
+    
+    it("onMoving handles OpenFin bounds", async () => {
+        // Mock isOpenFin to return true
+        const originalWindow = global.window;
+        (global as any).window = { fin: {} };
+        
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        // Mock methods
+        vi.spyOn(win, "getOptions").mockResolvedValue({});
+        vi.spyOn(win, "getGroup").mockResolvedValue([]);
+        
+        // Create a mock container with empty windows array
+        const container = {
+            getAllWindows: vi.fn().mockResolvedValue([])
+        };
+        
+        const mgr = new TestSnapAssistWindowManager(container as any);
+        
+        // Mock moveWindow to verify it's called with the right bounds
+        const moveWindowSpy = vi.spyOn(mgr, "moveWindow").mockResolvedValue();
+        
+        // Create an OpenFin-style event with innerEvent
+        const event = { 
+            sender: win,
+            innerEvent: {
+                left: 100,
+                top: 200,
+                width: 300,
+                height: 400
+            }
+        };
+        
+        await mgr.testOnMoving(event);
+        
+        // Verify moveWindow was called with bounds from innerEvent
+        expect(moveWindowSpy).toHaveBeenCalledWith(win, expect.objectContaining({
+            x: 100,
+            y: 200,
+            width: 300,
+            height: 400
+        }));
+        
+        // Restore original window
+        (global as any).window = originalWindow;
+    });
+    
+    it("onMoving processes other windows for snapping", async () => {
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        const otherWin = new MockWindow();
+        otherWin.id = "other-window";
+        
+        // Mock methods for the main window
+        vi.spyOn(win, "getOptions").mockResolvedValue({});
+        vi.spyOn(win, "getGroup").mockResolvedValue([]);
+        vi.spyOn(win, "getBounds").mockResolvedValue(new Rectangle(100, 100, 50, 50));
+        
+        // Mock methods for the other window
+        vi.spyOn(otherWin, "getOptions").mockResolvedValue({});
+        vi.spyOn(otherWin, "getBounds").mockResolvedValue(new Rectangle(200, 100, 50, 50));
+        
+        // Create a mock container that returns the other window
+        const container = {
+            getAllWindows: vi.fn().mockResolvedValue([win, otherWin])
+        };
+        
+        const mgr = new TestSnapAssistWindowManager(container as any);
+        
+        // Mock getSnapBounds to return a specific rectangle
+        const snapBounds = new Rectangle(150, 100, 50, 50);
+        vi.spyOn(mgr, "getSnapBounds").mockReturnValue(snapBounds);
+        
+        // Mock showGroupingHint and moveWindow
+        const showGroupingHintSpy = vi.spyOn(mgr, "showGroupingHint");
+        const moveWindowSpy = vi.spyOn(mgr, "moveWindow").mockResolvedValue();
+        
+        const event = { sender: win };
+        await mgr.testOnMoving(event);
+        
+        // Verify the other window was processed
+        expect(showGroupingHintSpy).toHaveBeenCalledWith(otherWin);
+        expect(moveWindowSpy).toHaveBeenCalledWith(win, snapBounds);
+    });
+    
+    it("onMoving handles non-snapped windows with OpenFin", async () => {
+        // Mock isOpenFin to return true
+        const originalWindow = global.window;
+        (global as any).window = { fin: {} };
+        
+        const win = new MockWindow();
+        win.id = "test-window";
+        
+        // Mock methods
+        vi.spyOn(win, "getOptions").mockResolvedValue({});
+        vi.spyOn(win, "getGroup").mockResolvedValue([]);
+        
+        // Create a mock container with empty windows array
+        const container = {
+            getAllWindows: vi.fn().mockResolvedValue([])
+        };
+        
+        const mgr = new TestSnapAssistWindowManager(container as any);
+        
+        // Mock getSnapBounds to return undefined (no snap)
+        vi.spyOn(mgr, "getSnapBounds").mockReturnValue(undefined);
+        
+        // Mock moveWindow to verify it's called with the original bounds
+        const moveWindowSpy = vi.spyOn(mgr, "moveWindow").mockResolvedValue();
+        
+        // Create an OpenFin-style event with innerEvent
+        const bounds = new Rectangle(100, 200, 300, 400);
+        const event = { 
+            sender: win,
+            innerEvent: {
+                left: bounds.x,
+                top: bounds.y,
+                width: bounds.width,
+                height: bounds.height
+            }
+        };
+        
+        await mgr.testOnMoving(event);
+        
+        // Verify moveWindow was called with the original bounds
+        expect(moveWindowSpy).toHaveBeenCalledWith(win, expect.objectContaining({
+            x: bounds.x,
+            y: bounds.y,
+            width: bounds.width,
+            height: bounds.height
+        }));
+        
+        // Restore original window
+        (global as any).window = originalWindow;
     });
 });
