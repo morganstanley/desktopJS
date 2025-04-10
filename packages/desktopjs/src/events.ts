@@ -117,7 +117,6 @@ export class EventEmitter {
     /**
      * Invokes each listener registered for the specified event type.
      * @param {string} eventName The type of the event.
-     * @param {MessageBus} ipc (Optional) The {MessageBus} in which to broadcast the event.
      */
     public emit(eventName: string, eventArgs: EventArgs) {
         for (const listener of this.listeners(eventName)) {

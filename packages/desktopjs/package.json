@@ -6,8 +6,21 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "dist/desktop.js",
-  "types": "dist/desktopjs.d.ts",
+  "main": "./dist/desktop.umd.js",
+  "types": "./dist/desktop.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rimraf dist && rimraf build",
+    "build:iife": "vite build --mode iife",
+    "build": "vite build && npm run build:iife",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "deploy": "npm publish --provenance --access public",
+    "prepublishOnly": "copyfiles ../../README.md . -u 2"
+  },
   "license": "Apache-2.0",
   "author": "Morgan Stanley",
   "repository": {
@@ -25,16 +38,5 @@
     "hadouken",
     "electron"
   ],
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "clean": "gulp clean",
-    "build:workspaces": "gulp build:workspaces",
-    "build": "gulp build",
-    "test": "gulp test",
-    "deploy": "npm publish --provenance --access public",
-    "prepublishOnly": "copyfiles ../../README.md . -u 2"
-  },
   "homepage": "https://github.com/MorganStanley/desktopJS#readme"
 }

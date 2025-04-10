@@ -12,19 +12,19 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
+import { describe, it, expect, vi } from 'vitest';
 import { MessageBusSubscription } from "../../src/ipc";
 
 describe("ipc", () => {
     describe("new MessageBusSubscription()", () => {
         it("parameters set on properties", () => {
             const options = {};
-            const callback = jasmine.createSpy('callback');
+            const callback = vi.fn();
             const sub = new MessageBusSubscription("topic", callback, options);
 
-            expect(sub.topic).toEqual("topic");
-            expect(sub.listener).toEqual(callback);
-            expect(sub.options).toEqual(options);
+            expect(sub.topic).toBe("topic");
+            expect(sub.listener).toBe(callback);
+            expect(sub.options).toBe(options);
         });
     });
 });

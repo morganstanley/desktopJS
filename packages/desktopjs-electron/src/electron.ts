@@ -647,7 +647,7 @@ export class ElectronWindowManager {
         }
 
         // Group all windows by group and for any group consisting of one window unhook and clear the group
-        this.groupBy<any>(this.browserWindow.getAllWindows(), "group").filter(group => group.key && group.values && group.values.length === 1).forEach(group => {
+        this.groupBy<any>(this.browserWindow.getAllWindows(), "group")?.filter(group => group.key && group.values && group.values.length === 1).forEach(group => {
             for (const win of group.values) {
                 this.unregisterWindowEvents(win);
                 win.group = null;
@@ -689,7 +689,7 @@ export class ElectronWindowManager {
     }
 
     private groupBy<T>(array: T[], groupBy: any): { key: any, values: T[] }[] {
-        return array.reduce((accumulator, current) => {
+        return array?.reduce((accumulator, current) => {
             const key = groupBy instanceof Function ? groupBy(current) : current[groupBy];
             const group = accumulator.find((r) => r && r.key === key);
 

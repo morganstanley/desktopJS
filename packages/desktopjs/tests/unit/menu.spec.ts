@@ -12,7 +12,7 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
+import { describe, it, expect } from 'vitest';
 import { MenuItem } from "../../src/menu";
 
 describe('menu', () => {
@@ -21,14 +21,14 @@ describe('menu', () => {
     describe('id', () => {
         it("Set matches Get", () => {
             item.id = "ID";
-            expect(item.id).toEqual("ID");
+            expect(item.id).toBe("ID");
         });
     });
 
     describe('label', () => {
         it("Set matches Get", () => {
             item.label = "LABEL";
-            expect(item.label).toEqual("LABEL");
+            expect(item.label).toBe("LABEL");
         });
     });
 });
