@@ -12,16 +12,16 @@
  * and limitations under the License.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as registry from "../../src/registry";
 import { Container } from "../../src/container";
+import { jest } from '@jest/globals';
 
 describe("registry", () => {
     describe("resolveContainer", () => {
         let mockContainer: Container;
         const setUpContainer = (registration?: registry.ContainerRegistration, id = "Test", hostType = "Test") => {
             mockContainer = {
-                createWindow: vi.fn(),
+                createWindow: jest.fn(),
                 hostType
             } as unknown as Container;
 
@@ -29,7 +29,7 @@ describe("registry", () => {
                 condition: (_options?: any): boolean => true,
                 create: (): Container => mockContainer
             };
-            registry.registerContainer(id, registration);
+            registry.registerContainer(id, registration );
         };
 
         beforeEach(() => {
@@ -51,31 +51,33 @@ describe("registry", () => {
             registry.registerContainer("Test", { condition: () => false, create: () => mockContainer });
             const container: Container = registry.resolveContainer(true);
             expect(container).toBeDefined();
-            expect(container.hostType).toBe("Default");
+            expect(container.hostType).toEqual("Default");
         });
 
         it("Subsequent call returns from cache", () => {
             const container: Container = registry.resolveContainer(true);
-            vi.spyOn(registry, "container", "get").mockReturnValue(container);
+            (registry as any).container = container;
             const container2: Container = registry.resolveContainer(); // Specifically testing cached value
             expect(container2).toBeDefined();
-            expect(container2.uuid).toBe(container.uuid);
+            expect(container2.uuid).toEqual(container.uuid);
         });
 
         it("Resolves registered test container", () => {
             const container: Container = registry.resolveContainer(true);
             expect(container).toBeDefined();
-            expect(container.hostType).toBe("Test");
+            expect(container.hostType).toEqual("Test");
         });
 
         it("Error on resolve logs to console", () => {
-            const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+            // eslint-disable-next-line no-console
+            jest.spyOn(console, "error").mockImplementation(() => {});
             setUpContainer({ condition: () => { throw new Error("Forced Error"); }, create: () => mockContainer });
             const container: Container = registry.resolveContainer(true);
-            expect(consoleSpy).toHaveBeenCalledWith("Error resolving container 'Test' : Error: Forced Error");
+            // eslint-disable-next-line no-console
+            expect(console.error).toHaveBeenCalledWith("Error resolving container 'Test' : Error: Forced Error" );
         });
 
-        it("resolveContainer passes options", () => {
+        it ("resolveContainer passes options", () => {
             const providedOptions = {};
             let condition = false;
             let create = false;
@@ -88,24 +90,21 @@ describe("registry", () => {
 
             const container: Container = registry.resolveContainer(true, providedOptions);
 
-            expect(condition).toBe(true);
-            expect(create).toBe(true);
+            expect(condition).toBeTruthy();
+            expect(create).toBeTruthy();
         });
 
-        it("resolveContainer resolves in order", () => {
+        it ("resolveContainer resolves in order", () => {
             const hostType = "AnotherContainer";
-            let mockContainer2: Container;
+            let mockContainer2;
             setUpContainer({ condition: () => true, create: () => mockContainer });
-            registry.registerContainer("Test", { 
-                condition: () => true, 
-                create: () => {
-                    mockContainer2 = {
-                        createWindow: vi.fn(),
-                        hostType
-                    } as unknown as Container;
-                    return mockContainer2;
-                } 
-            });
+            registry.registerContainer("Test", { condition: () => true, create: () => {
+                mockContainer2 = {
+                    createWindow: jest.fn(),
+                    hostType
+                } as unknown as Container;
+                return mockContainer2;
+            } });
 
             const container: Container = registry.resolveContainer(true);
             expect(container.hostType).toBe(hostType);

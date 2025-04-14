@@ -12,7 +12,6 @@
  * and limitations under the License.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EventEmitter, EventArgs } from "../../src/events";
 
 class TestEmitter extends EventEmitter {
@@ -24,70 +23,73 @@ describe("EventArgs", () => {
         const eventName = "TestEvent";
         const innerEvent = {};
         const args = new EventArgs(sender, eventName, innerEvent);
-        expect(args.sender).toBe(sender);
-        expect(args.name).toBe(eventName);
-        expect(args.innerEvent).toBe(innerEvent);
+        expect(args.sender).toEqual(sender);
+        expect(args.name).toEqual(eventName);
+        expect(args.innerEvent).toEqual(innerEvent);
     });
 });
 
 describe("EventEmitter", () => {
-    let emitter: TestEmitter;
+    let emitter;
 
     beforeEach(() => {
         emitter = new TestEmitter();
     });
 
     it("addListener adds callback to listeners", () => {
-        expect(emitter.listeners("TestEvent").length).toBe(0);
+        expect(emitter.listeners("TestEvent").length).toEqual(0);
         emitter.addListener("TestEvent", (event: EventArgs) => { });
-        expect(emitter.listeners("TestEvent").length).toBe(1);
+        expect(emitter.listeners("TestEvent").length).toEqual(1);
     });
 
     it("removeListener removes callback to listeners", () => {
-        expect(emitter.listeners("TestEvent").length).toBe(0);
+        expect(emitter.listeners("TestEvent").length).toEqual(0);
         const callback = (event: EventArgs) => { };
         emitter.addListener("TestEvent", callback);
-        expect(emitter.listeners("TestEvent").length).toBe(1);
+        expect(emitter.listeners("TestEvent").length).toEqual(1);
         emitter.removeListener("TestEvent", callback);
-        expect(emitter.listeners("TestEvent").length).toBe(0);
+        expect(emitter.listeners("TestEvent").length).toEqual(0);
     });
 
-    it("emit invokes callbacks", async () => {
-        const args = new EventArgs({}, "TestEvent", {});
-        const callback = vi.fn();
+    it("emit invokes callbacks", (done) => {
+        const args = new EventArgs(this, "TestEvent", {});
+        const callback = (event: EventArgs) => {
+            expect(event).toEqual(args);
+            done();
+        };
         emitter.addListener(args.name, callback);
         emitter.emit(args.name, args);
-        expect(callback).toHaveBeenCalledWith(args);
     });
 
-    it("static emit invokes callbacks", async () => {
+    it("static emit invokes callbacks", (done) => {
         const args = new EventArgs(undefined, "TestEvent", {});
-        const callback = vi.fn();
+        const callback = (event: EventArgs) => {
+            expect(event).toEqual(args);
+            done();
+        };
         EventEmitter.addListener(args.name, callback);
         EventEmitter.emit(args.name, args);
-        expect(callback).toHaveBeenCalledWith(args);
     });
 
-    it("registerAndWrapListener invokes listener", async () => {
-        const listener = vi.fn();
+    it("registerAndWrapListener", (done) => {
+        const listener = (event: EventArgs) => { done(); };
         const wrappedCallback = emitter.registerAndWrapListener("TestEvent", listener);
-        expect(wrappedCallback).toBeDefined();
+        expect(wrappedCallback).not.toBeNull();
         emitter.addListener("TestEvent", wrappedCallback);
         emitter.emit("TestEvent", {});
-        expect(listener).toHaveBeenCalled();
     });
 
     it("unwrapAndUnRegisterListener returns mapped callback", () => {
         const listener = (event: EventArgs) => { };
         const wrappedCallback = emitter.registerAndWrapListener("TestEvent", listener);
-        expect(emitter.unwrapAndUnRegisterListener(listener)).toBe(wrappedCallback);
+        expect(emitter.unwrapAndUnRegisterListener(listener)).toEqual(wrappedCallback);
     });
 
-    it("postProcessArgs copies returnValue to innerEvent", () => {
+    it ("postProcessArgs copies returnValue to innerEvent", () => {
         const innerEvent: any = {};
         const args = new EventArgs({}, "event", innerEvent);
         args.returnValue = "Foo";
-        emitter.postProcessArgs(args);
-        expect(innerEvent.returnValue).toBe("Foo");
+        emitter.postProcessArgs(args)
+        expect(innerEvent.returnValue).toEqual("Foo");
     }); 
 });

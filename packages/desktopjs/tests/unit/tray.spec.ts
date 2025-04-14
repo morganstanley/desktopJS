@@ -12,7 +12,6 @@
  * and limitations under the License.
  */
 
-import { describe, it, expect } from 'vitest';
 import { TrayIconDetails } from "../../src/tray";
 
 describe("tray", () => {

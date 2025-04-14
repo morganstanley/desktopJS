@@ -12,8 +12,8 @@
  * and limitations under the License.
  */
 
-import { describe, it, expect, vi } from 'vitest';
 import { ContainerNotification } from "../../src/notification";
+import { jest } from '@jest/globals';
 
 class TestNotification extends ContainerNotification {
 }
@@ -26,17 +26,21 @@ describe('notification', () => {
     });
 
     it("permission defaulted to granted", () => {
-        expect(ContainerNotification.permission).toBe("granted");
+        expect(ContainerNotification.permission).toEqual("granted");
     });
 
-    it("requestPermission invokes callback", async () => {
-        const callback = vi.fn();
-        await ContainerNotification.requestPermission(callback);
-        expect(callback).toHaveBeenCalled();
+    it("requestPermission invokes callback", (done) => {
+        // Create a mock callback that calls done() when invoked
+        const callback = jest.fn(() => {
+            expect(callback).toHaveBeenCalledWith("granted");
+            done();
+        });
+        
+        ContainerNotification.requestPermission(callback);
     });
 
     it("requestPermission resolves the returned Promise", async () => {
         const result = await ContainerNotification.requestPermission();
-        expect(result).toBe("granted");
+        expect(result).toEqual("granted");
     });
 });

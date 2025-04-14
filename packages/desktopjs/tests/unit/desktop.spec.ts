@@ -12,7 +12,6 @@
  * and limitations under the License.
  */
 
-import { describe, it, expect } from 'vitest';
 import * as desktopJS from "../../src/desktop";
 
 describe("desktop", () => {

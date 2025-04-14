@@ -12,19 +12,19 @@
  * and limitations under the License.
  */
 
-import { describe, it, expect, vi } from 'vitest';
 import { MessageBusSubscription } from "../../src/ipc";
+import { jest } from '@jest/globals';
 
 describe("ipc", () => {
     describe("new MessageBusSubscription()", () => {
         it("parameters set on properties", () => {
             const options = {};
-            const callback = vi.fn();
+            const callback = jest.fn();
             const sub = new MessageBusSubscription("topic", callback, options);
 
-            expect(sub.topic).toBe("topic");
-            expect(sub.listener).toBe(callback);
-            expect(sub.options).toBe(options);
+            expect(sub.topic).toEqual("topic");
+            expect(sub.listener).toEqual(callback);
+            expect(sub.options).toEqual(options);
         });
     });
 });

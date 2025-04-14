@@ -12,8 +12,8 @@
  * and limitations under the License.
  */
 
-import { describe, it, expect, vi } from 'vitest';
 import { ObjectTransform, PropertyMap } from "../../src/propertymapping";
+import { jest } from '@jest/globals';
 
 describe('propertymapping', () => {
     const map: PropertyMap = {
@@ -27,36 +27,38 @@ describe('propertymapping', () => {
         it("Simple from to target", () => {
             const input: any = { a: "foo" };
             const output: any = ObjectTransform.transformProperties(input, map);
-            expect(output.a1).toBe("foo");
+            expect(output.a1).toEqual("foo");
         });
 
         it("Target convert", () => {
             const input: any = { b: "foo" };
             const output: any = ObjectTransform.transformProperties(input, map);
-            expect(output.b1).toBe("b2");
+            expect(output.b1).toEqual("b2");
         });
 
         it("Target convert using from/to", () => {
             const input: any = { b: "foo", c: "bar" };
             const output: any = ObjectTransform.transformProperties(input, map);
-            expect(output.c1).toBe("barfoob2");
+            expect(output.c1).toEqual("barfoob2");
         });
 
         it("Unmapped value passes through", () => {
             const input: any = { d: "foobar" };
             const output: any = ObjectTransform.transformProperties(input, map);
-            expect(output.d).toBe("foobar");
+            expect(output.d).toEqual("foobar");
         });
 
         it("Error processing one mapping logs to console and continues", () => {
             const input: any = { errorProperty: "value", a: "foo", d: "foobar" };
 
-            const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+            // eslint-disable-next-line no-console
+            jest.spyOn(console, "error").mockImplementation(() => {});
             const output: any = ObjectTransform.transformProperties(input, map);
-            expect(consoleSpy).toHaveBeenCalledWith("Error transforming property 'errorProperty'");
+            // eslint-disable-next-line no-console
+            expect(console.error).toHaveBeenCalledWith("Error transforming property 'errorProperty'");
 
-            expect(output.a1).toBe("foo");
-            expect(output.d).toBe("foobar");
+            expect(output.a1).toEqual("foo");
+            expect(output.d).toEqual("foobar");
         });
     });
 });

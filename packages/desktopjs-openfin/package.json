@@ -12,11 +12,10 @@
     "dist"
   ],
   "scripts": {
-    "clean": "rimraf dist && rimraf build",
+    "clean": "rimraf dist build",
     "build": "vite build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
     "deploy": "npm publish --provenance --access public"
   },
   "license": "Apache-2.0",

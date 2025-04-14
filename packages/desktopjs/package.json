@@ -12,12 +12,11 @@
     "dist"
   ],
   "scripts": {
-    "clean": "rimraf dist && rimraf build",
+    "clean": "rimraf dist build",
     "build:iife": "vite build --mode iife",
     "build": "vite build && npm run build:iife",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
     "deploy": "npm publish --provenance --access public",
     "prepublishOnly": "copyfiles ../../README.md . -u 2"
   },
