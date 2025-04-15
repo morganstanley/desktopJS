@@ -18,7 +18,7 @@ const config = {
     '!<rootDir>/src/**/*.d.ts'
   ],
   coverageDirectory: '<rootDir>/build/coverage',
-  coverageReporters: ['text', 'json', 'html', 'lcov']
+
 };
 
 // eslint-disable-next-line no-undef

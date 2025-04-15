@@ -8,7 +8,7 @@
     "build": "npm run build --workspaces --if-present",
     "postbuild": "copyfiles -f packages/**/dist/*.*.js packages/**/dist/*.*.js.map examples/web/assets/build",
     "clean": "npm run clean --workspaces --if-present",
-    "postclean": "rimraf examples/web/assets/build",
+    "postclean": "rimraf build examples/web/assets/build",
     "test": "jest --collectCoverage",
     "start": "vite serve examples/web",
     "lint": "eslint . --quiet",

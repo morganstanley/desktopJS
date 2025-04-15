@@ -3,7 +3,8 @@ const config = {
   projects: ['<rootDir>/packages/*/jest.config.js'],
   coverageDirectory: '<rootDir>/build/coverage',
   collectCoverage: true,
-  coverageReporters: ['text', 'json', 'lcov', 'html'],
+  reporters: ['default'],
+
   testEnvironment: 'jsdom'
 };
 
