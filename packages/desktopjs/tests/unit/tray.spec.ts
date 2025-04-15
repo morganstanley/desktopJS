@@ -12,11 +12,10 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
 import { TrayIconDetails } from "../../src/tray";
 
 describe("tray", () => {
-    it ("create", () => {
+    it("create", () => {
         expect(new TrayIconDetails()).toBeDefined();
     });
 });
