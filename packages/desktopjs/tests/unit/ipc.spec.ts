@@ -12,14 +12,14 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
 import { MessageBusSubscription } from "../../src/ipc";
+import { jest } from '@jest/globals';
 
 describe("ipc", () => {
     describe("new MessageBusSubscription()", () => {
         it("parameters set on properties", () => {
             const options = {};
-            const callback = jasmine.createSpy('callback');
+            const callback = jest.fn();
             const sub = new MessageBusSubscription("topic", callback, options);
 
             expect(sub.topic).toEqual("topic");

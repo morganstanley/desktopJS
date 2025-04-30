@@ -12,8 +12,8 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
 import { ObjectTransform, PropertyMap } from "../../src/propertymapping";
+import { jest } from '@jest/globals';
 
 describe('propertymapping', () => {
     const map: PropertyMap = {
@@ -51,8 +51,10 @@ describe('propertymapping', () => {
         it("Error processing one mapping logs to console and continues", () => {
             const input: any = { errorProperty: "value", a: "foo", d: "foobar" };
 
-            spyOn(console, "error");
+            // eslint-disable-next-line no-console
+            jest.spyOn(console, "error").mockImplementation(() => {});
             const output: any = ObjectTransform.transformProperties(input, map);
+            // eslint-disable-next-line no-console
             expect(console.error).toHaveBeenCalledWith("Error transforming property 'errorProperty'");
 
             expect(output.a1).toEqual("foo");

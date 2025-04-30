@@ -13,7 +13,6 @@
  */
 
 /**
- * @preferred
  * @module @morgan-stanley/desktopjs
  */
 export * from "./container";

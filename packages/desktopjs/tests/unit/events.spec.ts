@@ -12,7 +12,6 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
 import { EventEmitter, EventArgs } from "../../src/events";
 
 class TestEmitter extends EventEmitter {

@@ -34,26 +34,14 @@
 			"webRoot": "${workspaceRoot}/dist"
 		},
 		{
-			"name": "Debug Tests",
-			"type": "node",
-			"request": "launch",
-			"program": "${workspaceRoot}/node_modules/gulp/bin/gulp.js",
-			"stopOnEntry": false,
-			"args": [
-				"test"
-			],
-			"cwd": "${workspaceRoot}/src/",
-			"preLaunchTask": null,
-			"runtimeExecutable": null,
-			"runtimeArgs": [
-				"--nolazy"
-			],
-			"env": {
-				"NODE_ENV": "development"
-			},
-			"externalConsole": false,
-			"sourceMaps": true,
-			"outDir": null
-		}
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Vitest",
+            "autoAttachChildProcesses": true,
+            "skipFiles": ["<node_internals>/**"],
+            "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+            "args": ["run"],
+            "smartStep": true
+        }
 	]
 }

@@ -12,16 +12,18 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
 import * as registry from "../../src/registry";
 import { Container } from "../../src/container";
+import { jest } from '@jest/globals';
 
 describe("registry", () => {
     describe("resolveContainer", () => {
-        let mockContainer: jasmine.SpyObj<Container>;
+        let mockContainer: Container;
         const setUpContainer = (registration?: registry.ContainerRegistration, id = "Test", hostType = "Test") => {
-            mockContainer = jasmine.createSpyObj<Container>("Container", ["createWindow"]);
-            mockContainer.hostType = hostType;
+            mockContainer = {
+                createWindow: jest.fn(),
+                hostType
+            } as unknown as Container;
 
             registration = registration || {
                 condition: (_options?: any): boolean => true,
@@ -67,9 +69,11 @@ describe("registry", () => {
         });
 
         it("Error on resolve logs to console", () => {
-            spyOn(console, "error");
+            // eslint-disable-next-line no-console
+            jest.spyOn(console, "error").mockImplementation(() => {});
             setUpContainer({ condition: () => { throw new Error("Forced Error"); }, create: () => mockContainer });
             const container: Container = registry.resolveContainer(true);
+            // eslint-disable-next-line no-console
             expect(console.error).toHaveBeenCalledWith("Error resolving container 'Test' : Error: Forced Error" );
         });
 
@@ -95,8 +99,10 @@ describe("registry", () => {
             let mockContainer2;
             setUpContainer({ condition: () => true, create: () => mockContainer });
             registry.registerContainer("Test", { condition: () => true, create: () => {
-                mockContainer2 = jasmine.createSpyObj<Container>("Container", ["createWindow"]);
-                mockContainer2.hostType = hostType;
+                mockContainer2 = {
+                    createWindow: jest.fn(),
+                    hostType
+                } as unknown as Container;
                 return mockContainer2;
             } });
 

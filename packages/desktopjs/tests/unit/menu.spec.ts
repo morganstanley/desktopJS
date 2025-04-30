@@ -12,7 +12,6 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
 import { MenuItem } from "../../src/menu";
 
 describe('menu', () => {

@@ -12,8 +12,8 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
 import { ContainerNotification } from "../../src/notification";
+import { jest } from '@jest/globals';
 
 class TestNotification extends ContainerNotification {
 }
@@ -26,14 +26,21 @@ describe('notification', () => {
     });
 
     it("permission defaulted to granted", () => {
-        expect (ContainerNotification.permission).toEqual("granted");
+        expect(ContainerNotification.permission).toEqual("granted");
     });
 
-    it ("requestPermission invokes callback", (done) => {
-        ContainerNotification.requestPermission(done);
+    it("requestPermission invokes callback", (done) => {
+        // Create a mock callback that calls done() when invoked
+        const callback = jest.fn(() => {
+            expect(callback).toHaveBeenCalledWith("granted");
+            done();
+        });
+        
+        ContainerNotification.requestPermission(callback);
     });
 
-    it ("requestPermission resolves the returned Promise", async () => {
-        await ContainerNotification.requestPermission();
+    it("requestPermission resolves the returned Promise", async () => {
+        const result = await ContainerNotification.requestPermission();
+        expect(result).toEqual("granted");
     });
 });

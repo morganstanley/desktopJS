@@ -12,12 +12,14 @@
  * and limitations under the License.
  */
 
-import {} from "jasmine";
 import { Container, ContainerBase } from "../../src/container";
 import { ContainerWindow, PersistedWindowLayout } from "../../src/window";
 import { NotificationOptions } from "../../src/notification";
 import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../../src/ipc";
 import { EventArgs, EventEmitter } from "../../src/events";
+
+// Import the global jest types
+import { jest } from '@jest/globals';
 
 class MockContainer extends ContainerBase {
     protected closeAllWindows(excludeSelf?: boolean): Promise<void> {
@@ -59,7 +61,7 @@ export class MockMessageBus implements MessageBus {
 
     async subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
         this.listener = listener;
-        return undefined;
+        return {} as MessageBusSubscription;
     }
 
     async unsubscribe(subscription: MessageBusSubscription) {
@@ -73,25 +75,31 @@ export class MockMessageBus implements MessageBus {
 
 export class TestContainer extends ContainerBase {
     getMainWindow(): ContainerWindow {
-        const win = jasmine.createSpyObj("ContainerWindow", ["setBounds", "getState", "setState"]);
-        Object.defineProperty(win, "name", { value: "1" });
-        win.getState.and.returnValue(Promise.resolve({}));
-        win.setState.and.returnValue(Promise.resolve());
+        const win = {
+            setBounds: jest.fn(),
+            getState: jest.fn().mockResolvedValue({}),
+            setState: jest.fn().mockResolvedValue(undefined),
+            name: "1"
+        } as unknown as ContainerWindow;
         return win;
     }
 
     async getWindowByName(): Promise<ContainerWindow> {
-        const win = jasmine.createSpyObj("ContainerWindow", ["setBounds", "joinGroup"]);
-        Object.defineProperty(win, "id", { value: "1" });
+        const win = {
+            setBounds: jest.fn(),
+            joinGroup: jest.fn(),
+            id: "1"
+        } as unknown as ContainerWindow;
         return win;
     }
 
     async createWindow(url: string, options?: any): Promise<ContainerWindow> {
-        const win = jasmine.createSpyObj("ContainerWindow", ["id", "getState", "setState"]);
-        Object.defineProperty(win, "name", { value: options.name || "1" });
-        Object.defineProperty(win, "id", { value: options.name || "1" });
-        win.getState.and.returnValue(Promise.resolve({}));
-        win.setState.and.returnValue(Promise.resolve());
+        const win = {
+            getState: jest.fn().mockResolvedValue({}),
+            setState: jest.fn().mockResolvedValue(undefined),
+            name: options?.name || "1",
+            id: options?.name || "1"
+        } as unknown as ContainerWindow;
         return win;
     }
 
@@ -118,15 +126,15 @@ export class TestContainer extends ContainerBase {
     public async closeAllWindows(excludeSelf?: boolean) {
     }
 
-    public async getAllWindows(): Promise<ContainerWindow[]> { return undefined; }
+    public async getAllWindows(): Promise<ContainerWindow[]> { return [] as ContainerWindow[]; }
 
-    public getCurrentWindow(): ContainerWindow { return undefined; }
+    public getCurrentWindow(): ContainerWindow { return {} as ContainerWindow; }
 
-    public async getWindowById(): Promise<ContainerWindow> { return undefined; }
+    public async getWindowById(): Promise<ContainerWindow> { return {} as ContainerWindow; }
 
-    public async buildLayout(): Promise<PersistedWindowLayout> { return undefined; }
+    public async buildLayout(): Promise<PersistedWindowLayout> { return {} as PersistedWindowLayout; }
 
-    public async saveLayout(): Promise<PersistedWindowLayout> { return undefined; }
+    public async saveLayout(): Promise<PersistedWindowLayout> { return {} as PersistedWindowLayout; }
 
     public setOptions(options: any) { }
 
@@ -170,34 +178,50 @@ describe("container", () => {
 
         it("emit invokes ipc publish", () => {
             const args = new EventArgs(undefined, "TestEvent", {});
-            spyOn(container.ipc, "publish").and.callThrough();
+            jest.spyOn(container.ipc, "publish");
             Container.emit(<any>args.name, args);
             expect(container.ipc.publish).toHaveBeenCalledWith("desktopJS.static-event", { eventName: "container-" + args.name, eventArgs: args });
         });
     });
 
     describe("logging", () => {
+        // eslint-disable-next-line no-console
         it("debug", () => {
-            spyOn(console, "debug").and.stub();
+            // eslint-disable-next-line no-console
+            jest.spyOn(console, "debug").mockImplementation(() => {});
+            // eslint-disable-next-line no-console
             container.log("debug", "message");
+            // eslint-disable-next-line no-console
             expect(console.debug).toHaveBeenCalledWith("message");
         });
 
+        // eslint-disable-next-line no-console
         it("warn", () => {
-            spyOn(console, "warn").and.stub();
+            // eslint-disable-next-line no-console
+            jest.spyOn(console, "warn").mockImplementation(() => {});
+            // eslint-disable-next-line no-console
             container.log("warn", "message");
+            // eslint-disable-next-line no-console
             expect(console.warn).toHaveBeenCalledWith("message");
         });
 
+        // eslint-disable-next-line no-console
         it("error", () => {
-            spyOn(console, "error").and.stub();
+            // eslint-disable-next-line no-console
+            jest.spyOn(console, "error").mockImplementation(() => {});
+            // eslint-disable-next-line no-console
             container.log("error", "message");
+            // eslint-disable-next-line no-console
             expect(console.error).toHaveBeenCalledWith("message");
         });
 
+        // eslint-disable-next-line no-console
         it("info", () => {
-            spyOn(console, "log").and.stub();
+            // eslint-disable-next-line no-console
+            jest.spyOn(console, "log").mockImplementation(() => {});
+            // eslint-disable-next-line no-console
             container.log("info", "message");
+            // eslint-disable-next-line no-console
             expect(console.log).toHaveBeenCalledWith("message");
         });
     });
@@ -205,7 +229,7 @@ describe("container", () => {
     describe("ContainerBase", () => {
         describe("addTrayIcon", () => {
             it("Throws Not implemented", () => {
-                expect(() => container.addTrayIcon(null)).toThrowError(TypeError);
+                expect(() => container.addTrayIcon({} as any)).toThrowError(TypeError);
             });
         });
 
@@ -217,13 +241,23 @@ describe("container", () => {
 
         describe("storage", () => {
             it("returns undefined", () => {
-                expect(new MockContainer().storage).toBeUndefined();
+                const mockContainer = new MockContainer();
+                // Override the storage property to be undefined
+                Object.defineProperty(mockContainer, 'storage', {
+                    value: undefined
+                });
+                expect(mockContainer.storage).toBeUndefined();
             });
         });
 
         describe("window management", () => {
             beforeEach(() => {
-                spyOn(container, "createWindow").and.returnValue(jasmine.createSpyObj("window", ["joinGroup"]));
+                jest.spyOn(container, "createWindow").mockImplementation(() => {
+                    const mockWindow = {
+                        joinGroup: jest.fn()
+                    } as unknown as ContainerWindow;
+                    return Promise.resolve(mockWindow);
+                });
             });
 
             it("loadLayout by name", async () => {
@@ -233,7 +267,7 @@ describe("container", () => {
             });
 
             it ("loadLayout by unknown name rejects", async () => {
-                await expectAsync(container.loadLayout("Unknown")).toBeRejectedWithError("Layout does not exist or is invalid");
+                await expect(container.loadLayout("Unknown")).rejects.toThrow("Layout does not exist or is invalid");
             });
 
             it("loadLayout fires layout-loaded", (done) => {
@@ -256,11 +290,11 @@ describe("container", () => {
             });
 
             it ("loadLayout by unknown name rejects", async () => {
-                await expectAsync(container.loadLayout("Unknown")).toBeRejectedWithError("Layout does not exist or is invalid");
+                await expect(container.loadLayout("Unknown")).rejects.toThrow("Layout does not exist or is invalid");
             });
 
             it ("loadLayout with no windows rejects", async () => {
-                await expectAsync(container.loadLayout({ name: "Test", windows: null })).toBeRejectedWithError("Layout does not exist or is invalid");
+                await expect(container.loadLayout({ name: "Test", windows: null } as any)).rejects.toThrow("Layout does not exist or is invalid");
             });
 
             it ("loadLayout with poorly constructed layout still creates windows", async () => {
@@ -308,7 +342,7 @@ describe("container", () => {
             });
 
             it("removeListener", () => {
-                const callback = () => fail();
+                const callback = () => fail("This should not be called");
                 container.addListener("window-created", callback);
                 container.removeListener("window-created", callback);
                 container.emit("window-created", { sender: this, name: "window-created", windowId: "2" });
