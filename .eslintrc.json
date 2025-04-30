@@ -22,6 +22,12 @@
           "no-console": "warn"
         }
       }
+    ],
+    "ignorePatterns": [
+        "**/dist/*",
+        "**/build/*",
+        "**/gulpfile.js",
+        "docs/",
+        "examples/*" 
     ]
-    
 }
