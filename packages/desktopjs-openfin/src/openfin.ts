@@ -166,7 +166,12 @@ export class OpenFinContainerWindow extends ContainerWindow {
 
     public getState(): Promise<any> {
         return new Promise<any>(resolve => {
-            (this.nativeWindow && (<any>this.nativeWindow).getState) ? resolve((<any>this.nativeWindow).getState()) : resolve(undefined);
+            // Use explicit if/else instead of ternary for side-effect
+            if (this.nativeWindow && (<any>this.nativeWindow).getState) {
+                resolve((<any>this.nativeWindow).getState());
+            } else {
+                resolve(undefined);
+            }
         });
     }
 

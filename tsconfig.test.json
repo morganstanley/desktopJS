@@ -11,6 +11,14 @@
   },
   "include": [
     "packages/*/src/**/*.ts",
-    "packages/*/tests/**/*.ts"
+    "packages/*/tests/**/*.ts",
+    "**/*/vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/dist",
+    "**/build",
+    "**/coverage",
+    "docs"
   ]
 }
