@@ -92,6 +92,20 @@ or it is recommended to define a custom keyboard binding.
 }
 ``` 
 
+### Linting
+
+Run the linter:
+
+```bash
+npm run lint
+```
+
+Automatically fix fixable issues:
+
+```bash
+npm run lint:fix
+```
+
 Examples
 --------
 Examples showcasing usage of desktopJS for various containers and scenarios can be found under

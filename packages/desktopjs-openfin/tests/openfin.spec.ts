@@ -2,7 +2,7 @@
  * Morgan Stanley makes this available to you under the Apache License,
  * Version 2.0 (the "License"). You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0.
  *
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership. Unless required by applicable law or agreed
@@ -397,16 +397,15 @@ describe("OpenFinContainer", () => {
         });
 
         it("application window-created fires container window-created", (done) => {
-            // We need to use EventEmitter for this test
             const eventEmitter = {
                 listeners: {},
-                addListener: function(event: string, listener: Function) {
+                addListener: function(event: string, listener: (...args: any[]) => void) {
                     this.listeners[event] = this.listeners[event] || [];
                     this.listeners[event].push(listener);
                 },
                 emit: function(event: string, ...args: any[]) {
                     if (this.listeners[event]) {
-                        this.listeners[event].forEach((listener: Function) => listener(...args));
+                        this.listeners[event].forEach((listener: (...args: any[]) => void) => listener(...args));
                     }
                 }
             };
@@ -613,7 +612,6 @@ describe("OpenFinContainer", () => {
                 return {};
             };
             
-            // Mock getBounds for both windows
             mockWindowWithPersistFalse.getBounds = (callback, error) => {
                 callback({ left: 0, top: 0, width: 100, height: 100 });
                 return {};
@@ -624,65 +622,50 @@ describe("OpenFinContainer", () => {
                 return {};
             };
             
-            // Mock getNativeWindow for both windows
             jest.spyOn(mockWindowWithPersistFalse, 'getNativeWindow').mockReturnValue({ location: { toString: () => "http://example.com/false" } });
             jest.spyOn(mockWindowWithPersistTrue, 'getNativeWindow').mockReturnValue({ location: { toString: () => "http://example.com/true" } });
             
-            // Set up the container as non-platform
             jest.spyOn(container as any, "getIsPlatform").mockResolvedValue(false);
             
-            // Call buildLayout
             const layout = await container.buildLayout();
             
-            // Verify that only the window with persist:true is in the layout
             expect(layout.windows.length).toBe(1);
             expect(layout.windows[0].name).toBe("WindowPersistTrue");
             
-            // Verify that the window with persist:false is not in the layout
             const windowWithPersistFalse = layout.windows.find(w => w.name === "WindowPersistFalse");
             expect(windowWithPersistFalse).toBeUndefined();
         });
 
         it("skips provider window (platform manifest)", async () => {
-            // Create a main window (snapshot window)
             const mainWindowName = "snapshot-window-name";
             const mockMainWindow = new MockWindow(mainWindowName);
 
-            // Create a provider window (uuid and name = uuid)
             const mockProviderWindow = new MockWindow("uuid");
 
-            // Create a regular window
             const mockRegularWindow = new MockWindow("Singleton");
 
-            // Create wrapped container windows
             const containerMainWindow = new OpenFinContainerWindow(mockMainWindow);
             const containerRegularWindow = new OpenFinContainerWindow(mockRegularWindow);
             
-            // Mock platform-specific methods
             jest.spyOn(container as any, "getIsPlatform").mockResolvedValue(true);
             jest.spyOn(container as any, "getSnapshotWindow").mockResolvedValue(containerMainWindow);
             
-            // Mock Application.getCurrent().getWindow() to return the provider window
             const app = desktop.Application;
             const current = app.getCurrent();
             jest.spyOn(current, "getWindow").mockReturnValue(mockProviderWindow);
             
-            // Mock getChildWindows to return our test windows
             jest.spyOn(current, "getChildWindows").mockImplementation((callback) => {
                 callback([mockRegularWindow, mockMainWindow]);
             });
             
-            // Mock getAllWindows to return our test windows
             jest.spyOn(container, 'getAllWindows').mockResolvedValue([
                 containerRegularWindow,
                 containerMainWindow
             ]);
             
-            // Mock getState for both windows
             jest.spyOn(containerRegularWindow, 'getState').mockResolvedValue({});
             jest.spyOn(containerMainWindow, 'getState').mockResolvedValue({});
             
-            // Set up the mock options for both windows
             mockRegularWindow.getOptions = (callback, error) => {
                 callback({
                     url: "http://example.com/regular"
@@ -697,7 +680,6 @@ describe("OpenFinContainer", () => {
                 return {};
             };
             
-            // Mock getBounds for both windows
             mockRegularWindow.getBounds = (callback, error) => {
                 callback({ left: 0, top: 0, width: 100, height: 100 });
                 return {};
@@ -708,29 +690,22 @@ describe("OpenFinContainer", () => {
                 return {};
             };
             
-            // Mock getNativeWindow for both windows
             jest.spyOn(mockRegularWindow, 'getNativeWindow').mockReturnValue({ location: { toString: () => "http://example.com/regular" } });
             jest.spyOn(mockMainWindow, 'getNativeWindow').mockReturnValue({ location: { toString: () => "http://example.com/main" } });
             
-            // This will set isPlatform = true and mainWindow = snapshot window
             await container.ready();
             
-            // Call buildLayout
             const layout = await container.buildLayout();
             
-            // Verify that the layout contains the expected windows
             expect(layout).toBeDefined();
             expect(layout.windows.length).toBe(2);
             
-            // First window should be the regular window (not main)
             expect(layout.windows[0].name).toBe("Singleton");
             expect(layout.windows[0].main).toBe(false);
             
-            // Second window should be the main window
             expect(layout.windows[1].name).toBe(mainWindowName);
             expect(layout.windows[1].main).toBe(true);
             
-            // Verify that the provider window is not in the layout
             const providerWindow = layout.windows.find(w => w.name === "uuid");
             expect(providerWindow).toBeUndefined();
         });
@@ -750,67 +725,52 @@ describe("OpenFinContainer", () => {
 
     describe("notifications", () => {
         it("createNotification creates a notification", () => {
-            // Create a mock Notification constructor
             const mockNotification = jest.fn();
             
-            // Save the original Notification constructor
             const originalNotification = globalWindow.Notification;
             
             try {
-                // Replace the Notification constructor with our mock
                 globalWindow.Notification = mockNotification;
                 
-                // Add createNotification method to container
                 Object.defineProperty(container, 'createNotification', {
                     value: (title: string, options?: any) => {
                         return new globalWindow.Notification(title, options);
                     }
                 });
                 
-                // Call createNotification
                 (container as any).createNotification("title", { body: "body" });
                 
-                // Verify Notification constructor was called with the right arguments
                 expect(mockNotification).toHaveBeenCalledWith("title", { body: "body" });
             } finally {
-                // Restore the original Notification constructor
                 globalWindow.Notification = originalNotification;
             }
         });
         
         it("registerNotificationsApi creates notification wrapper", () => {
-            // Save original Notification
             const originalNotification = globalWindow.Notification;
             
             try {
-                // Create a mock for the original Notification
                 const originalMock = jest.fn();
                 globalWindow.Notification = originalMock;
                 
-                // Create a mock implementation for registerNotificationsApi
                 Object.defineProperty(container, 'registerNotificationsApi', {
                     value: () => {
-                        // Replace Notification with a custom implementation
                         globalWindow.Notification = jest.fn().mockImplementation((title, options) => {
                             return { title, options, custom: true };
                         });
                     }
                 });
                 
-                // Call registerNotificationsApi
                 (container as any).registerNotificationsApi();
                 
-                // Create a notification with the new constructor
                 const notification = new globalWindow.Notification("test", { body: "test body" });
                 
-                // Verify the notification has the expected properties
                 expect(notification).toEqual({
                     title: "test",
                     options: { body: "test body" },
                     custom: true
                 });
             } finally {
-                // Restore original Notification
                 globalWindow.Notification = originalNotification;
             }
         });
@@ -818,7 +778,6 @@ describe("OpenFinContainer", () => {
 
     describe("getOptions", () => {
         it("returns options from container options", async () => {
-            // Mock getShortcuts to return systemStartup: true
             const app = desktop.Application;
             const current = app.getCurrent();
             
@@ -835,7 +794,6 @@ describe("OpenFinContainer", () => {
         });
         
         it("handles error when getting options", async () => {
-            // Mock getShortcuts to throw an error
             const app = desktop.Application;
             const current = app.getCurrent();
             
@@ -848,7 +806,7 @@ describe("OpenFinContainer", () => {
             
             try {
                 await container.getOptions();
-                expect(true).toBe(false); // This will fail the test if we get here
+                expect(true).toBe(false);
             } catch (error) {
                 expect(error).toBeDefined();
             }
@@ -857,7 +815,6 @@ describe("OpenFinContainer", () => {
 
     describe("isAutoStartEnabled", () => {
         it("returns true when systemStartup is true", async () => {
-            // Mock getShortcuts to return systemStartup: true
             const app = desktop.Application;
             const current = app.getCurrent();
             
@@ -873,7 +830,6 @@ describe("OpenFinContainer", () => {
         });
         
         it("returns false when systemStartup is false", async () => {
-            // Mock getShortcuts to return systemStartup: false
             const app = desktop.Application;
             const current = app.getCurrent();
             
@@ -889,7 +845,6 @@ describe("OpenFinContainer", () => {
         });
         
         it("handles error when checking autostart", async () => {
-            // Mock getShortcuts to throw an error
             const app = desktop.Application;
             const current = app.getCurrent();
             
@@ -902,7 +857,7 @@ describe("OpenFinContainer", () => {
             
             try {
                 await (container as any).isAutoStartEnabledAtLogin();
-                expect(true).toBe(false); // This will fail the test if we get here
+                expect(true).toBe(false);
             } catch (error) {
                 expect(error).toEqual("Error");
             }
@@ -914,15 +869,14 @@ describe("OpenFinContainer", () => {
             Object.defineProperty(desktop, "Clipboard", { 
                 value: {
                     writeText: jest.fn().mockImplementation((text: string, ...args: any[]) => {
-                        if (args.length > 0 && typeof args[0] === 'function') args[0]();
+                        if (args.length > 0 && typeof args[0] === 'function') (args[0] as () => void)();
                     }),
                     readText: jest.fn().mockImplementation((type: string, ...args: any[]) => {
-                        if (args.length > 0 && typeof args[0] === 'function') args[0]("Text");
+                        if (args.length > 0 && typeof args[0] === 'function') (args[0] as (text: string) => void)("Text");
                     })
                 }
             });
             
-            // Add clipboard property to container
             Object.defineProperty(container, 'clipboard', {
                 value: {
                     writeText: async (text: string) => {
@@ -951,7 +905,6 @@ describe("OpenFinContainer", () => {
         });
         
         it("writeText handles error", async () => {
-            // Mock writeText to call the error callback
             desktop.Clipboard.writeText = jest.fn().mockImplementation((text: string, successCallback: () => void, errorCallback: (error: string) => void) => {
                 errorCallback("Error writing to clipboard");
             });
@@ -965,7 +918,6 @@ describe("OpenFinContainer", () => {
         });
         
         it("readText handles error", async () => {
-            // Mock readText to call the error callback
             desktop.Clipboard.readText = jest.fn().mockImplementation((type: string, successCallback: (text: string) => void, errorCallback: (error: string) => void) => {
                 errorCallback("Error reading from clipboard");
             });
@@ -981,23 +933,19 @@ describe("OpenFinContainer", () => {
 
     describe("groupLayout", () => {
         it("joinGroup calls underlying joinGroup", async () => {
-            // Create a mock joinGroup function that resolves immediately
             const mockJoinGroup = jest.fn().mockImplementation((window, callback) => {
                 if (callback) callback();
             });
             
-            // Create mock windows
             const targetWindow = { 
                 name: "target", 
                 joinGroup: mockJoinGroup
             };
             const window = { name: "window" };
             
-            // Create container windows with our mocks
             const targetContainerWindow = new OpenFinContainerWindow(targetWindow);
             const containerWindow = new OpenFinContainerWindow(window);
             
-            // Add joinGroup method to the window
             Object.defineProperty(targetContainerWindow, 'joinGroup', {
                 value: function(window) {
                     return new Promise<void>((resolve) => {
@@ -1006,29 +954,23 @@ describe("OpenFinContainer", () => {
                 }
             });
             
-            // Call joinGroup
             await targetContainerWindow.joinGroup(containerWindow);
             
-            // Verify joinGroup was called with the right arguments
             expect(mockJoinGroup).toHaveBeenCalledWith(window, expect.any(Function));
         });
 
         it("leaveGroup calls underlying leaveGroup", async () => {
-            // Create a mock leaveGroup function that calls the callback
             const mockLeaveGroup = jest.fn().mockImplementation((callback) => {
                 if (callback) callback();
             });
             
-            // Create a mock window
             const mockWindow = { 
                 name: "window", 
                 leaveGroup: mockLeaveGroup
             };
             
-            // Create a container window with our mock
             const containerWindow = new OpenFinContainerWindow(mockWindow);
             
-            // Add leaveGroup method to the window
             Object.defineProperty(containerWindow, 'leaveGroup', {
                 value: function() {
                     return new Promise<void>((resolve) => {
@@ -1037,33 +979,26 @@ describe("OpenFinContainer", () => {
                 }
             });
             
-            // Call leaveGroup
             await containerWindow.leaveGroup();
             
-            // Verify leaveGroup was called
             expect(mockLeaveGroup).toHaveBeenCalledWith(expect.any(Function));
         });
 
         it("getGroup calls underlying getGroup", async () => {
-            // Create mock windows for the group
             const mockWindow1 = { name: "window1" };
             const mockWindow2 = { name: "window2" };
             
-            // Create a mock getGroup function that calls the callback with the group
             const mockGetGroup = jest.fn().mockImplementation((callback) => {
                 callback([mockWindow1, mockWindow2]);
             });
             
-            // Create a mock window
             const mockWindow = { 
                 name: "window", 
                 getGroup: mockGetGroup
             };
             
-            // Create a container window with our mock
             const containerWindow = new OpenFinContainerWindow(mockWindow);
             
-            // Add getGroup method to the window
             Object.defineProperty(containerWindow, 'getGroup', {
                 value: function() {
                     return new Promise<ContainerWindow[]>((resolve) => {
@@ -1074,13 +1009,10 @@ describe("OpenFinContainer", () => {
                 }
             });
             
-            // Call getGroup
             const group = await containerWindow.getGroup();
             
-            // Verify getGroup was called
             expect(mockGetGroup).toHaveBeenCalledWith(expect.any(Function));
             
-            // Verify the group contains the expected windows
             expect(group.length).toEqual(2);
             expect(group[0].innerWindow).toEqual(mockWindow1);
             expect(group[1].innerWindow).toEqual(mockWindow2);
@@ -1089,7 +1021,6 @@ describe("OpenFinContainer", () => {
 
     describe("getMenuHtml and getMenuItemHtml", () => {
         beforeEach(() => {
-            // Add ensureAbsoluteUrl method to container
             Object.assign(container, {
                 ensureAbsoluteUrl: (url: string) => url
             });
@@ -1113,7 +1044,6 @@ describe("OpenFinContainer", () => {
     });
 
     it("addTrayIcon invokes underlying setTrayIcon", () => {
-        // Add ensureAbsoluteUrl method to container
         Object.assign(container, {
             ensureAbsoluteUrl: (url: string) => url
         });
@@ -1178,7 +1108,6 @@ describe("OpenFinContainer", () => {
 
     describe("getMainWindow", () => {
         it("getMainWindow returns wrapped inner window (non platform manifest)", async () => {
-            // Reset mocks that might have been changed by other tests
             jest.spyOn(container as any, "getIsPlatform").mockResolvedValue(false);
             
             await container.ready();
@@ -1204,11 +1133,9 @@ describe("OpenFinContainer", () => {
 
     describe("registerNotificationsApi", () => {
         it.skip("registers notification API", () => {
-            // Skipped due to issues with redefining Notification property
         });
 
         it("registers notification API", () => {
-            // Create a mock window object with a Notification property
             const mockWindow: any = {
                 Notification: class MockNotification {
                     title: string;
@@ -1225,30 +1152,23 @@ describe("OpenFinContainer", () => {
                 }
             };
             
-            // Create a mock for the OpenFin notify method
             const mockNotify = jest.fn();
             
-            // Create a mock window for notifications
             const mockWindowForNotify = {
                 name: "window-name", 
                 notify: mockNotify
             };
             
-            // Create a wrapped window for notifications
             const mockContainerWindow = new OpenFinContainerWindow(mockWindowForNotify);
-            // Add the notify method directly to the container window
             Object.defineProperty(mockContainerWindow, 'notify', {
                 value: (options: any) => mockWindowForNotify.notify(options)
             });
             
-            // Create a container with the mock window
             const desktop = new MockDesktop();
             const container = new OpenFinContainer(desktop, mockWindow);
             
-            // Mock getCurrentWindow to return our mockContainerWindow
             jest.spyOn(container, "getCurrentWindow").mockResolvedValue(mockContainerWindow as any);
             
-            // Create the Notification implementation that we expect registerNotificationsApi to create
             const customNotification = function(title: string, options: any) {
                 const containerWindow = mockContainerWindow;
                 containerWindow.notify({
@@ -1265,12 +1185,10 @@ describe("OpenFinContainer", () => {
                 };
             };
             
-            // Add static method to the custom Notification
             customNotification.requestPermission = function() {
                 return Promise.reject("Not supported");
             };
             
-            // Mock the implementation for registerNotificationsApi
             Object.defineProperty(container, 'registerNotificationsApi', {
                 value: () => {
                     mockWindow.Notification = jest.fn().mockImplementation((title, options) => {
@@ -1281,19 +1199,15 @@ describe("OpenFinContainer", () => {
                 }
             });
             
-            // Call registerNotificationsApi
             (container as any).registerNotificationsApi();
             
-            // Create a notification using the new API
             const notification = new mockWindow.Notification("Test Title", {
                 body: "Test Body",
                 icon: "test-icon.png"
             });
             
-            // Verify the notification was created with correct parameters
             expect(notification).toBeDefined();
             
-            // Verify that notify was called with the right parameters
             expect(mockNotify).toHaveBeenCalledWith(
                 expect.objectContaining({
                     title: "Test Title",
@@ -1302,7 +1216,6 @@ describe("OpenFinContainer", () => {
                 })
             );
             
-            // Verify requestPermission method is implemented
             expect(mockWindow.Notification.requestPermission).toBeDefined();
         });
     });
@@ -1323,7 +1236,6 @@ describe("OpenFinContainer", () => {
 
     describe("ensureAbsoluteUrl", () => {
         it("returns the same URL when linkHelper is not available", () => {
-            // Create a mock window without Office.LinkHelper
             const mockWindow: any = {
                 location: {
                     protocol: "https:",
@@ -1331,52 +1243,40 @@ describe("OpenFinContainer", () => {
                 }
             };
             
-            // Create a container with our mocked window
             const desktop = new MockDesktop();
             const container = new OpenFinContainer(desktop, mockWindow);
             
-            // Mock setTrayIcon and capture the URL that's passed
             const mockSetTrayIcon = jest.fn();
             desktop.Application.getCurrent().setTrayIcon = mockSetTrayIcon;
             
-            // Create a mock implementation of ensureAbsoluteUrl
             const mockEnsureAbsoluteUrl = jest.fn((url: string) => {
                 if (url.startsWith("http")) {
-                    return url; // Already absolute
+                    return url;
                 } else {
-                    // Simple URL resolution
                     return url.startsWith('/') 
                         ? `${mockWindow.location.protocol}//${mockWindow.location.host}${url}`
                         : `${mockWindow.location.protocol}//${mockWindow.location.host}/${url}`;
                 }
             });
             
-            // Replace the original ensureAbsoluteUrl with our mock
             Object.defineProperty(container, 'ensureAbsoluteUrl', {
                 value: mockEnsureAbsoluteUrl
             });
             
-            // Calling addTrayIcon should invoke our mocked ensureAbsoluteUrl
             container.addTrayIcon({ icon: 'https://example.com/icon.png', text: 'Icon' }, () => {});
             
-            // Verify our mock was called with the absolute URL
             expect(mockEnsureAbsoluteUrl).toHaveBeenCalledWith('https://example.com/icon.png');
             
-            // The mock should return the same URL since it's already absolute
             expect(mockEnsureAbsoluteUrl('https://example.com/icon.png')).toEqual('https://example.com/icon.png');
             
-            // Test with a relative URL
             container.addTrayIcon({ icon: '/relative/path/icon.png', text: 'Icon' }, () => {});
             
-            // Verify our mock was called with the relative URL
             expect(mockEnsureAbsoluteUrl).toHaveBeenCalledWith('/relative/path/icon.png');
             
-            // The mock should resolve the URL against window.location
             expect(mockEnsureAbsoluteUrl('/relative/path/icon.png')).toEqual('https://example.com/relative/path/icon.png');
         });
 
         it("returns absolute URL when linkHelper is available", () => {
-            // Create a mock window with Office.LinkHelper
             const mockWindow: any = {
                 location: {
                     protocol: "https:",
@@ -1391,48 +1291,36 @@ describe("OpenFinContainer", () => {
                 }
             };
             
-            // Create a container with our mocked window
             const desktop = new MockDesktop();
             const container = new OpenFinContainer(desktop, mockWindow);
             
-            // Mock setTrayIcon and capture the URL that's passed
             const mockSetTrayIcon = jest.fn();
             desktop.Application.getCurrent().setTrayIcon = mockSetTrayIcon;
             
-            // Create a mock implementation of ensureAbsoluteUrl that uses Office.LinkHelper
             const mockEnsureAbsoluteUrl = jest.fn((url: string) => {
                 if (url.startsWith("http")) {
-                    return url; // Already absolute
+                    return url;
                 } else {
-                    // Use LinkHelper.resolveUrl for relative URLs
                     return mockWindow.Office.LinkHelper.resolveUrl(url);
                 }
             });
             
-            // Replace the original ensureAbsoluteUrl with our mock
             Object.defineProperty(container, 'ensureAbsoluteUrl', {
                 value: mockEnsureAbsoluteUrl
             });
             
-            // Calling addTrayIcon should invoke our mocked ensureAbsoluteUrl
             container.addTrayIcon({ icon: 'https://example.com/icon.png', text: 'Icon' }, () => {});
             
-            // Verify our mock was called with the absolute URL
             expect(mockEnsureAbsoluteUrl).toHaveBeenCalledWith('https://example.com/icon.png');
             
-            // The mock should return the same URL since it's already absolute
             expect(mockEnsureAbsoluteUrl('https://example.com/icon.png')).toEqual('https://example.com/icon.png');
             
-            // Test with a relative URL
             container.addTrayIcon({ icon: '/relative/path/icon.png', text: 'Icon' }, () => {});
             
-            // Verify our mock was called with the relative URL
             expect(mockEnsureAbsoluteUrl).toHaveBeenCalledWith('/relative/path/icon.png');
             
-            // Verify LinkHelper.resolveUrl was called
             expect(mockWindow.Office.LinkHelper.resolveUrl).toHaveBeenCalledWith('/relative/path/icon.png');
             
-            // The mock should resolve the URL using Office.LinkHelper
             expect(mockEnsureAbsoluteUrl('/relative/path/icon.png')).toEqual('https://resolved.example.com/relative/path/icon.png');
         });
     });
@@ -1451,7 +1339,6 @@ describe("OpenFinContainer", () => {
             const mockWindow = { name: "window", notify: jest.fn() };
             const window = new OpenFinContainerWindow(mockWindow);
             
-            // Add notify method to window
             Object.defineProperty(window, 'notify', {
                 value: (options: any) => mockWindow.notify(options)
             });
@@ -1470,7 +1357,6 @@ describe("OpenFinContainer", () => {
             const mockWindow = { name: "window", notify: jest.fn() };
             const window = new OpenFinContainerWindow(mockWindow);
             
-            // Add notify method to window
             Object.defineProperty(window, 'notify', {
                 value: (options: any) => mockWindow.notify(options)
             });
@@ -1495,7 +1381,6 @@ describe("OpenFinContainer", () => {
 
     describe("showMenu", () => {
         it("creates a context menu window with provided menu items", () => {
-            // Create a mock document element for the context menu
             const mockContextMenuElement = {
                 innerHTML: "",
                 offsetWidth: 100,
@@ -1503,7 +1388,6 @@ describe("OpenFinContainer", () => {
                 addEventListener: jest.fn()
             };
             
-            // Create a mock document for the window
             const mockDocument = {
                 open: jest.fn(),
                 write: jest.fn(),
@@ -1516,7 +1400,6 @@ describe("OpenFinContainer", () => {
                 })
             };
             
-            // Create a mock native window that will be returned by getNativeWindow
             const mockNativeWindow = {
                 document: mockDocument,
                 location: {
@@ -1524,7 +1407,6 @@ describe("OpenFinContainer", () => {
                 }
             };
             
-            // Create the mock window with proper structure
             const mockContextMenuWindow = {
                 name: "mockContextMenu",
                 getNativeWindow: jest.fn().mockReturnValue(mockNativeWindow),
@@ -1537,8 +1419,7 @@ describe("OpenFinContainer", () => {
                 close: jest.fn()
             };
             
-            // Mock desktop.Window constructor to return our mockContextMenuWindow
-            let storedCallback: Function | null = null;
+            let storedCallback: ((win?: any) => void) | null = null; // Use specific function type ((win?: any) => void)
             const mockWindowConstructor = jest.fn().mockImplementation((options, callback) => {
                 if (callback) {
                     storedCallback = callback;
@@ -1546,38 +1427,31 @@ describe("OpenFinContainer", () => {
                 return mockContextMenuWindow;
             });
             
-            // Create a container with our mocks
             const desktop = new MockDesktop();
             desktop.Window = mockWindowConstructor;
             
-            // Mock the ensureAbsoluteUrl method
             const container = new OpenFinContainer(desktop);
             
-            // Add missing methods
             Object.defineProperty(container, 'getMenuHtml', {
                 value: () => "<div id='contextMenu'></div>"
             });
             
-            // Mock getMenuItemHtml to return a simple string
             Object.defineProperty(container, 'getMenuItemHtml', {
                 value: jest.fn().mockImplementation((item) => `<div id="${item.id || 'item'}">${item.label}</div>`)
             });
             
             (container as any).ensureAbsoluteUrl = jest.fn().mockImplementation(url => url);
             
-            // Create unique uuid
             Object.defineProperty(container, 'uuid', { 
                 value: "test-uuid",
                 writable: true
             });
             
-            // Menu items to display
             const menuItems = [
                 { id: "item1", label: "Item 1", icon: "icon1.png", click: jest.fn() },
                 { id: "item2", label: "Item 2", click: jest.fn() }
             ];
             
-            // Mock monitorInfo
             const mockMonitorInfo = {
                 primaryMonitor: {
                     monitorRect: {
@@ -1589,15 +1463,12 @@ describe("OpenFinContainer", () => {
                 }
             };
             
-            // Call showMenu
             (container as any).showMenu(100, 100, mockMonitorInfo, menuItems);
             
-            // Now execute the stored callback after mockContextMenuWindow is set
             if (storedCallback) {
                 storedCallback();
             }
             
-            // Verify window constructor was called with correct options
             expect(desktop.Window).toHaveBeenCalledWith(
                 expect.objectContaining({
                     saveWindowState: false,
@@ -1610,27 +1481,23 @@ describe("OpenFinContainer", () => {
                 expect.any(Function)
             );
             
-            // Verify document methods were called
             expect(mockDocument.open).toHaveBeenCalledWith("text/html", "replace");
             expect(mockDocument.write).toHaveBeenCalled();
             expect(mockDocument.close).toHaveBeenCalled();
             
-            // Verify getElementById was called to get the contextMenu element
             expect(mockDocument.getElementById).toHaveBeenCalledWith("contextMenu");
             
-            // Verify resize and positioning
             expect(mockContextMenuWindow.resizeTo).toHaveBeenCalledWith(100, 100, "top-left");
             expect(mockContextMenuWindow.addEventListener).toHaveBeenCalledWith("blurred", expect.any(Function));
             expect(mockContextMenuWindow.showAt).toHaveBeenCalledWith(
-                100, // x position
-                100, // y position
+                100, 
+                100, 
                 expect.any(Boolean),
                 expect.any(Function)
             );
         });
 
         it.skip("positions menu to the left when near the right edge of the monitor", () => {
-            // Create a mock document element for the context menu
             const mockContextMenuElement = {
                 innerHTML: "",
                 offsetWidth: 200,
@@ -1638,7 +1505,6 @@ describe("OpenFinContainer", () => {
                 addEventListener: jest.fn()
             };
             
-            // Create a mock document for the window
             const mockDocument = {
                 open: jest.fn(),
                 write: jest.fn(),
@@ -1651,7 +1517,6 @@ describe("OpenFinContainer", () => {
                 })
             };
             
-            // Create a mock native window that will be returned by getNativeWindow
             const mockNativeWindow = {
                 document: mockDocument,
                 location: {
@@ -1659,7 +1524,6 @@ describe("OpenFinContainer", () => {
                 }
             };
             
-            // Create the mock window with proper structure
             const mockContextMenuWindow = {
                 name: "mockContextMenu",
                 getNativeWindow: jest.fn().mockReturnValue(mockNativeWindow),
@@ -1672,8 +1536,7 @@ describe("OpenFinContainer", () => {
                 close: jest.fn()
             };
             
-            // Mock desktop.Window constructor to return our mockContextMenuWindow
-            let storedCallback: Function | null = null;
+            let storedCallback: ((win?: any) => void) | null = null; // Use specific function type ((win?: any) => void)
             const mockWindowConstructor = jest.fn().mockImplementation((options, callback) => {
                 if (callback) {
                     storedCallback = callback;
@@ -1681,50 +1544,40 @@ describe("OpenFinContainer", () => {
                 return mockContextMenuWindow;
             });
             
-            // Create a container with our mocks
             const desktop = new MockDesktop();
             desktop.Window = mockWindowConstructor;
             
-            // Mock the ensureAbsoluteUrl method
             const container = new OpenFinContainer(desktop);
             
-            // Add missing methods
             Object.defineProperty(container, 'getMenuHtml', {
                 value: () => "<div id='contextMenu'></div>"
             });
             
             (container as any).ensureAbsoluteUrl = jest.fn().mockImplementation(url => url);
             
-            // Create unique uuid
             Object.defineProperty(container, 'uuid', { 
                 value: "test-uuid",
                 writable: true
             });
             
-            // Mock monitorInfo with a small right edge
             const mockMonitorInfo = {
                 primaryMonitor: {
                     monitorRect: {
                         left: 0,
                         top: 0,
-                        right: 900, // Right edge is at 900px
+                        right: 900,
                         bottom: 1000
                     }
                 }
             };
             
-            // Set the position near the right edge (x = 800) so menu will overflow
             const xPosition = 800;
-            const menuWidth = 200; // Menu is 200px wide from the mock
+            const menuWidth = 200;
             
-            // Call showMenu
             (container as any).showMenu(xPosition, 100, mockMonitorInfo, [{ label: "Test" }]);
             
-            // The menu should be positioned to the left of the click point
-            // Should be: x - width - trayIconMenuLeftOffset
             const expectedLeft = xPosition - menuWidth - OpenFinContainer.trayIconMenuLeftOffset;
             
-            // Verify positioning
             expect(mockContextMenuWindow.showAt).toHaveBeenCalledWith(
                 expectedLeft, 
                 expect.any(Number), 
@@ -1734,7 +1587,6 @@ describe("OpenFinContainer", () => {
         });
 
         it.skip("positions menu above when near the bottom edge of the monitor", () => {
-            // Create a mock document for the window
             const mockDocument = {
                 open: jest.fn(),
                 write: jest.fn(),
@@ -1746,7 +1598,6 @@ describe("OpenFinContainer", () => {
                 })
             };
             
-            // Create a mock native window that will be returned by getNativeWindow
             const mockNativeWindow = {
                 document: mockDocument,
                 location: {
@@ -1754,7 +1605,6 @@ describe("OpenFinContainer", () => {
                 }
             };
             
-            // Create the mock window with proper structure
             const mockContextMenuWindow = {
                 name: "mockContextMenu",
                 getNativeWindow: jest.fn().mockReturnValue(mockNativeWindow),
@@ -1767,8 +1617,7 @@ describe("OpenFinContainer", () => {
                 close: jest.fn()
             };
             
-            // Mock desktop.Window constructor to return our mockContextMenuWindow
-            let storedCallback: Function | null = null;
+            let storedCallback: ((win?: any) => void) | null = null; // Use specific function type ((win?: any) => void)
             const mockWindowConstructor = jest.fn().mockImplementation((options, callback) => {
                 if (callback) {
                     storedCallback = callback;
@@ -1776,50 +1625,40 @@ describe("OpenFinContainer", () => {
                 return mockContextMenuWindow;
             });
             
-            // Create a container with our mocks
             const desktop = new MockDesktop();
             desktop.Window = mockWindowConstructor;
             
-            // Mock the ensureAbsoluteUrl method
             const container = new OpenFinContainer(desktop);
             
-            // Add missing methods
             Object.defineProperty(container, 'getMenuHtml', {
                 value: () => "<div id='contextMenu'></div>"
             });
             
             (container as any).ensureAbsoluteUrl = jest.fn().mockImplementation(url => url);
             
-            // Create unique uuid
             Object.defineProperty(container, 'uuid', { 
                 value: "test-uuid",
                 writable: true
             });
             
-            // Mock monitorInfo with a low bottom edge
             const mockMonitorInfo = {
                 primaryMonitor: {
                     monitorRect: {
                         left: 0,
                         top: 0,
                         right: 1000,
-                        bottom: 800 // Bottom edge is at 800px
+                        bottom: 800
                     }
                 }
             };
             
-            // Set the position near the bottom edge (y = 700) so menu will overflow
             const yPosition = 700;
-            const menuHeight = 300; // Menu is 300px tall from the mock
+            const menuHeight = 300;
             
-            // Call showMenu
             (container as any).showMenu(100, yPosition, mockMonitorInfo, [{ label: "Test" }]);
             
-            // The menu should be positioned above the click point
-            // Should be: y - height - trayIconMenuTopOffset
             const expectedTop = yPosition - menuHeight - OpenFinContainer.trayIconMenuTopOffset;
             
-            // Verify positioning
             expect(mockContextMenuWindow.showAt).toHaveBeenCalledWith(
                 expect.any(Number),
                 expectedTop,
@@ -1829,7 +1668,6 @@ describe("OpenFinContainer", () => {
         });
 
         it.skip("creates menu items with proper IDs and HTML", () => {
-            // Create a mock document element for the context menu
             const mockContextMenuElement = {
                 innerHTML: "",
                 offsetWidth: 100,
@@ -1837,7 +1675,6 @@ describe("OpenFinContainer", () => {
                 addEventListener: jest.fn()
             };
             
-            // Create a mock document for the window
             const mockDocument = {
                 open: jest.fn(),
                 write: jest.fn(),
@@ -1850,7 +1687,6 @@ describe("OpenFinContainer", () => {
                 })
             };
             
-            // Create a mock native window that will be returned by getNativeWindow
             const mockNativeWindow = {
                 document: mockDocument,
                 location: {
@@ -1858,7 +1694,6 @@ describe("OpenFinContainer", () => {
                 }
             };
             
-            // Create the mock window with proper structure
             const mockContextMenuWindow = {
                 name: "mockContextMenu",
                 getNativeWindow: jest.fn().mockReturnValue(mockNativeWindow),
@@ -1871,8 +1706,7 @@ describe("OpenFinContainer", () => {
                 close: jest.fn()
             };
             
-            // Mock desktop.Window constructor to return our mockContextMenuWindow
-            let storedCallback: Function | null = null;
+            let storedCallback: ((win?: any) => void) | null = null; // Use specific function type ((win?: any) => void)
             const mockWindowConstructor = jest.fn().mockImplementation((options, callback) => {
                 if (callback) {
                     storedCallback = callback;
@@ -1880,66 +1714,53 @@ describe("OpenFinContainer", () => {
                 return mockContextMenuWindow;
             });
             
-            // Create a container with our mocks
             const desktop = new MockDesktop();
             desktop.Window = mockWindowConstructor;
             
-            // Mock the ensureAbsoluteUrl method
             const container = new OpenFinContainer(desktop);
             
-            // Add missing methods
             Object.defineProperty(container, 'getMenuHtml', {
                 value: () => "<div id='contextMenu'></div>"
             });
             
-            // Mock getMenuItemHtml to return a simple string
             Object.defineProperty(container, 'getMenuItemHtml', {
                 value: jest.fn().mockImplementation((item) => `<div id="${item.id || 'item'}">${item.label}</div>`)
             });
             
             (container as any).ensureAbsoluteUrl = jest.fn().mockImplementation(url => url);
             
-            // Create unique uuid
             Object.defineProperty(container, 'uuid', { 
                 value: "test-uuid",
                 writable: true
             });
             
-            // Menu items to display
             const menuItems = [
                 { id: "item1", label: "Item 1", icon: "icon1.png", click: jest.fn() },
                 { id: "item2", label: "Item 2", click: jest.fn() }
             ];
             
-            // Call showMenu
             (container as any).showMenu(100, 100, { primaryMonitor: { monitorRect: { right: 1000, bottom: 1000 } } }, menuItems);
             
-            // Now execute the stored callback after mockContextMenuWindow is set
             if (storedCallback) {
                 storedCallback();
             }
             
-            // Verify IDs were generated
             expect(menuItems[0].id).toBeDefined();
             expect(menuItems[1].id).toBeDefined();
             
-            // Verify getMenuItemHtml was called for each item
             expect((container as any).getMenuItemHtml).toHaveBeenCalledTimes(2);
             expect((container as any).getMenuItemHtml).toHaveBeenCalledWith(menuItems[0]);
             expect((container as any).getMenuItemHtml).toHaveBeenCalledWith(menuItems[1]);
             
-            // Verify that menu items without labels are filtered out
             const menuItemsWithNoLabel = [
                 { id: "item1", label: "Item 1" },
-                { id: "item2" } // No label
+                { id: "item2" }
             ];
             
             (container as any).getMenuItemHtml.mockClear();
             
-            // Call showMenu with items including one without a label
             (container as any).showMenu(100, 100, { primaryMonitor: { monitorRect: { right: 1000, bottom: 1000 } } }, menuItemsWithNoLabel);
             
-            // Only one item should have getMenuItemHtml called - the one with a label
             expect((container as any).getMenuItemHtml).toHaveBeenCalledTimes(1);
             expect((container as any).getMenuItemHtml).toHaveBeenCalledWith(menuItemsWithNoLabel[0]);
         });
@@ -1952,7 +1773,6 @@ describe("OpenFinContainer", () => {
                 snapshot: { windows: [{ name: "test-window" }] }
             };
             
-            // Mock the getManifest method in the application
             jest.spyOn(desktop.Application.getCurrent(), "getManifest")
                 .mockImplementation((callback) => callback(mockManifest));
             
@@ -1964,7 +1784,6 @@ describe("OpenFinContainer", () => {
         it("handles error when retrieving manifest", async () => {
             const mockError = new Error("Failed to get manifest");
             
-            // Mock the getManifest method to reject with an error
             jest.spyOn(desktop.Application.getCurrent(), "getManifest")
                 .mockImplementation((callback, errorCallback) => errorCallback(mockError));
             
@@ -1976,7 +1795,6 @@ describe("OpenFinContainer", () => {
         it("returns the name of the first window in the snapshot", async () => {
             const windowName = "test-window";
             
-            // Mock getManifest to return a valid manifest with a window name
             jest.spyOn(container as any, "getManifest").mockResolvedValue({
                 snapshot: {
                     windows: [{ name: windowName }]
@@ -1989,10 +1807,9 @@ describe("OpenFinContainer", () => {
         });
         
         it("returns null if window has no name", async () => {
-            // Mock getManifest to return a valid manifest with a window without a name
             jest.spyOn(container as any, "getManifest").mockResolvedValue({
                 snapshot: {
-                    windows: [{ url: "test.html" }] // No name property
+                    windows: [{ url: "test.html" }]
                 }
             });
             
@@ -2002,7 +1819,6 @@ describe("OpenFinContainer", () => {
         });
         
         it("throws an error if no valid windows are found in snapshot", async () => {
-            // Mock getManifest to return a manifest with no windows
             jest.spyOn(container as any, "getManifest").mockResolvedValue({
                 snapshot: {
                     windows: []
@@ -2013,7 +1829,6 @@ describe("OpenFinContainer", () => {
         });
         
         it("throws an error if snapshot windows is undefined", async () => {
-            // Mock getManifest to return a manifest with no windows array
             jest.spyOn(container as any, "getManifest").mockResolvedValue({
                 snapshot: {}
             });
@@ -2028,10 +1843,8 @@ describe("OpenFinContainer", () => {
             const mockWindow = { name: snapshotWindowName };
             const mockWrappedWindow = { innerWindow: mockWindow, name: snapshotWindowName };
             
-            // Mock getAllWindows to return a window with the snapshot name
             jest.spyOn(container, "getAllWindows").mockResolvedValue([mockWrappedWindow] as any);
             
-            // Mock getSnapshotWindowName to return our test name
             jest.spyOn(container as any, "getSnapshotWindowName").mockResolvedValue(snapshotWindowName);
             
             const result = await (container as any).getSnapshotWindow();
@@ -2049,48 +1862,39 @@ describe("OpenFinContainer", () => {
             const mockWrappedSnapshotWindow = { innerWindow: mockSnapshotWindow, name: snapshotWindowName };
             const mockWrappedInternalWindow = { innerWindow: mockInternalWindow, name: internalGeneratedName };
             
-            // Mock getAllWindows to return both windows
             jest.spyOn(container, "getAllWindows").mockResolvedValue([
                 mockWrappedSnapshotWindow,
                 mockWrappedInternalWindow
             ] as any);
             
-            // Mock getSnapshotWindowName to return a different name than what's in windows
             jest.spyOn(container as any, "getSnapshotWindowName").mockResolvedValue("different-name");
             
             const result = await (container as any).getSnapshotWindow();
             
-            // Should return the internal-generated-window since the snapshot name doesn't match
             expect(result).toEqual(mockWrappedInternalWindow);
         });
         
         it("throws an error when no matching window is found", async () => {
-            // Mock getAllWindows to return a window with a different name
             jest.spyOn(container, "getAllWindows").mockResolvedValue([
                 { name: "other-window" }
             ] as any);
             
-            // Mock getSnapshotWindowName to return our test name
             jest.spyOn(container as any, "getSnapshotWindowName").mockResolvedValue("snapshot-window");
             
             await expect((container as any).getSnapshotWindow()).rejects.toThrow("Error getting snapshot window");
         });
         
         it("throws an error when no windows are returned from getAllWindows", async () => {
-            // Mock getAllWindows to return empty array
             jest.spyOn(container, "getAllWindows").mockResolvedValue([]);
             
-            // Mock getSnapshotWindowName to return our test name
             jest.spyOn(container as any, "getSnapshotWindowName").mockResolvedValue("snapshot-window");
             
             await expect((container as any).getSnapshotWindow()).rejects.toThrow("Error getting snapshot window");
         });
         
         it("throws an error when getAllWindows returns undefined", async () => {
-            // Mock getAllWindows to return undefined
             jest.spyOn(container, "getAllWindows").mockResolvedValue(undefined as any);
             
-            // Mock getSnapshotWindowName to return our test name
             jest.spyOn(container as any, "getSnapshotWindowName").mockResolvedValue("snapshot-window");
             
             await expect((container as any).getSnapshotWindow()).rejects.toThrow("Error getting snapshot window");
@@ -2103,7 +1907,6 @@ describe("OpenFinContainerWindow", () => {
     let win: OpenFinContainerWindow;
 
     beforeEach(() => {
-        // Create a more complete mock window with all required methods
         innerWin = {
             name: "MockWindow",
             getNativeWindow: jest.fn().mockReturnValue({
@@ -2130,9 +1933,7 @@ describe("OpenFinContainerWindow", () => {
                 stopFlashing: jest.fn().mockImplementation((callback: () => void) => callback()),
                 getOptions: jest.fn().mockImplementation((callback: (options: any) => void, error: (reason: any) => void) => callback({ url: "url", customData: null })),
                 getSnapshot: jest.fn().mockImplementation((callback: (snapshot: string) => void, error: (reason: any) => void) => callback("base64data")),
-                navigate: jest.fn().mockImplementation((url: string, callback: () => void, error: (reason: any) => void) => callback()),
-                addEventListener: jest.fn(),
-                removeEventListener: jest.fn()
+                navigate: jest.fn().mockImplementation((url: string, callback: () => void, error: (reason: any) => void) => callback())
             }),
             navigate: jest.fn().mockImplementation((url: string, callback: () => void, error: (reason: any) => void) => callback()),
             focus: jest.fn().mockImplementation((callback: () => void, error: (reason: any) => void) => callback()),
@@ -2278,44 +2079,35 @@ describe("OpenFinContainerWindow", () => {
 
     describe("setState", () => {
         it("setState undefined", async () => {
-            // Create a mock window without setState in nativeWindow
             const mockWindow = { 
                 name: "MockWindow",
                 getNativeWindow: jest.fn().mockReturnValue({})
             };
             
-            // Create a container window with our mock
             const win = new OpenFinContainerWindow(mockWindow);
             
-            // Mock the prototype's emit method to prevent errors
             const originalPrototype = Object.getPrototypeOf(win);
             const originalEmit = originalPrototype.emit;
             originalPrototype.emit = jest.fn();
             
-            // Mock the static emit method
             const originalStaticEmit = ContainerWindow.emit;
             ContainerWindow.emit = jest.fn();
             
             try {
-                // Should not throw when setState is not available
                 await win.setState({});
                 
-                // Verify getNativeWindow was called
                 expect(mockWindow.getNativeWindow).toHaveBeenCalled();
             } finally {
-                // Restore original methods
                 originalPrototype.emit = originalEmit;
                 ContainerWindow.emit = originalStaticEmit;
             }
         });
 
         it("setState defined", async () => {
-            // Create a mock setState function that resolves immediately
             const mockSetState = jest.fn().mockImplementation(() => {
                 return Promise.resolve();
             });
             
-            // Create a mock window with setState in nativeWindow
             const mockWindow = { 
                 name: "MockWindow",
                 getNativeWindow: jest.fn().mockReturnValue({
@@ -2323,31 +2115,24 @@ describe("OpenFinContainerWindow", () => {
                 })
             };
             
-            // Create a container window with our mock
             const win = new OpenFinContainerWindow(mockWindow);
             
-            // Mock the prototype's emit method to prevent errors
             const originalPrototype = Object.getPrototypeOf(win);
             const originalEmit = originalPrototype.emit;
             originalPrototype.emit = jest.fn();
             
-            // Mock the static emit method
             const originalStaticEmit = ContainerWindow.emit;
             ContainerWindow.emit = jest.fn();
             
             try {
-                // Call setState with a mock state
                 const mockState = { value: "test" };
                 await win.setState(mockState);
                 
-                // Verify setState was called with the right arguments
                 expect(mockSetState).toHaveBeenCalledWith(mockState);
                 
-                // Verify emit was called
                 expect(originalPrototype.emit).toHaveBeenCalled();
                 expect(ContainerWindow.emit).toHaveBeenCalled();
             } finally {
-                // Restore original methods
                 originalPrototype.emit = originalEmit;
                 ContainerWindow.emit = originalStaticEmit;
             }
@@ -2365,8 +2150,8 @@ describe("OpenFinContainerWindow", () => {
         expect(bounds).toBeDefined();
         expect(bounds.x).toEqual(0);
         expect(bounds.y).toEqual(1);
-        expect(bounds.width).toEqual(2);  // right - left
-        expect(bounds.height).toEqual(3); // bottom - top
+        expect(bounds.width).toEqual(2);
+        expect(bounds.height).toEqual(3);
     });
 
     it("setBounds sets underlying window position", async () => {
@@ -2449,16 +2234,13 @@ describe("OpenFinContainerWindow", () => {
 
     describe("addListener", () => {
         it("addListener calls underlying OpenFin window addEventListener with mapped event name", () => {
-            // Create a mock window with addEventListener method
             const mockWindow = { 
                 name: "MockWindow",
                 addEventListener: jest.fn()
             };
             
-            // Create a container window
             const win = new OpenFinContainerWindow(mockWindow);
             
-            // Add the addListener method to the window
             Object.defineProperty(win, 'addListener', {
                 value: function(eventName: string, listener: (...args: any[]) => void) {
                     const mappedEvent = eventName === "move" ? "bounds-changing" : eventName;
@@ -2466,45 +2248,36 @@ describe("OpenFinContainerWindow", () => {
                 }
             });
             
-            // Create a listener function
             const listener = jest.fn();
             
-            // Call addListener with a mapped event (move maps to bounds-changing)
             win.addListener("move", listener);
             
-            // Verify the addEventListener was called with the mapped event name
             expect(mockWindow.addEventListener).toHaveBeenCalledWith("bounds-changing", listener);
         });
 
         it("addListener calls underlying OpenFin window addEventListener with unmapped event name", () => {
             const unmappedEvent = "closed";
             
-            // Create a mock window with addEventListener method
             const mockWindow = { 
                 name: "MockWindow",
                 addEventListener: jest.fn()
             };
             const win = new OpenFinContainerWindow(mockWindow);
             
-            // Add the addListener method to the window
             Object.defineProperty(win, 'addListener', {
                 value: function(eventName: string, listener: (...args: any[]) => void) {
                     mockWindow.addEventListener(eventName, listener);
                 }
             });
             
-            // Create a listener function
             const listener = jest.fn();
             
-            // Call addListener with an unmapped event
             win.addListener(unmappedEvent, listener);
             
-            // Verify the addEventListener was called with the same event name
             expect(mockWindow.addEventListener).toHaveBeenCalledWith(unmappedEvent, listener);
         });
 
         it("resize wraps filtered bounds-changing", (done) => {
-            // Create a mock addEventListener that invokes the listener with a changeType = 1
             const mockWindow = { 
                 name: "MockWindow",
                 addEventListener: jest.fn().mockImplementation((eventName: string, listener: (event: any) => void) => {
@@ -2512,10 +2285,8 @@ describe("OpenFinContainerWindow", () => {
                 })
             };
             
-            // Create a container window
             const win = new OpenFinContainerWindow(mockWindow);
             
-            // Add the addListener method to the window
             Object.defineProperty(win, 'addListener', {
                 value: function(eventName: string, listener: (...args: any[]) => void) {
                     const mappedEvent = eventName === "resize" ? "bounds-changing" : eventName;
@@ -2527,16 +2298,13 @@ describe("OpenFinContainerWindow", () => {
                 }
             });
             
-            // Call addListener with resize event
             win.addListener("resize", (e) => {
-                // Verify that the innerEvent is passed correctly
                 expect(e.innerEvent.changeType).toBeGreaterThanOrEqual(1);
                 done();
             });
         });
 
         it("move wraps filtered bounds-changing", (done) => {
-            // Create a mock addEventListener that invokes the listener with a changeType = 0
             const mockWindow = { 
                 name: "MockWindow",
                 addEventListener: jest.fn().mockImplementation((eventName: string, listener: (event: any) => void) => {
@@ -2544,10 +2312,8 @@ describe("OpenFinContainerWindow", () => {
                 })
             };
             
-            // Create a container window
             const win = new OpenFinContainerWindow(mockWindow);
             
-            // Add the addListener method to the window
             Object.defineProperty(win, 'addListener', {
                 value: function(eventName: string, listener: (...args: any[]) => void) {
                     const mappedEvent = eventName === "move" ? "bounds-changing" : eventName;
@@ -2559,23 +2325,19 @@ describe("OpenFinContainerWindow", () => {
                 }
             });
             
-            // Call addListener with move event
             win.addListener("move", (e) => {
-                // Verify that the innerEvent is passed correctly
                 expect(e.innerEvent.changeType).toEqual(0);
                 done();
             });
         });
 
         it("beforeunload attaches to underlying close-requested", () => {
-            // Create a mock window with addEventListener method
             const mockWindow = { 
                 name: "MockWindow",
                 addEventListener: jest.fn()
             };
             const win = new OpenFinContainerWindow(mockWindow);
             
-            // Add the addListener method to the window
             Object.defineProperty(win, 'addListener', {
                 value: function(eventName: string, listener: (...args: any[]) => void) {
                     const mappedEvent = eventName === "beforeunload" ? "close-requested" : eventName;
@@ -2583,29 +2345,23 @@ describe("OpenFinContainerWindow", () => {
                 }
             });
             
-            // Create a listener function
             const listener = jest.fn();
             
-            // Call addListener with beforeunload event
             win.addListener("beforeunload", listener);
             
-            // Verify the addEventListener was called with close-requested
             expect(mockWindow.addEventListener).toHaveBeenCalledWith("close-requested", listener);
         });
     });
 
     describe("removeListener", () => {
         it("removeListener calls underlying OpenFin window removeEventListener with mapped event name", () => {
-            // Create a mock window with removeEventListener method
             const mockWindow = { 
                 name: "MockWindow",
                 removeEventListener: jest.fn()
             };
             
-            // Create a container window
             const win = new OpenFinContainerWindow(mockWindow);
             
-            // Add the removeListener method to the window
             Object.defineProperty(win, 'removeListener', {
                 value: function(eventName: string, listener: (...args: any[]) => void) {
                     const mappedEvent = eventName === "move" ? "bounds-changing" : eventName;
@@ -2613,40 +2369,32 @@ describe("OpenFinContainerWindow", () => {
                 }
             });
             
-            // Create a listener function
             const listener = jest.fn();
             
-            // Call removeListener with a mapped event (move maps to bounds-changing)
             win.removeListener("move", listener);
             
-            // Verify the removeEventListener was called with the mapped event name
             expect(mockWindow.removeEventListener).toHaveBeenCalledWith("bounds-changing", listener);
         });
 
         it("removeListener calls underlying OpenFin window removeEventListener with unmapped event name", () => {
             const unmappedEvent = "closed";
             
-            // Create a mock window with removeEventListener method
             const mockWindow = { 
                 name: "MockWindow",
                 removeEventListener: jest.fn()
             };
             const win = new OpenFinContainerWindow(mockWindow);
             
-            // Add the removeListener method to the window
             Object.defineProperty(win, 'removeListener', {
                 value: function(eventName: string, listener: (...args: any[]) => void) {
                     mockWindow.removeEventListener(eventName, listener);
                 }
             });
             
-            // Create a listener function
             const listener = jest.fn();
             
-            // Call removeListener with an unmapped event
             win.removeListener(unmappedEvent, listener);
             
-            // Verify the removeEventListener was called with the same event name
             expect(mockWindow.removeEventListener).toHaveBeenCalledWith(unmappedEvent, listener);
         });
     });
@@ -2738,7 +2486,6 @@ describe("OpenFinDisplayManager", () => {
     beforeEach(() => {
         desktop = new MockDesktop();
         
-        // Create a more detailed System mock
         system = {
             getMonitorInfo: jest.fn().mockImplementation((callback: (info: any) => void) => callback({
                 primaryMonitor: {
@@ -2777,13 +2524,13 @@ describe("OpenFinDisplayManager", () => {
         
         expect(display.bounds.x).toBe(2);
         expect(display.bounds.y).toBe(3);
-        expect(display.bounds.width).toBe(2);  // right - left
-        expect(display.bounds.height).toBe(2); // bottom - top
+        expect(display.bounds.width).toBe(2);
+        expect(display.bounds.height).toBe(2);
         
         expect(display.workArea.x).toBe(6);
         expect(display.workArea.y).toBe(7);
-        expect(display.workArea.width).toBe(2); // right - left
-        expect(display.workArea.height).toBe(2); // bottom - top
+        expect(display.workArea.width).toBe(2);
+        expect(display.workArea.height).toBe(2);
     });
 
     it("getAllDisplays", async () => {
@@ -2810,7 +2557,6 @@ describe("OpenFinGlobalShortcutManager", () => {
 
     it("Unavailable in OpenFin is unavailable on container", () => {
         delete desktop.GlobalHotkey;
-        // Mock the log method to avoid actual calls
         jest.spyOn(OpenFinContainer.prototype, "log").mockImplementation(() => Promise.resolve());
         
         const container = new OpenFinContainer(desktop);
@@ -2852,7 +2598,6 @@ describe("OpenFinGlobalShortcutManager", () => {
     });
 });
 
-// For items 1-3 in our remaining coverage areas
 describe("OpenFinContainerWindow constructor", () => {
     it("creates a new instance with the provided window", () => {
         const innerWindow = { name: "test-window" };
@@ -2864,37 +2609,30 @@ describe("OpenFinContainerWindow constructor", () => {
 
 describe("registerContainer", () => {
     it("registers OpenFin container", () => {
-        // Create a mock global window
         const mockWindow: any = {
             fin: {
                 desktop: {}
             }
         };
         
-        // Mock the condition function to avoid window reference issues
         const mockConditionFunc = jest.fn().mockImplementation(() => {
             return typeof mockWindow !== "undefined" && "fin" in mockWindow && "desktop" in mockWindow.fin;
         });
         
-        // Create a mock for registerContainer
         const mockRegisterContainer = jest.fn();
         
-        // Call our mock
         mockRegisterContainer("OpenFin", { 
             condition: mockConditionFunc, 
             create: () => new OpenFinContainer(null, null, {})
         });
         
-        // Verify it was called with the right parameters
         expect(mockRegisterContainer).toHaveBeenCalledWith("OpenFin", {
             condition: mockConditionFunc,
             create: expect.any(Function)
         });
         
-        // Verify the condition works with desktop
         expect(mockConditionFunc()).toBe(true);
         
-        // Modify window to make condition false
         delete mockWindow.fin.desktop;
         expect(mockConditionFunc()).toBe(false);
     });
@@ -2902,40 +2640,30 @@ describe("registerContainer", () => {
 
 describe("OpenFinContainer additional functions", () => {
     it("uses replaceNotificationApi from options", () => {
-        // Create a container with replaceNotificationApi set to false
         const desktop = new MockDesktop();
         const container = new OpenFinContainer(desktop, {}, { replaceNotificationApi: false });
         
-        // Mock registerNotificationsApi
         const mockRegisterNotificationsApi = jest.spyOn(container as any, "registerNotificationsApi");
         
-        // Call setOptions with replaceNotificationApi = true
         container.setOptions({ replaceNotificationApi: true });
         
-        // Verify registerNotificationsApi was called
         expect(mockRegisterNotificationsApi).toHaveBeenCalled();
         
-        // Reset and try with false
         mockRegisterNotificationsApi.mockClear();
         container.setOptions({ replaceNotificationApi: false });
         
-        // Verify it wasn't called
         expect(mockRegisterNotificationsApi).not.toHaveBeenCalled();
     });
     
     it("has the static option to replace notification API", () => {
-        // Save original value
         const originalValue = OpenFinContainer.replaceNotificationApi;
         
         try {
-            // Verify default is true
             expect(OpenFinContainer.replaceNotificationApi).toBe(true);
             
-            // Change and verify
             OpenFinContainer.replaceNotificationApi = false;
             expect(OpenFinContainer.replaceNotificationApi).toBe(false);
         } finally {
-            // Restore original
             OpenFinContainer.replaceNotificationApi = originalValue;
         }
     });
@@ -2946,23 +2674,18 @@ describe("menu handling", () => {
         const desktop = new MockDesktop();
         const container = new OpenFinContainer(desktop);
         
-        // Mock methods to avoid calling actual showMenu
         (container as any).ensureAbsoluteUrl = jest.fn(url => url);
         
-        // Test the getMenuItemHtml method directly
         const menuItem = { id: "test-id", label: "Test Label", icon: "icon.png" };
         const menuItemHtml: string = (container as any).getMenuItemHtml(menuItem);
         
-        // Verify the HTML contains the id and label
         expect(menuItemHtml).toContain("test-id");
         expect(menuItemHtml).toContain("Test Label");
         expect(menuItemHtml).toContain("icon.png");
         
-        // Test with no icon
         const menuItemNoIcon = { id: "test-id", label: "Test Label" };
         const menuItemHtmlNoIcon: string = (container as any).getMenuItemHtml(menuItemNoIcon);
         
-        // Verify the HTML contains &nbsp; for no icon
         expect(menuItemHtmlNoIcon).toContain("&nbsp;");
     });
     
@@ -2970,16 +2693,12 @@ describe("menu handling", () => {
         const desktop = new MockDesktop();
         const container = new OpenFinContainer(desktop);
         
-        // Mock the showMenu method to avoid actual implementation
         const mockShowMenu = jest.fn();
         (container as any).showMenu = mockShowMenu;
         
-        // Mock ensureAbsoluteUrl
         (container as any).ensureAbsoluteUrl = jest.fn(url => url);
         
-        // Create a mock for setTrayIcon
         const mockSetTrayIcon = jest.fn().mockImplementation((icon, callback) => {
-            // Simulate a right click
             callback({ 
                 button: 2, 
                 x: 100, 
@@ -2994,27 +2713,22 @@ describe("menu handling", () => {
         
         desktop.Application.getCurrent().setTrayIcon = mockSetTrayIcon;
         
-        // Set up the mock for Application.getCurrent
         const mockApp = {
             setTrayIcon: mockSetTrayIcon,
             uuid: "test-uuid"
         };
         desktop.Application.getCurrent = jest.fn().mockReturnValue(mockApp);
         
-        // Set up a UUID
         Object.defineProperty(container, 'uuid', { 
             value: "test-uuid",
             writable: true
         });
         
-        // Add a tray icon with menu items
         const menuItems = [{ label: "Test Item" }];
         container.addTrayIcon({ icon: "icon.png" }, () => {}, menuItems);
         
-        // Verify setTrayIcon was called
         expect(mockSetTrayIcon).toHaveBeenCalled();
         
-        // Verify showMenu was called with the right parameters
         expect(mockShowMenu).toHaveBeenCalledWith(
             100 + OpenFinContainer.trayIconMenuLeftOffset,
             100 + OpenFinContainer.trayIconMenuTopOffset,
@@ -3036,16 +2750,12 @@ describe("OpenFinContainer", () => {
 
     describe("handles tray icon right click", () => {
         it("triggers showMenu with the correct parameters", () => {
-            // Mock the showMenu method to avoid actual implementation
             const mockShowMenu = jest.fn();
             (container as any).showMenu = mockShowMenu;
             
-            // Mock ensureAbsoluteUrl
             (container as any).ensureAbsoluteUrl = jest.fn(url => url);
             
-            // Create a mock for setTrayIcon
             const mockSetTrayIcon = jest.fn().mockImplementation((icon, callback) => {
-                // Simulate a right click
                 callback({ 
                     button: 2, 
                     x: 100, 
@@ -3058,27 +2768,22 @@ describe("OpenFinContainer", () => {
                 });
             });
             
-            // Set up the mock for Application.getCurrent
             const mockApp = {
                 setTrayIcon: mockSetTrayIcon,
                 uuid: "test-uuid"
             };
             desktop.Application.getCurrent = jest.fn().mockReturnValue(mockApp);
             
-            // Set up a UUID
             Object.defineProperty(container, 'uuid', { 
                 value: "test-uuid",
                 writable: true
             });
             
-            // Add a tray icon with menu items
             const menuItems = [{ label: "Test Item" }];
             container.addTrayIcon({ icon: "icon.png" }, () => {}, menuItems);
             
-            // Verify setTrayIcon was called
             expect(mockSetTrayIcon).toHaveBeenCalled();
             
-            // Verify showMenu was called with the right parameters
             expect(mockShowMenu).toHaveBeenCalledWith(
                 100 + OpenFinContainer.trayIconMenuLeftOffset,
                 100 + OpenFinContainer.trayIconMenuTopOffset,
