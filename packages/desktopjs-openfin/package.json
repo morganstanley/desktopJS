@@ -36,6 +36,6 @@
   ],
   "homepage": "https://github.com/MorganStanley/desktopJS/tree/main#readme",
   "devDependencies": {
-    "@morgan-stanley/desktopjs": "file:packages/desktopjs"
+    "@morgan-stanley/desktopjs": "file:../../packages/desktopjs"
   }
 }

@@ -5,7 +5,7 @@
   "main": "electron.js",
   "private": true,
   "dependencies": {
-    "@morgan-stanley/desktopjs": "file:packages/desktopjs",
-    "@morgan-stanley/desktopjs-electron": "file:packages/desktopjs-electron"
+    "@morgan-stanley/desktopjs": "file:../../packages/desktopjs",
+    "@morgan-stanley/desktopjs-electron": "file:../../packages/desktopjs-electron"
   }
 }
