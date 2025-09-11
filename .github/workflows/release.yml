@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NODE_VERSION: '20'
+      NODE_VERSION: '22'
 
     steps:
     - name: Checkout
@@ -34,9 +34,7 @@ jobs:
 
     - name: Publish
       if: success()
-      run: ./deploy.sh
-      env:
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      run: npm run deploy
 
     - name: GitHub Pages
       if: success()
