@@ -229,13 +229,13 @@ describe("container", () => {
     describe("ContainerBase", () => {
         describe("addTrayIcon", () => {
             it("Throws Not implemented", () => {
-                expect(() => container.addTrayIcon({} as any)).toThrowError(TypeError);
+                expect(() => container.addTrayIcon({} as any)).toThrow(TypeError);
             });
         });
 
         describe("showNotification", () => {
             it("Throws Not implemented", () => {
-                expect(() => container.showNotification(<any>new NotificationOptions())).toThrowError(TypeError);
+                expect(() => container.showNotification(<any>new NotificationOptions())).toThrow(TypeError);
             });
         });
 
