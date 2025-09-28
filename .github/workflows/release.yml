@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NODE_VERSION: '20'
+      NODE_VERSION: '24'
 
     steps:
     - name: Checkout
@@ -28,15 +28,13 @@ jobs:
       uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
         node-version: ${{ env.NODE_VERSION }}
-    - run: npm i
+    - run: npm ci
     - run: npm run build
     - run: npm run docs
 
     - name: Publish
       if: success()
-      run: ./deploy.sh
-      env:
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      run: npm run deploy
 
     - name: GitHub Pages
       if: success()
