@@ -633,7 +633,7 @@ describe("ElectronContainer", () => {
             electron.app.getLoginItemSettings = jest.fn().mockImplementation(() => {
                 throw new Error("something went wrong");
             });
-            await expect(container.getOptions()).rejects.toThrowError("Error getting Container options. Error: something went wrong");
+            await expect(container.getOptions()).rejects.toThrow("Error getting Container options. Error: something went wrong");
             expect(electron.app.getLoginItemSettings).toHaveBeenCalled();
         });
     });
