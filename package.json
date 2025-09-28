@@ -10,7 +10,6 @@
     "clean": "npm run clean --workspaces --if-present",
     "postclean": "rimraf build examples/web/assets/build",
     "test": "jest --collectCoverage",
-    "test:coverage": "jest --collectCoverage",
     "start": "vite serve examples/web",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --quiet --fix",
