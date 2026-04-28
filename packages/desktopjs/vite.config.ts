@@ -39,7 +39,10 @@ const sharedConfig = {
     },
     rollupOptions: {
       output: {
-        globals: {}
+        globals: {},
+        sourcemapPathTransform: (relativeSourcePath: string) => {
+          return relativeSourcePath.replace(/^(\.\.[\\/])+src[\\/]/, './');
+        }
       }
     }
   }

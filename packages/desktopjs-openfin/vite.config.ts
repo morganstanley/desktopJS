@@ -35,6 +35,9 @@ const sharedConfig = {
       output: {
         globals: {
           '@morgan-stanley/desktopjs': 'desktopJS'
+        },
+        sourcemapPathTransform: (relativeSourcePath: string) => {
+          return relativeSourcePath.replace(/^\.\.[\\/]src[\\/]/, './');
         }
       }
     }
