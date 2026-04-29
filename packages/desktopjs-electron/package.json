@@ -2,7 +2,7 @@
   "name": "@morgan-stanley/desktopjs-electron",
   "title": "desktopJS-electron",
   "description": "desktopJS container implementation for Electron",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "publishConfig": {
     "access": "public"
   },
