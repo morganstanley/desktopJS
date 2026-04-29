@@ -36,6 +36,9 @@ const sharedConfig = {
         globals: {
           electron: 'electron',
           '@morgan-stanley/desktopjs': 'desktopJS'
+        },
+        sourcemapPathTransform: (relativeSourcePath: string) => {
+          return relativeSourcePath.replace(/^\.\.[\\/]src[\\/]/, './');
         }
       }
     }
