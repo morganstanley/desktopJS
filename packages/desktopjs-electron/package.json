@@ -22,7 +22,7 @@
   "author": "Morgan Stanley",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MorganStanley/desktopJS.git#main"
+    "url": "git+https://github.com/morganstanley/desktopJS.git"
   },
   "bugs": {
     "url": "https://github.com/MorganStanley/desktopJS/issues"
