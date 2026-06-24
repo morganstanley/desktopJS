@@ -21,7 +21,8 @@ const sharedConfig = {
     dts({
       include: ['src'],
       exclude: ['**/*.spec.ts', '**/*.test.ts'],
-      rollupTypes: true
+      rollupTypes: true,
+      aliasesExclude: ['@morgan-stanley/desktopjs']
     })
   ],
   build: {
