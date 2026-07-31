@@ -618,6 +618,23 @@ describe("DefaultMessageBus", () => {
         await bus.publish("topic", message, { name: "target" });
         expect(mockWindow.postMessage).not.toHaveBeenCalled();
     });
+
+    it("publish ignores an opener-provided windows list instead of the container's own", async () => {
+        // Simulate a window opened by an untrusted page that planted its own windows list on opener
+        const evilWindow: any = { postMessage: jest.fn(), [Default.DefaultContainer.windowNamePropertyKey]: "evil" };
+        delete mockWindow[Default.DefaultContainer.windowsPropertyKey];
+        mockWindow.opener = { [Default.DefaultContainer.windowsPropertyKey]: { evil: evilWindow } };
+
+        await bus.publish("topic", { data: "data" });
+
+        expect(evilWindow.postMessage).not.toHaveBeenCalled();
+    });
+
+    it("publish never honors a wildcard targetOrigin", async () => {
+        jest.spyOn(mockWindow, "postMessage").mockImplementation(() => {});
+        await bus.publish("topic", { data: "data" }, { targetOrigin: "*" });
+        expect(mockWindow.postMessage).toHaveBeenCalledWith(expect.anything(), "origin");
+    });
 });
 
 describe("DefaultDisplayManager", () => {
