@@ -168,10 +168,14 @@ export abstract class Container extends EventEmitter implements ContainerWindowM
         EventEmitter.emit(Container.staticEventScopePrefix + eventName, eventArgs, Container.ipc);
     }
 
-    public static listeners(eventName: string): ((event: EventArgs) => void)[] { 
+    public static listeners(eventName: string): ((event: EventArgs) => void)[] {
         return EventEmitter.listeners(Container.staticEventScopePrefix + eventName);
     }
 }
+
+// Registers the container-level event names permitted to travel over the shared MessageBus so
+// EventEmitter can reject forged/unknown static events (see ContainerEventType).
+EventEmitter.registerStaticEventNames("container-", ["window-created", "layout-loaded", "layout-saved", "layout-deleted"]);
 
 /**
  * Represents a common Container to be used as a base for any custom Container implementation.

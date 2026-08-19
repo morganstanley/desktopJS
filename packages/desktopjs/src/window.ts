@@ -237,10 +237,17 @@ export abstract class ContainerWindow extends EventEmitter {
         EventEmitter.emit(ContainerWindow.staticEventScopePrefix + eventName, eventArgs, Container.ipc);
     }
 
-    public static listeners(eventName: string): ((event: EventArgs) => void)[] { 
+    public static listeners(eventName: string): ((event: EventArgs) => void)[] {
         return EventEmitter.listeners(ContainerWindow.staticEventScopePrefix + eventName);
     }
 }
+
+// Registers the window-level event names permitted to travel over the shared MessageBus so
+// EventEmitter can reject forged/unknown static events (see WindowEventType).
+EventEmitter.registerStaticEventNames("containerwindow-", [
+    "window-created", "window-joinGroup", "window-leaveGroup", "move", "resize", "close", "closed",
+    "focus", "blur", "maximize", "minimize", "restore", "beforeunload", "state-changed"
+]);
 
 /** Represents window management capability */
 export interface ContainerWindowManager {
