@@ -245,7 +245,10 @@ export class OpenFinMessageBus implements MessageBus {
     public subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
         return new Promise<MessageBusSubscription>((resolve, reject) => {
             const subscription: MessageBusSubscription = new MessageBusSubscription(topic, (message: any, uuid: string, name: string) => {
-                listener( /* Event */ { topic: topic }, message);
+                // Forward the OpenFin-supplied sender identity so callers can authorize senders
+                // instead of accepting messages from any uuid/name (the default subscribe below
+                // uses "*" for senderUuid unless the caller opted into a specific one).
+                listener( /* Event */ { topic: topic, uuid: uuid, name: name }, message);
             }, options);
 
             this.bus.subscribe(options && options.uuid || "*",      // senderUuid
@@ -546,13 +549,37 @@ export class OpenFinContainer extends WebContainerBase {
         return OpenFinContainer.menuHtml;
     }
 
+    // Escapes text/attribute values interpolated into menu HTML built from MenuItem fields,
+    // which may originate from untrusted content (eg. a remote page's title or a saved item name).
+    private escapeHtml(value: string): string {
+        return String(value ?? "").replace(/[&<>"']/g, char => {
+            switch (char) {
+                case "&": return "&amp;";
+                case "<": return "&lt;";
+                case ">": return "&gt;";
+                case "\"": return "&quot;";
+                case "'": return "&#39;";
+                default: return char;
+            }
+        });
+    }
+
     protected getMenuItemHtml(item: MenuItem) {
         const imgHtml: string = (item.icon)
-            ? `<span><img align="absmiddle" class="context-menu-image" src="${this.ensureAbsoluteUrl(item.icon)}" /></span>`
+            ? `<span><img align="absmiddle" class="context-menu-image" src="${this.escapeHtml(this.ensureAbsoluteUrl(item.icon))}" /></span>`
             : "<span>&nbsp;</span>";
 
-        return `<li class="context-menu-item" onclick="fin.desktop.InterApplicationBus.send('${(<any>this.desktop.Application.getCurrent()).uuid}`
-            + `', null, 'TrayIcon_ContextMenuClick_${this.uuid}', { id: '${item.id}' });this.close()">${imgHtml}${item.label}</li>`;
+        // Build the onclick handler's JS string arguments with JSON.stringify rather than raw
+        // interpolation so a MenuItem.id containing a quote can't break out of the literal and
+        // run arbitrary script. JSON.stringify always double-quotes, so the resulting JS
+        // expression is then HTML-attribute-escaped as a whole before going into onclick="...",
+        // otherwise those double quotes would themselves close the attribute early.
+        const appUuid = JSON.stringify((<any>this.desktop.Application.getCurrent()).uuid);
+        const contextMenuTopic = JSON.stringify(`TrayIcon_ContextMenuClick_${this.uuid}`);
+        const itemId = JSON.stringify(item.id);
+        const onclick = `fin.desktop.InterApplicationBus.send(${appUuid}, null, ${contextMenuTopic}, { id: ${itemId} });this.close()`;
+
+        return `<li class="context-menu-item" onclick="${this.escapeHtml(onclick)}">${imgHtml}${this.escapeHtml(item.label)}</li>`;
     }
 
     private showMenu(x: number, y: number, monitorInfo: any, menuItems: MenuItem[]) {
