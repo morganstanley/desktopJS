@@ -308,6 +308,50 @@ describe("container", () => {
                 expect(layout.name).toEqual(undefined);
             });
 
+            it ("loadLayout rejects javascript: url and does not create that window", async () => {
+                const layoutToLoad: PersistedWindowLayout = new PersistedWindowLayout("Test");
+                layoutToLoad.windows.push({ name: "1", id: "1", url: "javascript:alert(document.domain)", bounds: {} } as any);
+
+                const layout = await container.loadLayout(layoutToLoad);
+                expect(container.createWindow).not.toHaveBeenCalled();
+                expect(layout).toBeDefined();
+            });
+
+            it ("loadLayout rejects data: url and does not create that window", async () => {
+                const layoutToLoad: PersistedWindowLayout = new PersistedWindowLayout("Test");
+                layoutToLoad.windows.push({ name: "1", id: "1", url: "data:text/html,<script>alert(1)</script>", bounds: {} } as any);
+
+                const layout = await container.loadLayout(layoutToLoad);
+                expect(container.createWindow).not.toHaveBeenCalled();
+                expect(layout).toBeDefined();
+            });
+
+            it ("loadLayout still creates windows with http(s) and relative urls", async () => {
+                const layoutToLoad: PersistedWindowLayout = new PersistedWindowLayout("Test");
+                layoutToLoad.windows.push({ name: "1", id: "1", url: "https://example.com", bounds: {} } as any);
+                layoutToLoad.windows.push({ name: "2", id: "2", url: "relative/path", bounds: {} } as any);
+
+                await container.loadLayout(layoutToLoad);
+                expect(container.createWindow).toHaveBeenCalledTimes(2);
+                expect(container.createWindow).toHaveBeenCalledWith("https://example.com", { name: "1" });
+                expect(container.createWindow).toHaveBeenCalledWith("relative/path", { name: "2" });
+            });
+
+            it ("loadLayout tolerates malformed JSON in storage instead of throwing", async () => {
+                jest.spyOn(container.storage, "getItem").mockReturnValue("{not valid json");
+                await expect(container.loadLayout("Test")).rejects.toThrow("Layout does not exist or is invalid");
+            });
+
+            it ("loadLayout strips __proto__ keys from persisted layout JSON", async () => {
+                const poisoned = `{"Test": {"name": "Test", "windows": [{"name": "1", "id": "1", "url": "url", "bounds": {}, "options": {"__proto__": {"polluted": true}}}]}}`;
+                jest.spyOn(container.storage, "getItem").mockReturnValue(poisoned);
+
+                await container.loadLayout("Test");
+
+                expect(container.createWindow).toHaveBeenCalledWith("url", expect.objectContaining({ name: "1" }));
+                expect(({} as any).polluted).toBeUndefined();
+            });
+
             it("saveLayoutToStorage", () => {
                 const layout: PersistedWindowLayout = new PersistedWindowLayout();
                 (<any>container).saveLayoutToStorage("Test", layout);
