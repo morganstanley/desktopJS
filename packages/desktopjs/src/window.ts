@@ -453,7 +453,7 @@ export class SnapAssistWindowManager extends GroupWindowManager {
             win.addListener(<WindowEventType>"disabled-frame-bounds-changed", () => this.onMoved(win));
             win.addListener(<WindowEventType>"frame-enabled", () => win.innerWindow.disableFrame());
         } else {
-            // Electron windows specific moved handler
+            // Container-specific moved handler for native windows that expose hookWindowMessage
             if (win.innerWindow && win.innerWindow.hookWindowMessage) {
                 win.innerWindow.hookWindowMessage(0x0232, () => this.onMoved(win));  // WM_EXITSIZEMOVE
             }

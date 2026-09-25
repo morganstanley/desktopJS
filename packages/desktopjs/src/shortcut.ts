@@ -21,18 +21,18 @@
  */
 export abstract class GlobalShortcutManager { 
     /** Registers a global shortcut.
-     * @param shortcut {string} [Accelerator]{@link https://electronjs.org/docs/api/accelerator}
+     * @param shortcut {string} Accelerator string describing the key combination (e.g. "CmdOrCtrl+Shift+A")
      */
     public abstract register(shortcut: string, callback: () => void): Promise<void>;
 
     /** Checks if a given shortcut has been registered.
-     * @param shortcut {string} [Accelerator]{@link https://electronjs.org/docs/api/accelerator}
+     * @param shortcut {string} Accelerator string describing the key combination (e.g. "CmdOrCtrl+Shift+A")
      * @returns {Promise<boolean>} A Promise that resolves to a boolean whether the shortcut is already registered.
      */
     public abstract isRegistered(shortcut: string): Promise<boolean>;
 
     /** Removes a previously registered shortcut.
-     * @param shortcut {string} [Accelerator]{@link https://electronjs.org/docs/api/accelerator}
+     * @param shortcut {string} Accelerator string describing the key combination (e.g. "CmdOrCtrl+Shift+A")
      */
     public abstract unregister(shortcut: string): Promise<void>;
 

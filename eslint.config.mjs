@@ -81,13 +81,6 @@ export default [
     },
   },
   {
-    // Override for Electron source file allowing require
-    files: ['packages/desktopjs-electron/src/electron.ts'],
-    rules: {
-        '@typescript-eslint/no-require-imports': 'off'
-    }
-  },
-  {
     // Override for spec files
     files: ['**/*.spec.ts'],
     // Exclude TS rules requiring type info for spec files if they cause issues
