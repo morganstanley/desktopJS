@@ -26,6 +26,7 @@
     "@typescript-eslint/eslint-plugin": "^8.33.1",
     "@typescript-eslint/parser": "^8.33.1",
     "copyfiles": "^2.4.1",
+    "esbuild": "^0.28.0",
     "eslint": "^9.28.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-license-header": "^0.9.0",
@@ -40,7 +41,7 @@
     "ts-jest": "^29.3.4",
     "typedoc": "^0.28.5",
     "typescript": "^5.8.3",
-    "vite": "^7.1.7",
+    "vite": "^8.2.2",
     "vite-plugin-dts": "^5.0.3"
   },
   "overrides": {
