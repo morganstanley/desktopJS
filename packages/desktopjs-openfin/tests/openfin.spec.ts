@@ -1041,6 +1041,31 @@ describe("OpenFinContainer", () => {
             const menuItemHtml: string = (container as any).getMenuItemHtml(menuItem);
             expect(menuItemHtml).toContain(`<span>&nbsp;</span>Label`);
         });
+
+        it("getMenuItemHtml HTML-escapes a label containing markup", () => {
+            const menuItem: MenuItem = { id: "ID", label: "<script>alert(1)</script>" };
+            const menuItemHtml: string = (container as any).getMenuItemHtml(menuItem);
+            expect(menuItemHtml).not.toContain("<script>");
+            expect(menuItemHtml).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+        });
+
+        it("getMenuItemHtml HTML-escapes an icon url containing a quote", () => {
+            const menuItem: MenuItem = { id: "ID", label: "Label", icon: `Icon" onerror="alert(1)` };
+            const menuItemHtml: string = (container as any).getMenuItemHtml(menuItem);
+            expect(menuItemHtml).not.toContain(`Icon" onerror="alert(1)`);
+            expect(menuItemHtml).toContain("&quot;");
+        });
+
+        it("getMenuItemHtml never leaks a raw double quote from item.id/label that could break out of the onclick/class attributes", () => {
+            const menuItem: MenuItem = { id: `x"); alert(document.domain); ({id:"x`, label: `"><img src=x onerror=alert(1)>` };
+            const menuItemHtml: string = (container as any).getMenuItemHtml(menuItem);
+
+            // Every raw double quote in the output should belong to class="context-menu-item" and
+            // onclick="..." only; anything from item.id/label must come through HTML-escaped.
+            const quoteCount = (menuItemHtml.match(/"/g) || []).length;
+            expect(quoteCount).toEqual(4);
+            expect(menuItemHtml).not.toContain("<img src=x onerror=");
+        });
     });
 
     it("addTrayIcon invokes underlying setTrayIcon", () => {
@@ -2446,6 +2471,17 @@ describe("OpenFinMessageBus", () => {
     it("subscribe with options invokes underlying subscribe", async () => {
         await bus.subscribe("topic", callback, { uuid: "uuid", name: "name" });
         expect(mockBus.subscribe).toHaveBeenCalledWith("uuid", "name", "topic", expect.any(Function), expect.any(Function), expect.any(Function));
+    });
+
+    it("subscribe forwards sender uuid/name to the listener so callers can authorize senders", async () => {
+        const received: any[] = [];
+        await bus.subscribe("topic", (event: any, message: any) => received.push(event));
+
+        // Invoke the wrapped listener passed to the underlying bus, simulating an inbound message
+        const wrappedListener = mockBus.subscribe.mock.calls[0][3];
+        wrappedListener({ data: "payload" }, "sender-uuid", "sender-name");
+
+        expect(received).toEqual([{ topic: "topic", uuid: "sender-uuid", name: "sender-name" }]);
     });
 
     it("unsubscribe invokes underlying unsubscribe", async () => {
