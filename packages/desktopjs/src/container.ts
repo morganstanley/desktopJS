@@ -191,16 +191,56 @@ export abstract class ContainerBase extends Container {
         throw new TypeError("Tray icons are not supported by this container.");
     }
 
-    public storage: Storage = (typeof window !== "undefined" && window)
-        ? window.localStorage
-        : undefined;
+    public storage: Storage;
+
+    protected constructor(storage?: Storage) {
+        super();
+        this.storage = storage ?? ((typeof window !== "undefined" && window) ? window.localStorage : undefined);
+    }
+
+    // Keys that could re-target an object's prototype if later merged with Object.assign
+    private static readonly unsafeJsonKeys: ReadonlySet<string> = new Set(["__proto__", "constructor", "prototype"]);
+
+    /** Parses persisted layout JSON, stripping keys that could be used for prototype pollution
+     * and tolerating missing/corrupt storage instead of throwing.
+     */
+    private parseLayoutsFromStorage(): any {
+        const raw = this.storage.getItem(ContainerBase.layoutsPropertyKey);
+        if (!raw) {
+            return undefined;
+        }
+
+        try {
+            return JSON.parse(raw, (key, value) => ContainerBase.unsafeJsonKeys.has(key) ? undefined : value);
+        } catch (e) {
+            this.log("warn", `Unable to parse persisted layouts, ignoring: ${e}`);
+            return undefined;
+        }
+    }
+
+    /** Restricts a persisted layout window url to the http(s)/relative schemes createWindow expects,
+     * rejecting schemes (eg. javascript:, data:) that a poisoned layout could use to run script on load.
+     */
+    protected sanitizeUrl(url: string): string {
+        if (!url) {
+            return url;
+        }
+
+        const schemeMatch = /^([a-zA-Z][a-zA-Z0-9+.-]*):/.exec(url);
+        if (schemeMatch && !["http", "https"].includes(schemeMatch[1].toLowerCase())) {
+            this.log("warn", `Blocked layout window with disallowed url scheme '${schemeMatch[1]}'`);
+            return undefined;
+        }
+
+        return url;
+    }
 
     protected getLayoutFromStorage(name: string): PersistedWindowLayout {
-        return JSON.parse(this.storage.getItem(ContainerBase.layoutsPropertyKey))[name];
+        return this.parseLayoutsFromStorage()?.[name];
     }
 
     protected saveLayoutToStorage(name: string, layout: PersistedWindowLayout) {
-        const layouts: any = JSON.parse(this.storage.getItem(ContainerBase.layoutsPropertyKey)) || {};
+        const layouts: any = this.parseLayoutsFromStorage() || {};
 
         if (!layout.name) {
             layout.name = name;
@@ -214,7 +254,7 @@ export abstract class ContainerBase extends Container {
     }
 
     protected deleteLayoutFromStorage(name: string) {
-        const layouts: any = JSON.parse(this.storage.getItem(ContainerBase.layoutsPropertyKey)) || {};
+        const layouts: any = this.parseLayoutsFromStorage() || {};
         const layout = layouts[name];
 
         if (layout) {
@@ -241,7 +281,11 @@ export abstract class ContainerBase extends Container {
                     this.getMainWindow().setBounds(window.bounds);
                     promises.push(Promise.resolve(this.getMainWindow()));
                 } else {
-                    promises.push(this.createWindow(window.url, options));
+                    const url = this.sanitizeUrl(window.url);
+                    if (window.url && !url) {
+                        continue; // url was rejected as unsafe; do not create this window
+                    }
+                    promises.push(this.createWindow(url, options));
                 }
             }
             
@@ -274,7 +318,7 @@ export abstract class ContainerBase extends Container {
             groupMap.forEach((targets, window) => {
                 targets.forEach(target => {
                     this.getWindowByName(layoutToLoad.windows.find(win => win.id === target).name).then(targetWin => {
-                        targetWin.joinGroup(window);
+                        targetWin?.joinGroup(window);
                     });
                 });
             });
@@ -301,9 +345,8 @@ export abstract class ContainerBase extends Container {
     }
 
     public async getLayouts(): Promise<PersistedWindowLayout[]> {
-        const rawLayouts = this.storage.getItem(ContainerBase.layoutsPropertyKey);
-        if (rawLayouts) {
-            const layouts = JSON.parse(rawLayouts);
+        const layouts = this.parseLayoutsFromStorage();
+        if (layouts) {
             return Object.getOwnPropertyNames(layouts).map(key => layouts[key]);
         }
     }
