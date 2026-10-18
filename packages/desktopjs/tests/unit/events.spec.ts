@@ -13,8 +13,22 @@
  */
 
 import { EventEmitter, EventArgs } from "../../src/events";
+import { MessageBus, MessageBusSubscription, MessageBusOptions } from "../../src/ipc";
 
 class TestEmitter extends EventEmitter {
+}
+
+class CapturingMessageBus implements MessageBus {
+    public capturedListener: (event: any, message: any) => void;
+
+    async subscribe<T>(topic: string, listener: (event: any, message: T) => void, options?: MessageBusOptions): Promise<MessageBusSubscription> {
+        this.capturedListener = listener;
+        return new MessageBusSubscription(topic, listener, options);
+    }
+
+    async unsubscribe(): Promise<void> { }
+
+    async publish(): Promise<void> { }
 }
 
 describe("EventArgs", () => {
@@ -91,5 +105,55 @@ describe("EventEmitter", () => {
         args.returnValue = "Foo";
         emitter.postProcessArgs(args)
         expect(innerEvent.returnValue).toEqual("Foo");
-    }); 
+    });
+});
+
+describe("EventEmitter static ipc forwarding", () => {
+    let bus: CapturingMessageBus;
+
+    beforeEach(async () => {
+        bus = new CapturingMessageBus();
+        (<any>EventEmitter).staticEventListeners = new Map();
+        EventEmitter.registerStaticEventNames("test-scope-", ["known-event"]);
+        EventEmitter.ipc = bus;
+        await Promise.resolve();
+    });
+
+    it ("forwards a known, allowlisted static event", (done) => {
+        EventEmitter.addListener("test-scope-known-event", (event: any) => {
+            expect(event.value).toEqual("ok");
+            done();
+        });
+
+        bus.capturedListener({}, { eventName: "test-scope-known-event", eventArgs: { value: "ok" } });
+    });
+
+    it ("drops a forged static event with an unregistered name", () => {
+        const listener = jest.fn();
+        EventEmitter.addListener("container-layout-saved-forged", listener);
+
+        bus.capturedListener({}, { eventName: "container-layout-saved-forged", eventArgs: { evil: true } });
+
+        expect(listener).not.toHaveBeenCalled();
+    });
+
+    it ("drops a static event with a non-string eventName", () => {
+        const listener = jest.fn();
+        EventEmitter.addListener("test-scope-known-event", listener);
+
+        bus.capturedListener({}, { eventName: { toString: () => "test-scope-known-event" }, eventArgs: {} });
+
+        expect(listener).not.toHaveBeenCalled();
+    });
+
+    it ("strips __proto__/constructor/prototype keys from inbound eventArgs", (done) => {
+        EventEmitter.addListener("test-scope-known-event", (event: any) => {
+            expect(Object.prototype.hasOwnProperty.call(event, "__proto__")).toEqual(false);
+            expect(({} as any).polluted).toBeUndefined();
+            done();
+        });
+
+        const poisoned = JSON.parse('{"safe": "value", "__proto__": {"polluted": true}}');
+        bus.capturedListener({}, { eventName: "test-scope-known-event", eventArgs: poisoned });
+    });
 });
