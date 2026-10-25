@@ -61,7 +61,7 @@ export default defineConfig(({ mode }) => {
           fileName: () => 'desktopjs.js'
         },
         outDir: 'dist/iife',
-        minify: 'esbuild'
+        minify: 'oxc'
       }
     };
   }
