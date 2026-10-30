@@ -312,7 +312,7 @@ describe("SnapAssistWindowManager", () => {
         expect(win.innerWindow.disableFrame).toHaveBeenCalled();
     });
 
-    it ("onAttached hooks on Electron wndproc when available", () => {
+    it ("onAttached hooks native wndproc via hookWindowMessage when available", () => {
         const win = {
             innerWindow: {
                 hookWindowMessage: jest.fn()
