@@ -41,7 +41,7 @@ export function clearRegistry() {
 }
 
 /** Register a container type in the registry.
- * @param {string} id Unique identifier of the container type (eg. Electron).
+ * @param {string} id Unique identifier of the container type (eg. OpenFin).
  * @param {ContainerRegistration} registration Registration details.
  */
 export function registerContainer(id: string, registration: ContainerRegistration) {

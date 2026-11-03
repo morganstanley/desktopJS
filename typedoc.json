@@ -1,7 +1,6 @@
 {
     "entryPoints": [
         "./packages/desktopjs/src/desktop.ts",
-        "./packages/desktopjs-electron/src/electron.ts",
         "./packages/desktopjs-openfin/src/openfin.ts"
     ],
     "name": "desktopJS",

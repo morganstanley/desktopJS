@@ -11,29 +11,6 @@
 			"sourceMaps": true
 		},
 		{
-			"name": "Debug Electron Main",
-			"type": "node",
-			"request": "launch",
-			"cwd": "${workspaceRoot}/examples/web",
-			"runtimeExecutable": "electron.cmd", // For windows
-			//"runtimeExecutable": "electron" // Other platforms
-			"program": "${workspaceRoot}/examples/electron/electron.js"
-		},
-		{
-			"name": "Debug Electron Renderer",
-			"type": "chrome",
-			"request": "launch",
-			"runtimeExecutable": "electron.cmd", // For windows
-			//"runtimeExecutable": "electron" // Other platforms
-			"runtimeArgs": [
-				"${workspaceRoot}/examples/electron",
-				"--enable-logging",
-				"--remote-debugging-port=9222"
-			],
-			"sourceMaps": true,
-			"webRoot": "${workspaceRoot}/dist"
-		},
-		{
             "type": "node",
             "request": "launch",
             "name": "Debug Vitest",
