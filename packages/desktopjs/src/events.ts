@@ -43,6 +43,44 @@ export class EventEmitter {
 
     private static readonly staticEventName: string = "desktopJS.static-event";
 
+    // Static event names a known scope (eg. "container-", "containerwindow-") is allowed to
+    // broadcast/receive over the shared MessageBus. Populated by Container/ContainerWindow at
+    // module load. Used to reject forged static events carrying names no scope actually emits.
+    private static readonly allowedStaticEventNames: Set<string> = new Set();
+
+    // Keys that could re-target an object's prototype if a listener later merges eventArgs
+    // into another object (eg. via Object.assign).
+    private static readonly unsafeKeys: ReadonlySet<string> = new Set(["__proto__", "constructor", "prototype"]);
+
+    /**
+     * Registers the event names a static event scope is allowed to broadcast/receive.
+     * @param {string} scopePrefix The static event scope prefix (eg. "container-").
+     * @param {string[]} eventNames The event names valid for that scope.
+     */
+    public static registerStaticEventNames(scopePrefix: string, eventNames: string[]): void {
+        for (const name of eventNames) {
+            EventEmitter.allowedStaticEventNames.add(scopePrefix + name);
+        }
+    }
+
+    /** Recursively strips prototype-pollution keys from an inbound (untrusted) event payload. */
+    private static sanitizeEventArgs(value: any, seen: Set<any> = new Set()): any {
+        if (!value || typeof value !== "object" || seen.has(value)) {
+            return value;
+        }
+
+        seen.add(value);
+        for (const key of Object.getOwnPropertyNames(value)) {
+            if (EventEmitter.unsafeKeys.has(key)) {
+                delete value[key];
+                continue;
+            }
+            value[key] = EventEmitter.sanitizeEventArgs(value[key], seen);
+        }
+
+        return value;
+    }
+
     /**
      * Registers an event listener on the specified event.
      * @param {string} eventName The type of the event.
@@ -130,7 +168,15 @@ export class EventEmitter {
     public static set ipc(value: MessageBus) {
         if (value) {
             value.subscribe(EventEmitter.staticEventName, (event: any, message: any) => {
-                EventEmitter.emit(message.eventName, message.eventArgs);
+                const eventName = message?.eventName;
+
+                // Reject forged/unknown static events instead of trusting eventName/eventArgs
+                // from any sender able to publish on the shared MessageBus.
+                if (typeof eventName !== "string" || !EventEmitter.allowedStaticEventNames.has(eventName)) {
+                    return;
+                }
+
+                EventEmitter.emit(eventName, EventEmitter.sanitizeEventArgs(message.eventArgs));
             });
         }
     }

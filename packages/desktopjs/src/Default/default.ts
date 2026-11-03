@@ -173,12 +173,10 @@ export namespace Default {
         }
 
         async publish<T>(topic: string, message: T, options?: MessageBusOptions) {
-            // Get list of windows from global (set by opener on creation) or fallback to opener global in case
-            // there is a race condition of getting here before the opener set the global for us
-            const windows: Window[] = (this.container.globalWindow)
-                ? this.container.globalWindow[DefaultContainer.windowsPropertyKey]
-                || this.container.globalWindow.opener?.[DefaultContainer.windowsPropertyKey]
-                : [];
+            // Only use the windows list the desktopJS runtime tracks directly on this window.
+            // Do not fall back to window.opener: for a window not created via createWindow,
+            // opener may be an untrusted page that can plant its own windows list there.
+            const windows: Window[] = this.container.globalWindow?.[DefaultContainer.windowsPropertyKey];
 
             if (windows) {
                 for (const key in windows) {
@@ -188,7 +186,12 @@ export namespace Default {
                         continue;
                     }
 
-                    const targetOrigin = options?.targetOrigin || this.container.globalWindow.location.origin;
+                    // Never broadcast to a wildcard origin; a caller-supplied "*" would let any
+                    // origin the target window later navigates to read the published message.
+                    const requestedOrigin = options?.targetOrigin;
+                    const targetOrigin = (requestedOrigin && requestedOrigin !== "*")
+                        ? requestedOrigin
+                        : this.container.globalWindow.location.origin;
                     win.postMessage({ source: DefaultMessageBus.messageSource, topic, message }, targetOrigin);
                 }
             }
